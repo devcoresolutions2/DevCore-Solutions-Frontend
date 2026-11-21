@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ExternalLink, FileText, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { ExternalLink, FileText } from "lucide-react";
 import { ReleasePill } from "@/components/glass/ReleasePill";
 import { type ShowcaseItem } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -30,17 +31,29 @@ export function ShowcaseCard({ item, featured = false, compact = false }: Showca
           featured ? "aspect-[16/9]" : "aspect-[16/9]"
         )}
       >
-        {/* Dot-grid pattern */}
-        <div
-          className="absolute inset-0 opacity-20 pointer-events-none"
-          style={{
-            backgroundImage: "radial-gradient(var(--brand-primary) 1px, transparent 1px)",
-            backgroundSize: "16px 16px",
-          }}
-          aria-hidden="true"
-        />
+        {item.coverImage ? (
+          <>
+            <Image
+              src={item.coverImage}
+              alt={item.name}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-surface)]/90 via-black/20 to-black/30 pointer-events-none" />
+          </>
+        ) : (
+          <div
+            className="absolute inset-0 opacity-20 pointer-events-none"
+            style={{
+              backgroundImage: "radial-gradient(var(--brand-primary) 1px, transparent 1px)",
+              backgroundSize: "16px 16px",
+            }}
+            aria-hidden="true"
+          />
+        )}
 
-        <div className="absolute inset-0 p-5 flex flex-col justify-between relative z-10">
+        <div className="absolute inset-0 p-5 flex flex-col justify-between z-10">
           {/* Top row */}
           <div className="flex items-center justify-between">
             <ReleasePill dot dotColor="var(--brand-primary)">
@@ -114,7 +127,7 @@ export function ShowcaseCard({ item, featured = false, compact = false }: Showca
         )}
         {item.caseStudySlug && (
           <Link
-            href={`/launches/${item.caseStudySlug}`}
+            href={`/projects/${item.caseStudySlug}`}
             className="inline-flex items-center gap-1.5 text-xs font-medium h-10 px-4 rounded-[10px] border border-[var(--border-strong)] bg-[var(--bg-elevated)]/65 text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] hover:border-[var(--brand-primary)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
           >
             <FileText size={13} aria-hidden="true" />

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, Layers, CheckCircle2 } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { ReleasePill } from "@/components/glass/ReleasePill";
 import { GlassCard } from "@/components/glass/GlassCard";
 import { type ProjectItem } from "@/lib/api";
@@ -22,20 +23,33 @@ export function ProjectCard({ project, featured = false }: ProjectCardProps) {
       <div>
         {/* Cover visual container */}
         <div className="w-full aspect-[16/9] bg-[var(--bg-surface)] border-b border-[var(--border-subtle)] relative overflow-hidden p-6 flex flex-col justify-between">
-          <div
-            className="absolute inset-0 opacity-20 pointer-events-none"
-            style={{
-              backgroundImage: "radial-gradient(var(--brand-primary) 1px, transparent 1px)",
-              backgroundSize: "16px 16px",
-            }}
-            aria-hidden="true"
-          />
+          {project.coverImage ? (
+            <>
+              <Image
+                src={project.coverImage}
+                alt={project.name}
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-surface)]/95 via-black/25 to-black/35 pointer-events-none" />
+            </>
+          ) : (
+            <div
+              className="absolute inset-0 opacity-20 pointer-events-none"
+              style={{
+                backgroundImage: "radial-gradient(var(--brand-primary) 1px, transparent 1px)",
+                backgroundSize: "16px 16px",
+              }}
+              aria-hidden="true"
+            />
+          )}
 
           <div className="relative z-10 flex items-center justify-between">
             <ReleasePill dot dotColor="var(--success)">
               {project.category}
             </ReleasePill>
-            <span className="font-mono text-xs px-2.5 py-1 rounded bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-subtle)]">
+            <span className="font-mono text-xs px-2.5 py-1 rounded bg-[var(--bg-elevated)]/90 text-[var(--text-muted)] border border-[var(--border-subtle)]">
               Case Study
             </span>
           </div>

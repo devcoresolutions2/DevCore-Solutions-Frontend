@@ -85,8 +85,8 @@ export type BentoProofItem = {
 export const MOCK_SHOWCASE: ShowcaseItem[] = [
   {
     id: "1",
-    slug: "dinedesk-enterprise",
-    name: "DineDesk Enterprise",
+    slug: "dinedesk",
+    name: "DineDesk",
     tagline: "Real-Time Restaurant Operating System",
     category: "SaaS",
     badge: "FLAGSHIP",
@@ -94,9 +94,10 @@ export const MOCK_SHOWCASE: ShowcaseItem[] = [
     version: "3.1",
     description:
       "DevCore engineered DineDesk from PRD to production: an ultra-low-latency POS and order routing architecture running on edge-cached local nodes. If the internet drops, kitchen lines and payment registers continue operating with zero disruption across 800+ franchise locations.",
+    coverImage: "/images/dinedesk-cover.jpg",
     techStack: ["React Native", "Node.js Cluster", "PostgreSQL", "Redis Pub/Sub", "ESC/POS Drivers"],
-    liveUrl: "#",
-    caseStudySlug: "dinedesk-enterprise",
+    liveUrl: "https://dine-desk-one.vercel.app/",
+    caseStudySlug: "dinedesk",
     isFeatured: true,
     metrics: [
       { label: "Peak Orders / Sec", value: "4,820 ops" },
@@ -152,10 +153,11 @@ export const MOCK_SHOWCASE: ShowcaseItem[] = [
 export const MOCK_PROJECTS: ProjectItem[] = [
   {
     id: "1",
-    slug: "dinedesk-enterprise",
-    name: "DineDesk Enterprise",
+    slug: "dinedesk",
+    name: "DineDesk",
     tagline: "Real-Time Restaurant Operating System",
     category: "SaaS",
+    coverImage: "/images/dinedesk-cover.jpg",
     challenge:
       "800+ franchise locations needed offline-first POS that keeps kitchen lines and payments running even when internet drops. Legacy TCP solutions introduced 4,000ms+ latency causing order chaos during peak hours.",
     solution:

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ExternalLink } from "lucide-react";
 import { GlassCard } from "@/components/glass/GlassCard";
 import { type ShowcaseItem } from "@/lib/api";
@@ -92,8 +93,20 @@ export function FlagshipSpotlight({ items }: FlagshipSpotlightProps) {
                   </div>
                 </div>
 
-                {/* Metrics card */}
-                <div className={cn("lg:col-span-5", !isEven && "lg:order-first")}>
+                {/* Preview / Image / Metrics */}
+                <div className={cn("lg:col-span-5 space-y-4", !isEven && "lg:order-first")}>
+                  {item.coverImage && (
+                    <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden border border-[var(--border-subtle)] shadow-sm">
+                      <Image
+                        src={item.coverImage}
+                        alt={`${item.name} user interface`}
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 40vw"
+                        className="object-cover object-top hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  )}
+
                   <div className="bg-[var(--bg-elevated)] rounded-xl p-5 border border-[var(--border-subtle)] shadow-sm font-mono text-xs">
                     <div className="flex justify-between items-center pb-3 border-b border-[var(--bg-surface)] mb-4">
                       <span className="font-bold text-[var(--text-primary)] uppercase">{item.name} Telemetry</span>
