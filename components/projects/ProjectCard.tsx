@@ -53,24 +53,6 @@ export function ProjectCard({ project, featured = false }: ProjectCardProps) {
               Case Study
             </span>
           </div>
-
-          {/* Impact preview */}
-          {project.impact && project.impact.length > 0 && (
-            <div className="relative z-10 max-w-sm bg-[var(--bg-elevated)]/95 rounded-xl border border-[var(--border-subtle)] p-3 shadow-sm">
-              <div className="flex items-center justify-between text-xs pb-1.5 border-b border-[var(--bg-surface)] mb-2">
-                <span className="font-display font-bold text-[var(--text-primary)]">Measurable Impact</span>
-                <span className="font-mono text-[var(--success)] text-[10px]">VERIFIED</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-center">
-                {project.impact.slice(0, 2).map((item) => (
-                  <div key={item.label} className="p-1.5 rounded bg-[var(--bg-canvas)] border border-[var(--border-subtle)]">
-                    <span className="text-[10px] text-[var(--text-muted)] block font-mono uppercase">{item.label}</span>
-                    <span className="font-mono font-bold text-sm text-[var(--text-primary)]">{item.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Content Details */}
@@ -87,6 +69,18 @@ export function ProjectCard({ project, featured = false }: ProjectCardProps) {
           <p className="text-sm text-[var(--text-secondary)] mt-3 leading-relaxed line-clamp-2">
             {project.challenge}
           </p>
+
+          {/* Measurable Impact inside card body */}
+          {project.impact && project.impact.length > 0 && (
+            <div className="grid grid-cols-2 gap-2 my-4 pt-3 border-t border-[var(--border-subtle)]">
+              {project.impact.slice(0, 2).map((item) => (
+                <div key={item.label} className="p-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-center">
+                  <span className="text-[10px] text-[var(--text-muted)] block font-mono uppercase truncate">{item.label}</span>
+                  <span className="font-mono font-bold text-sm text-[var(--text-primary)]">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Feature Highlights */}
           {project.features && project.features.length > 0 && (

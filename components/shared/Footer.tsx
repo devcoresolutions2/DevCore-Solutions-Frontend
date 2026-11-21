@@ -11,9 +11,8 @@ const CAPABILITIES = [
 ];
 
 const PRODUCTS = [
-  { label: "DineDesk", href: "/projects/dinedesk" },
-  { label: "GameVault Escrow", href: "/projects/gamevault-ledger" },
-  { label: "New Launches", href: "/launches" },
+  { label: "DineDesk Hospitality SaaS", href: "/projects/dinedesk" },
+  { label: "Product Launches", href: "/launches" },
   { label: "Engineering Stack", href: "/#tech-matrix" },
 ];
 

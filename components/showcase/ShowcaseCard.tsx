@@ -53,9 +53,9 @@ export function ShowcaseCard({ item, featured = false, compact = false }: Showca
           />
         )}
 
-        <div className="absolute inset-0 p-5 flex flex-col justify-between z-10">
+        <div className="absolute inset-0 p-5 flex flex-col justify-start z-10 pointer-events-none">
           {/* Top row */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pointer-events-auto">
             <ReleasePill dot dotColor="var(--brand-primary)">
               {item.badge}&nbsp;•&nbsp;{item.category.toUpperCase()}
             </ReleasePill>
@@ -63,24 +63,6 @@ export function ShowcaseCard({ item, featured = false, compact = false }: Showca
               {launchDate}
             </span>
           </div>
-
-          {/* Mini metric card */}
-          {item.metrics && item.metrics.length > 0 && (
-            <div className="bg-[var(--bg-elevated)]/95 rounded-xl border border-[var(--border-subtle)] p-3 shadow-sm max-w-xs">
-              <div className="flex items-center justify-between text-xs pb-2 border-b border-[var(--bg-surface)] mb-2">
-                <span className="font-display font-bold text-[var(--text-primary)]">{item.name}</span>
-                <span className="font-mono text-[var(--success)] text-[10px]">v{item.version}&nbsp;PROD</span>
-              </div>
-              <div className="grid grid-cols-3 gap-1.5">
-                {item.metrics.slice(0, 3).map((m) => (
-                  <div key={m.label} className="p-1.5 rounded bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-center">
-                    <span className="text-[9px] text-[var(--text-muted)] block font-mono uppercase">{m.label}</span>
-                    <span className="font-mono font-bold text-xs text-[var(--text-primary)]">{m.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -98,6 +80,18 @@ export function ShowcaseCard({ item, featured = false, compact = false }: Showca
         <p className="text-sm text-[var(--text-primary)]/90 leading-relaxed line-clamp-3">
           {item.description}
         </p>
+
+        {/* Telemetry Metrics inside card body */}
+        {item.metrics && item.metrics.length > 0 && (
+          <div className="grid grid-cols-3 gap-2 my-4 pt-3 border-t border-[var(--border-subtle)]">
+            {item.metrics.slice(0, 3).map((m) => (
+              <div key={m.label} className="p-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-center">
+                <span className="text-[10px] text-[var(--text-muted)] block font-mono uppercase truncate">{m.label}</span>
+                <span className="font-mono font-bold text-xs text-[var(--text-primary)]">{m.value}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Tech badges */}
         <div className="flex flex-wrap gap-1.5 mt-4">
