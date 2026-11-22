@@ -64,11 +64,11 @@ function YouTubeIcon({ className }: { className?: string }) {
 }
 
 const SOCIALS = [
-  { icon: LinkedInIcon, label: "LinkedIn", href: "https://linkedin.com" },
+  { icon: FacebookIcon, label: "Facebook", href: "https://www.facebook.com/devcoresolutionsofficial" },
+  { icon: LinkedInIcon, label: "LinkedIn", href: "https://www.linkedin.com/company/devcoresolutions2" },
+  { icon: TwitterIcon, label: "X / Twitter", href: "https://x.com/DevCoreSolution" },
+  { icon: YouTubeIcon, label: "YouTube", href: "https://www.youtube.com/@DevCoreSolutionsOfficial" },
   { icon: GitHubIcon, label: "GitHub", href: "https://github.com/devcoresolutions2" },
-  { icon: TwitterIcon, label: "X / Twitter", href: "https://x.com" },
-  { icon: FacebookIcon, label: "Facebook", href: "https://facebook.com" },
-  { icon: YouTubeIcon, label: "YouTube", href: "https://youtube.com" },
 ];
 
 export function Footer() {
@@ -113,7 +113,7 @@ export function Footer() {
                   aria-label={`DevCore on ${label}`}
                   className={cn(
                     "w-9 h-9 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]",
-                    "text-[var(--brand-primary)] flex items-center justify-center",
+                    "text-[var(--text-primary)] flex items-center justify-center",
                     "hover:bg-[var(--brand-primary)] hover:text-[var(--brand-contrast)] hover:border-[var(--brand-primary)]",
                     "transition-colors duration-150",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2"
