@@ -21,7 +21,7 @@ export function BrandLogo({ className, size = "md", href = "/" }: BrandLogoProps
       <span
         className={cn(
           iconSize,
-          "rounded-lg bg-[var(--brand-primary)] flex items-center justify-center text-[var(--brand-contrast)] shadow-sm",
+          "rounded-lg bg-[var(--brand-primary)] flex items-center justify-center text-[var(--brand-contrast)] shadow-sm border border-[var(--border-subtle)]",
           "logo-hover-glint transition-transform duration-300"
         )}
       >

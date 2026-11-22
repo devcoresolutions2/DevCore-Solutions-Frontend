@@ -28,8 +28,28 @@ async function buildCss() {
   const candidates = scanner.scan();
   const builtCss = compiler.build(candidates);
 
-  fs.writeFileSync(outCssPath, builtCss, "utf8");
-  console.log(`[build-css] Successfully built ${builtCss.length} bytes to ${outCssPath}`);
+  const header = `/**
+ * DEVCORE SOLUTIONS — GLOBAL THEME DESIGN TOKENS
+ *
+ * LIGHT MODE (Photo 1 Palette):
+ *   --bg-canvas: #F4F6F7         (Page Background)
+ *   --bg-surface: #E6EAEB        (Card / Surface)
+ *   --border-subtle: #CCD0CF     (Borders & Dividers)
+ *   --border-strong: #9BA8AB     (Subtle / Decorative)
+ *   --text-secondary: #4A5C6A    (Muted Text)
+ *   --brand-primary: #253745     (Primary Brand Accent)
+ *
+ * DARK MODE (Photo 2 Palette):
+ *   --bg-canvas: #06141B         (1st from top: Page Background)
+ *   --bg-surface: #11212D        (2nd from top: Card / Surface)
+ *   --brand-primary: #253745     (3rd from top: Primary Button / Brand Accent)
+ *   --border-strong: #4A5C6A     (4th from top: Borders & Dividers / Decorative)
+ *   --text-secondary: #9BA8AB    (5th from top: Muted Text / Secondary Text)
+ *   --text-primary: #CCD0CF      (6th from top: Primary Text / Foreground)
+ */\n\n`;
+
+  fs.writeFileSync(outCssPath, header + builtCss, "utf8");
+  console.log(`[build-css] Successfully built ${(header + builtCss).length} bytes to ${outCssPath}`);
 }
 
 buildCss().catch((err) => {
