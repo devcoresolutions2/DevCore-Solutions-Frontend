@@ -64,11 +64,11 @@ function YouTubeIcon({ className }: { className?: string }) {
 }
 
 const SOCIALS = [
-  { icon: FacebookIcon, label: "Facebook", href: "https://www.facebook.com/devcoresolutionsofficial" },
   { icon: LinkedInIcon, label: "LinkedIn", href: "https://www.linkedin.com/company/devcoresolutions2" },
-  { icon: TwitterIcon, label: "X / Twitter", href: "https://x.com/DevCoreSolution" },
-  { icon: YouTubeIcon, label: "YouTube", href: "https://www.youtube.com/@DevCoreSolutionsOfficial" },
   { icon: GitHubIcon, label: "GitHub", href: "https://github.com/devcoresolutions2" },
+  { icon: TwitterIcon, label: "X / Twitter", href: "https://x.com/DevCoreSolution" },
+  { icon: FacebookIcon, label: "Facebook", href: "https://www.facebook.com/devcoresolutionsofficial" },
+  { icon: YouTubeIcon, label: "YouTube", href: "https://www.youtube.com/@DevCoreSolutionsOfficial" },
 ];
 
 export function Footer() {
