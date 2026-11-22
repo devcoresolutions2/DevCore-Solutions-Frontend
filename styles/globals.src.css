@@ -1,0 +1,651 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: 'Inter', var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', var(--font-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+/* ==========================================================================
+   1. DEVCORE SOLUTIONS — DESIGN TOKENS (LIGHT & DARK LIQUID GLASS)
+   ========================================================================== */
+
+:root {
+  /* Light Mode (Photo 1 Palette)
+     #F4F6F7 -> PAGE BACKGROUND
+     #E6EAEB -> CARD / SURFACE
+     #CCD0CF -> BORDERS & DIVIDERS
+     #9BA8AB -> SUBTLE / DECORATIVE
+     #4A5C6A -> MUTED TEXT
+     #253745 -> PRIMARY BRAND ACCENT
+  */
+  --bg-canvas: #F4F6F7;
+  --bg-surface: #E6EAEB;
+  --bg-elevated: #FFFFFF;
+
+  --text-primary: #253745;
+  --text-secondary: #4A5C6A;
+  --text-muted: #4A5C6A;
+  --text-muted-strong: #253745;
+
+  --brand-primary: #253745;
+  --brand-hover: #11212D;
+  --brand-contrast: #FFFFFF;
+
+  --accent-warm: #CCD0CF;
+  --accent-ink: #253745;
+
+  --border-subtle: #CCD0CF;
+  --border-strong: #9BA8AB;
+
+  /* Semantic Status */
+  --success: #2E7D5B;
+  --warning: #B7791F;
+  --error: #B3392F;
+  --info: #4A5C6A;
+
+  /* Ambient Mesh & Liquid Glass Surfaces */
+  --bg-ambient-mesh:
+    radial-gradient(at 15% 15%, rgba(155, 168, 171, 0.28) 0, transparent 50%),
+    radial-gradient(at 85% 20%, rgba(74, 92, 106, 0.14) 0, transparent 55%),
+    radial-gradient(at 50% 85%, rgba(204, 208, 207, 0.35) 0, transparent 60%);
+  --glass-surface: rgba(230, 234, 235, 0.68);
+  --glass-elevated: rgba(244, 246, 247, 0.85);
+  --glass-nav: rgba(244, 246, 247, 0.82);
+  --glass-border: rgba(204, 208, 207, 0.75);
+  --glass-specular: inset 0 1px 0 0 rgba(255, 255, 255, 0.90);
+  --glass-shadow: 0 14px 36px -10px rgba(37, 55, 69, 0.10);
+  --glass-shadow-hover: 0 22px 48px -12px rgba(37, 55, 69, 0.18);
+  --badge-glass-bg: rgba(204, 208, 207, 0.55);
+  --shimmer-highlight: rgba(255, 255, 255, 0.60);
+}
+
+[data-theme="dark"],
+.dark {
+  /* Dark Mode (Photo 2 Palette)
+     #06141B -> Page Background
+     #11212D -> Card / Surface
+     #253745 -> Elevated / Subtle Borders
+     #4A5C6A -> Borders & Dividers / Decorative
+     #9BA8AB -> Muted Text / Secondary Text
+     #CCD0CF -> Primary Text / Foreground
+  */
+  --bg-canvas: #06141B;
+  --bg-surface: #11212D;
+  --bg-elevated: #253745;
+
+  --text-primary: #CCD0CF;
+  --text-secondary: #9BA8AB;
+  --text-muted: #9BA8AB;
+  --text-muted-strong: #CCD0CF;
+
+  /* Brand Primary in Dark Mode: 4th color code from top to under (#4A5C6A) */
+  --brand-primary: #4A5C6A;
+  --brand-hover: #5A6F7F;
+  --brand-contrast: #F4F6F7;
+
+  --accent-warm: #11212D;
+  --accent-ink: #CCD0CF;
+
+  --border-subtle: #253745;
+  --border-strong: #4A5C6A;
+
+  /* Semantic Status */
+  --success: #4FB58A;
+  --warning: #D9A441;
+  --error: #E5675C;
+  --info: #9BA8AB;
+
+  /* Ambient Mesh & Liquid Glass Surfaces */
+  --bg-ambient-mesh:
+    radial-gradient(at 20% 10%, rgba(74, 92, 106, 0.22) 0, transparent 52%),
+    radial-gradient(at 80% 25%, rgba(37, 55, 69, 0.35) 0, transparent 48%),
+    radial-gradient(at 50% 90%, rgba(17, 33, 45, 0.50) 0, transparent 60%);
+  --glass-surface: rgba(17, 33, 45, 0.65);
+  --glass-elevated: rgba(37, 55, 69, 0.72);
+  --glass-nav: rgba(6, 20, 27, 0.82);
+  --glass-border: rgba(74, 92, 106, 0.32);
+  --glass-specular: inset 0 1px 0 0 rgba(204, 208, 207, 0.15);
+  --glass-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.65);
+  --glass-shadow-hover: 0 24px 54px -12px rgba(6, 20, 27, 0.85);
+  --badge-glass-bg: rgba(37, 55, 69, 0.60);
+  --shimmer-highlight: rgba(204, 208, 207, 0.12);
+}
+
+/* ==========================================================================
+   2. BASE STYLES, SCROLLBAR & SELECTION
+   ========================================================================== */
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: light dark;
+}
+
+body {
+  background-color: var(--bg-canvas);
+  background-image: var(--bg-ambient-mesh);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+::selection {
+  background-color: var(--brand-primary);
+  color: var(--brand-contrast);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-canvas);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-primary);
+}
+
+/* ==========================================================================
+   3. LIQUID GLASS SURFACES & SPECULAR BORDERS
+   ========================================================================== */
+
+.devcore-glass-card {
+  background: var(--glass-surface);
+  backdrop-filter: blur(20px) saturate(135%);
+  -webkit-backdrop-filter: blur(20px) saturate(135%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-specular), var(--glass-shadow);
+  border-radius: 16px;
+  transition:
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s ease;
+}
+
+.devcore-glass-card:hover {
+  border-color: var(--brand-primary);
+  box-shadow: var(--glass-specular), var(--glass-shadow-hover);
+}
+
+.devcore-glass-nav {
+  background: var(--glass-nav);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-specular), 0 8px 28px -8px rgba(0, 0, 0, 0.08);
+}
+
+.devcore-glass-inset {
+  background: var(--glass-elevated);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-specular);
+  border-radius: 12px;
+}
+
+.devcore-glass-badge {
+  background: var(--badge-glass-bg);
+  color: var(--accent-ink);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-specular);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .devcore-glass-card,
+  .devcore-glass-nav {
+    background: var(--bg-surface);
+  }
+}
+
+/* ==========================================================================
+   4. KEYFRAMES — LOGO, TEXT, KINETIC TYPE, IMAGES & AMBIENT GLASS
+   ========================================================================== */
+
+/* 4A. Ambient Background Mesh Breathing */
+@keyframes meshDrift {
+  0%, 100% {
+    background-position: 0% 0%, 100% 0%, 50% 100%;
+  }
+  50% {
+    background-position: 8% 12%, 90% 18%, 45% 88%;
+  }
+}
+
+/* 4B. Brand Logo Animations (Levitation, Orbital Ring & Specular Sweep) */
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(1.2deg);
+  }
+}
+
+@keyframes logoPulseGlow {
+  0%, 100% {
+    filter: drop-shadow(0 4px 14px rgba(84, 101, 113, 0.22));
+  }
+  50% {
+    filter: drop-shadow(0 8px 24px rgba(123, 146, 163, 0.45));
+  }
+}
+
+@keyframes logoOrbitSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 4C. Hero & Section Text Reveal Animations */
+@keyframes textRevealUp {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.985);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes textRevealLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-28px);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes textShimmerGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 4D. Kinetic Moving Typography / Infinite Marquee Streams */
+@keyframes marqueeScrollLeft {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes marqueeScrollRight {
+  0% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes typingCursorBlink {
+  0%, 49% {
+    opacity: 1;
+  }
+  50%, 100% {
+    opacity: 0;
+  }
+}
+
+/* 4E. Showcase & Hero Image Animations (Ken Burns, Float & Glass Glint) */
+@keyframes imageKenBurns {
+  0% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.06) translate3d(-1%, -1%, 0);
+  }
+  100% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+}
+
+@keyframes glassSpecularSweep {
+  0% {
+    transform: translateX(-140%) skewX(-22deg);
+  }
+  100% {
+    transform: translateX(260%) skewX(-22deg);
+  }
+}
+
+@keyframes cardFloatSubtle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* 4F. Interactive Beacon & Skeleton Loading */
+@keyframes statusPing {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.85;
+  }
+  70% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ==========================================================================
+   5. UTILITY CLASSES — READY TO USE IN COMPONENTS
+   ========================================================================== */
+
+/* --- Ambient Canvas --- */
+.animate-mesh-drift {
+  background-size: 140% 140%;
+  animation: meshDrift 18s ease-in-out infinite;
+}
+
+/* --- Logo Animations --- */
+.animate-logo-float {
+  animation: logoFloat 5s ease-in-out infinite, logoPulseGlow 5s ease-in-out infinite;
+  will-change: transform, filter;
+}
+
+.animate-logo-orbit {
+  animation: logoOrbitSpin 22s linear infinite;
+  will-change: transform;
+}
+
+.logo-hover-glint {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.logo-hover-glint:hover {
+  transform: scale(1.05);
+}
+
+.logo-hover-glint::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 45%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--shimmer-highlight),
+    transparent
+  );
+  transform: translateX(-160%) skewX(-22deg);
+  pointer-events: none;
+}
+
+.logo-hover-glint:hover::after {
+  animation: glassSpecularSweep 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* --- Text & Headline Animations --- */
+.animate-text-reveal {
+  opacity: 0;
+  animation: textRevealUp 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-text-slide {
+  opacity: 0;
+  animation: textRevealLeft 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+
+/* Luminous Slate & Warm Sand Liquid Gradient Typography */
+.text-liquid-gradient {
+  background: linear-gradient(
+    120deg,
+    var(--text-primary) 0%,
+    var(--brand-primary) 35%,
+    var(--accent-ink) 65%,
+    var(--brand-primary) 100%
+  );
+  background-size: 240% 240%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: textShimmerGradient 7s ease infinite;
+}
+
+/* --- Moving Kinetic Type / Marquee Ribbon (Tech Stack, Client Logos, Taglines) --- */
+.marquee-viewport {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+}
+
+.marquee-track-left {
+  display: flex;
+  width: max-content;
+  animation: marqueeScrollLeft 32s linear infinite;
+  will-change: transform;
+}
+
+.marquee-track-right {
+  display: flex;
+  width: max-content;
+  animation: marqueeScrollRight 36s linear infinite;
+  will-change: transform;
+}
+
+.marquee-viewport:hover .marquee-track-left,
+.marquee-viewport:hover .marquee-track-right {
+  animation-play-state: paused;
+}
+
+/* Terminal / Rotating Role Typing Cursor */
+.typing-cursor::after {
+  content: "|";
+  margin-left: 3px;
+  color: var(--brand-primary);
+  animation: typingCursorBlink 1s step-end infinite;
+}
+
+/* --- Image & Showcase Card Motion --- */
+.image-showcase-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.image-showcase-frame img {
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), filter 0.5s ease;
+  will-change: transform;
+}
+
+.image-showcase-frame:hover img {
+  transform: scale(1.06);
+}
+
+/* Specular light sweep across showcase images on hover */
+.image-showcase-frame::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--shimmer-highlight),
+    transparent
+  );
+  transform: translateX(-160%) skewX(-22deg);
+  pointer-events: none;
+}
+
+.image-showcase-frame:hover::after {
+  animation: glassSpecularSweep 0.95s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.animate-image-kenburns {
+  animation: imageKenBurns 16s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-card-float {
+  animation: cardFloatSubtle 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* --- Interactive Magnetic Hover & Live Status Dot --- */
+.btn-liquid-hover {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent;
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.28s ease;
+}
+
+[data-theme="dark"] .btn-liquid-hover,
+.dark .btn-liquid-hover {
+  border-color: rgba(204, 208, 207, 0.25);
+  box-shadow: 0 4px 14px -3px rgba(6, 20, 27, 0.75);
+}
+
+.btn-liquid-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -6px rgba(37, 55, 69, 0.35);
+}
+
+[data-theme="dark"] .btn-liquid-hover:hover,
+.dark .btn-liquid-hover:hover {
+  border-color: rgba(204, 208, 207, 0.5);
+  box-shadow: 0 10px 24px -6px rgba(6, 20, 27, 0.95);
+}
+
+.btn-liquid-hover:active {
+  transform: translateY(0px) scale(0.98);
+}
+
+.status-beacon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-beacon::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background-color: var(--success);
+  animation: statusPing 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* --- Liquid Glass Skeleton Loader --- */
+.skeleton-glass {
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface) 25%,
+    var(--glass-elevated) 50%,
+    var(--bg-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.6s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   6. ACCESSIBILITY — REDUCED MOTION & REDUCED TRANSPARENCY
+   ========================================================================== */
+
+@media (prefers-reduced-transparency: reduce) {
+  .devcore-glass-card,
+  .devcore-glass-nav,
+  .devcore-glass-badge {
+    background: var(--bg-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .animate-text-reveal,
+  .animate-text-slide {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+}
