@@ -15,6 +15,9 @@ import {
   MOCK_ENGAGEMENT_TIERS,
   MOCK_JOBS,
   IN_MEMORY_APPLICATIONS,
+  IN_MEMORY_ABOUT_CONTENT,
+  IN_MEMORY_ENGINEERING_PRINCIPLES,
+  IN_MEMORY_TEAM_MEMBERS,
   type ShowcaseItem,
   type ProjectItem,
   type ServiceItem,
@@ -26,6 +29,9 @@ import {
   type JobItem,
   type JobApplicationPayload,
   type SubmittedApplicationItem,
+  type AboutGeneralContent,
+  type EngineeringPrincipleItem,
+  type TeamMemberItem,
 } from "./mock/data";
 
 // ─── ENVELOPE TYPES ──────────────────────────────────────────────────────────
@@ -512,6 +518,237 @@ export async function updateApplicationStatus(
   return true;
 }
 
+// ─── ABOUT & TEAM APIS ─────────────────────────────────────────────────────────
+
+export async function getAboutContent(): Promise<AboutGeneralContent> {
+  if (USE_MOCK) return IN_MEMORY_ABOUT_CONTENT;
+  try {
+    return await apiFetch<AboutGeneralContent>("/api/public/about");
+  } catch (err) {
+    console.warn("[api] Failed to fetch about content from backend, using fallback data:", err);
+    return IN_MEMORY_ABOUT_CONTENT;
+  }
+}
+
+export async function updateAboutContent(
+  payload: Partial<AboutGeneralContent>
+): Promise<AboutGeneralContent> {
+  Object.assign(IN_MEMORY_ABOUT_CONTENT, payload);
+  if (!USE_MOCK) {
+    try {
+      return await apiFetch<AboutGeneralContent>("/api/admin/about", {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      // ignore
+    }
+  }
+  return IN_MEMORY_ABOUT_CONTENT;
+}
+
+export async function getEngineeringPrinciples(params?: {
+  publishedOnly?: boolean;
+}): Promise<EngineeringPrincipleItem[]> {
+  if (USE_MOCK) {
+    let items = [...IN_MEMORY_ENGINEERING_PRINCIPLES];
+    if (params?.publishedOnly) {
+      items = items.filter((p) => p.isPublished);
+    }
+    return items.sort((a, b) => a.orderIndex - b.orderIndex);
+  }
+  try {
+    const q = params?.publishedOnly ? "?publishedOnly=true" : "";
+    return await apiFetch<EngineeringPrincipleItem[]>(`/api/public/about/principles${q}`);
+  } catch {
+    let items = [...IN_MEMORY_ENGINEERING_PRINCIPLES];
+    if (params?.publishedOnly) {
+      items = items.filter((p) => p.isPublished);
+    }
+    return items.sort((a, b) => a.orderIndex - b.orderIndex);
+  }
+}
+
+export async function createEngineeringPrinciple(
+  payload: Omit<EngineeringPrincipleItem, "id">
+): Promise<EngineeringPrincipleItem> {
+  const newId = `principle-${Date.now()}`;
+  const newItem: EngineeringPrincipleItem = { id: newId, ...payload };
+  IN_MEMORY_ENGINEERING_PRINCIPLES.push(newItem);
+  if (!USE_MOCK) {
+    try {
+      return await apiFetch<EngineeringPrincipleItem>("/api/admin/about/principles", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      // ignore
+    }
+  }
+  return newItem;
+}
+
+export async function updateEngineeringPrinciple(
+  id: string,
+  payload: Partial<EngineeringPrincipleItem>
+): Promise<EngineeringPrincipleItem> {
+  const idx = IN_MEMORY_ENGINEERING_PRINCIPLES.findIndex((p) => p.id === id);
+  if (idx !== -1) {
+    IN_MEMORY_ENGINEERING_PRINCIPLES[idx] = { ...IN_MEMORY_ENGINEERING_PRINCIPLES[idx], ...payload };
+  }
+  if (!USE_MOCK) {
+    try {
+      return await apiFetch<EngineeringPrincipleItem>(`/api/admin/about/principles/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      // ignore
+    }
+  }
+  return idx !== -1 ? IN_MEMORY_ENGINEERING_PRINCIPLES[idx] : (payload as EngineeringPrincipleItem);
+}
+
+export async function deleteEngineeringPrinciple(id: string): Promise<boolean> {
+  const idx = IN_MEMORY_ENGINEERING_PRINCIPLES.findIndex((p) => p.id === id);
+  if (idx !== -1) {
+    IN_MEMORY_ENGINEERING_PRINCIPLES.splice(idx, 1);
+  }
+  if (!USE_MOCK) {
+    try {
+      await apiFetch(`/api/admin/about/principles/${id}`, { method: "DELETE" });
+    } catch {
+      // ignore
+    }
+  }
+  return true;
+}
+
+export async function reorderEngineeringPrinciples(ids: string[]): Promise<boolean> {
+  ids.forEach((id, index) => {
+    const item = IN_MEMORY_ENGINEERING_PRINCIPLES.find((p) => p.id === id);
+    if (item) item.orderIndex = index + 1;
+  });
+  IN_MEMORY_ENGINEERING_PRINCIPLES.sort((a, b) => a.orderIndex - b.orderIndex);
+  if (!USE_MOCK) {
+    try {
+      await apiFetch("/api/admin/about/principles/reorder", {
+        method: "POST",
+        body: JSON.stringify({ ids }),
+      });
+    } catch {
+      // ignore
+    }
+  }
+  return true;
+}
+
+export async function getTeamMembers(params?: {
+  publishedOnly?: boolean;
+}): Promise<TeamMemberItem[]> {
+  if (USE_MOCK) {
+    let items = [...IN_MEMORY_TEAM_MEMBERS];
+    if (params?.publishedOnly) {
+      items = items.filter((m) => m.isPublished);
+    }
+    return items.sort((a, b) => a.displayOrder - b.displayOrder);
+  }
+  try {
+    const q = params?.publishedOnly ? "?publishedOnly=true" : "";
+    return await apiFetch<TeamMemberItem[]>(`/api/public/about/team${q}`);
+  } catch {
+    let items = [...IN_MEMORY_TEAM_MEMBERS];
+    if (params?.publishedOnly) {
+      items = items.filter((m) => m.isPublished);
+    }
+    return items.sort((a, b) => a.displayOrder - b.displayOrder);
+  }
+}
+
+export async function createTeamMember(
+  payload: Omit<TeamMemberItem, "id">
+): Promise<TeamMemberItem> {
+  const newId = `team-${Date.now()}`;
+  const newItem: TeamMemberItem = { id: newId, ...payload };
+  IN_MEMORY_TEAM_MEMBERS.push(newItem);
+  if (!USE_MOCK) {
+    try {
+      return await apiFetch<TeamMemberItem>("/api/admin/about/team", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      // ignore
+    }
+  }
+  return newItem;
+}
+
+export async function updateTeamMember(
+  id: string,
+  payload: Partial<TeamMemberItem>
+): Promise<TeamMemberItem> {
+  const idx = IN_MEMORY_TEAM_MEMBERS.findIndex((m) => m.id === id);
+  if (idx !== -1) {
+    IN_MEMORY_TEAM_MEMBERS[idx] = { ...IN_MEMORY_TEAM_MEMBERS[idx], ...payload };
+  }
+  if (!USE_MOCK) {
+    try {
+      return await apiFetch<TeamMemberItem>(`/api/admin/about/team/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      // ignore
+    }
+  }
+  return idx !== -1 ? IN_MEMORY_TEAM_MEMBERS[idx] : (payload as TeamMemberItem);
+}
+
+export async function deleteTeamMember(id: string): Promise<boolean> {
+  const idx = IN_MEMORY_TEAM_MEMBERS.findIndex((m) => m.id === id);
+  if (idx !== -1) {
+    IN_MEMORY_TEAM_MEMBERS.splice(idx, 1);
+  }
+  if (!USE_MOCK) {
+    try {
+      await apiFetch(`/api/admin/about/team/${id}`, { method: "DELETE" });
+    } catch {
+      // ignore
+    }
+  }
+  return true;
+}
+
+export async function reorderTeamMembers(ids: string[]): Promise<boolean> {
+  ids.forEach((id, index) => {
+    const item = IN_MEMORY_TEAM_MEMBERS.find((m) => m.id === id);
+    if (item) item.displayOrder = index + 1;
+  });
+  IN_MEMORY_TEAM_MEMBERS.sort((a, b) => a.displayOrder - b.displayOrder);
+  if (!USE_MOCK) {
+    try {
+      await apiFetch("/api/admin/about/team/reorder", {
+        method: "POST",
+        body: JSON.stringify({ ids }),
+      });
+    } catch {
+      // ignore
+    }
+  }
+  return true;
+}
+
+export async function uploadAvatar(file: File): Promise<string> {
+  // Convert to Base64 data URL for instant client preview and offline persistence
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+}
+
 export type {
   ShowcaseItem,
   ProjectItem,
@@ -524,4 +761,7 @@ export type {
   JobItem,
   JobApplicationPayload,
   SubmittedApplicationItem,
+  AboutGeneralContent,
+  EngineeringPrincipleItem,
+  TeamMemberItem,
 };

@@ -18,6 +18,7 @@ import {
   Sparkles,
   RefreshCw,
   Home,
+  Compass,
 } from "lucide-react";
 import {
   JobItem,
@@ -29,10 +30,11 @@ import {
   updateJobStatus,
   updateApplicationStatus,
 } from "@/lib/api";
+import { AboutCmsManager } from "@/components/admin/AboutCmsManager";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-type AdminTab = "jobs" | "applications" | "services";
+type AdminTab = "jobs" | "applications" | "services" | "about";
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>("jobs");
@@ -162,7 +164,7 @@ export default function AdminDashboardPage() {
       </header>
 
       {/* Metric Counters */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-5 rounded-xl devcore-glass-card border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-sm">
           <div className="flex items-center justify-between text-xs text-[var(--text-muted)] font-mono">
             <span>ACTIVE ROLES</span>
@@ -201,10 +203,37 @@ export default function AdminDashboardPage() {
             Published core capability pillars
           </span>
         </div>
+
+        <div className="p-5 rounded-xl devcore-glass-card border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-sm">
+          <div className="flex items-center justify-between text-xs text-[var(--text-muted)] font-mono">
+            <span>ABOUT & PRINCIPLES</span>
+            <Compass size={16} className="text-[var(--brand-primary)]" />
+          </div>
+          <div className="font-display text-3xl font-extrabold text-[var(--text-primary)] mt-2">
+            CMS
+          </div>
+          <span className="text-[11px] text-[var(--text-secondary)] mt-1 block">
+            Founders, principles & manifesto
+          </span>
+        </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] pb-2 font-mono text-xs">
+      <div className="flex flex-wrap items-center gap-2 border-b border-[var(--border-subtle)] pb-2 font-mono text-xs">
+        <button
+          type="button"
+          onClick={() => setActiveTab("about")}
+          className={cn(
+            "px-4 py-2 rounded-lg font-semibold transition-all inline-flex items-center gap-2",
+            activeTab === "about"
+              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-sm"
+              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
+          )}
+        >
+          <Compass size={14} />
+          <span>About Page Management</span>
+        </button>
+
         <button
           type="button"
           onClick={() => setActiveTab("jobs")}
@@ -247,6 +276,13 @@ export default function AdminDashboardPage() {
           <span>Services & Capabilities ({services.length})</span>
         </button>
       </div>
+
+      {/* TAB 0: ABOUT PAGE MANAGEMENT */}
+      {activeTab === "about" && (
+        <section className="space-y-4">
+          <AboutCmsManager />
+        </section>
+      )}
 
       {/* TAB 1: JOB POSTINGS */}
       {activeTab === "jobs" && (
