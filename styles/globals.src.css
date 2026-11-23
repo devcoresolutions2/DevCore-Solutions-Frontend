@@ -649,3 +649,21 @@ body {
     transform: none !important;
   }
 }
+
+/* ==========================================================================
+   DEVCORE OFFICIAL LOGO THEME VISIBILITY
+   ========================================================================== */
+.devcore-logo-light {
+  display: inline-block;
+}
+.devcore-logo-dark {
+  display: none;
+}
+[data-theme="dark"] .devcore-logo-light,
+.dark .devcore-logo-light {
+  display: none !important;
+}
+[data-theme="dark"] .devcore-logo-dark,
+.dark .devcore-logo-dark {
+  display: inline-block !important;
+}
