@@ -19,22 +19,29 @@ import {
   RefreshCw,
   Home,
   Compass,
+  BookOpen,
+  LogOut,
 } from "lucide-react";
 import {
   JobItem,
   SubmittedApplicationItem,
   ServiceItem,
+  AuthUser,
   getJobs,
   getSubmittedApplications,
   getServices,
   updateJobStatus,
   updateApplicationStatus,
+  apiGetSession,
+  apiSignOut,
 } from "@/lib/api";
 import { AboutCmsManager } from "@/components/admin/AboutCmsManager";
+import { BlogCmsManager } from "@/components/admin/BlogCmsManager";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-type AdminTab = "jobs" | "applications" | "services" | "about";
+type AdminTab = "about" | "blog" | "jobs" | "applications" | "services";
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>("jobs");
@@ -42,6 +49,7 @@ export default function AdminDashboardPage() {
   const [applications, setApplications] = useState<SubmittedApplicationItem[]>([]);
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<AuthUser | null>(null);
 
   // New Job Modal state
   const [showAddJobModal, setShowAddJobModal] = useState(false);
@@ -58,14 +66,18 @@ export default function AdminDashboardPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [fetchedJobs, fetchedApps, fetchedServices] = await Promise.all([
+      const [fetchedJobs, fetchedApps, fetchedServices, session] = await Promise.all([
         getJobs({ status: "ALL" }),
         getSubmittedApplications(),
         getServices(),
+        apiGetSession(),
       ]);
       setJobs(fetchedJobs);
       setApplications(fetchedApps);
       setServices(fetchedServices);
+      if (session?.user) {
+        setUser(session.user);
+      }
     } catch {
       toast.error("Failed to load control center data.");
     } finally {
@@ -128,13 +140,10 @@ export default function AdminDashboardPage() {
       {/* Top Header */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[var(--border-subtle)]">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-[var(--brand-primary)]" />
-            <h1 className="font-display font-extrabold text-2xl text-[var(--text-primary)] tracking-tight">
-              DevCore Mission Control
-            </h1>
+          <div className="flex items-center gap-3 mb-1">
+            <BrandLogo size="md" href="/admin/dashboard" />
             <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[var(--bg-surface)] text-[var(--text-muted)] border border-[var(--border-subtle)] uppercase">
-              Admin Console
+              Mission Control
             </span>
           </div>
           <p className="text-xs text-[var(--text-secondary)]">
@@ -142,7 +151,17 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {user && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs font-mono">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[var(--text-secondary)]">{user.email}</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] font-bold">
+                {user.role}
+              </span>
+            </div>
+          )}
+
           <button
             type="button"
             onClick={loadData}
@@ -160,6 +179,19 @@ export default function AdminDashboardPage() {
             <Home size={13} />
             <span>Public Site</span>
           </Link>
+
+          <button
+            type="button"
+            onClick={async () => {
+              await apiSignOut();
+              window.location.href = "/auth/signin";
+            }}
+            aria-label="Sign out"
+            className="h-9 px-3 rounded-lg bg-[var(--bg-surface)] hover:bg-rose-500/10 hover:text-rose-600 border border-[var(--border-subtle)] text-xs text-[var(--text-primary)] inline-flex items-center gap-1.5 transition-colors"
+          >
+            <LogOut size={13} />
+            <span>Sign Out</span>
+          </button>
         </div>
       </header>
 
@@ -236,6 +268,20 @@ export default function AdminDashboardPage() {
 
         <button
           type="button"
+          onClick={() => setActiveTab("blog")}
+          className={cn(
+            "px-4 py-2 rounded-lg font-semibold transition-all inline-flex items-center gap-2",
+            activeTab === "blog"
+              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-sm"
+              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
+          )}
+        >
+          <BookOpen size={14} />
+          <span>Blog & Technical CMS</span>
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab("jobs")}
           className={cn(
             "px-4 py-2 rounded-lg font-semibold transition-all inline-flex items-center gap-2",
@@ -281,6 +327,13 @@ export default function AdminDashboardPage() {
       {activeTab === "about" && (
         <section className="space-y-4">
           <AboutCmsManager />
+        </section>
+      )}
+
+      {/* TAB: BLOG & TECHNICAL CMS */}
+      {activeTab === "blog" && (
+        <section className="space-y-4">
+          <BlogCmsManager />
         </section>
       )}
 
