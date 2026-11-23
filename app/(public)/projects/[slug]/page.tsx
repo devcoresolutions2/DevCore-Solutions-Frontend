@@ -17,6 +17,7 @@ import {
 import { getProjectBySlug, getProjectList } from "@/lib/api";
 import { ReleasePill } from "@/components/glass/ReleasePill";
 import { GlassCard } from "@/components/glass/GlassCard";
+import { TechBadge } from "@/components/shared/TechBadge";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -282,12 +283,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           </div>
           <div className="flex flex-wrap gap-2.5">
             {project.techStack.map((tech) => (
-              <span
-                key={tech}
-                className="font-mono text-xs px-3 py-1.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)]"
-              >
-                {tech}
-              </span>
+              <TechBadge key={tech} tech={tech} size="md" />
             ))}
           </div>
         </GlassCard>

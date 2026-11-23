@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ExternalLink, FileText } from "lucide-react";
 import { ReleasePill } from "@/components/glass/ReleasePill";
+import { TechBadge } from "@/components/shared/TechBadge";
 import { type ShowcaseItem } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -85,9 +86,9 @@ export function ShowcaseCard({ item, featured = false, compact = false }: Showca
         {item.metrics && item.metrics.length > 0 && (
           <div className="grid grid-cols-3 gap-2 my-4 pt-3 border-t border-[var(--border-subtle)]">
             {item.metrics.slice(0, 3).map((m) => (
-              <div key={m.label} className="p-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-center">
-                <span className="text-[10px] text-[var(--text-muted)] block font-mono uppercase truncate">{m.label}</span>
-                <span className="font-mono font-bold text-xs text-[var(--text-primary)]">{m.value}</span>
+              <div key={m.label} className="p-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] dark:bg-white/[0.05] dark:border-white/12 text-center">
+                <span className="text-[10px] text-[var(--text-muted)] dark:text-slate-400 block font-mono uppercase truncate">{m.label}</span>
+                <span className="font-mono font-bold text-xs text-[var(--text-primary)] dark:text-white">{m.value}</span>
               </div>
             ))}
           </div>
@@ -96,12 +97,7 @@ export function ShowcaseCard({ item, featured = false, compact = false }: Showca
         {/* Tech badges */}
         <div className="flex flex-wrap gap-1.5 mt-4">
           {item.techStack.map((tech) => (
-            <span
-              key={tech}
-              className="font-mono text-[11px] px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--brand-primary)]"
-            >
-              {tech}
-            </span>
+            <TechBadge key={tech} tech={tech} size="sm" />
           ))}
         </div>
       </div>

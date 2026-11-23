@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { ReleasePill } from "@/components/glass/ReleasePill";
 import { GlassCard } from "@/components/glass/GlassCard";
+import { TechBadge } from "@/components/shared/TechBadge";
 import { type ProjectItem } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -97,12 +98,7 @@ export function ProjectCard({ project, featured = false }: ProjectCardProps) {
           {/* Tech stack badges */}
           <div className="flex flex-wrap gap-1.5 mt-5">
             {project.techStack.map((tech) => (
-              <span
-                key={tech}
-                className="font-mono text-[11px] px-2.5 py-1 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--brand-primary)]"
-              >
-                {tech}
-              </span>
+              <TechBadge key={tech} tech={tech} size="sm" />
             ))}
           </div>
         </div>
