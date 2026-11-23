@@ -3,6 +3,12 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+// Cloudinary Hosted High-Resolution Logos
+export const CLOUDINARY_LOGOS = {
+  light: "https://res.cloudinary.com/vrbru3ro/image/upload/v1795471039/devcore/branding/logo-light.png",
+  dark: "https://res.cloudinary.com/vrbru3ro/image/upload/v1795471040/devcore/branding/logo-dark.png",
+};
+
 interface BrandLogoProps {
   className?: string;
   size?: "sm" | "md" | "lg" | "xl";
@@ -30,9 +36,9 @@ export function BrandLogo({
         className
       )}
     >
-      {/* Light Mode Logo */}
+      {/* Light Mode Logo (Cloudinary CDN) */}
       <img
-        src="/images/logo-light.png"
+        src={CLOUDINARY_LOGOS.light}
         alt="DevCore Solutions"
         className={cn(
           heightClass,
@@ -40,9 +46,9 @@ export function BrandLogo({
         )}
       />
 
-      {/* Dark Mode Logo */}
+      {/* Dark Mode Logo (Cloudinary CDN) */}
       <img
-        src="/images/logo-dark.png"
+        src={CLOUDINARY_LOGOS.dark}
         alt="DevCore Solutions"
         className={cn(
           heightClass,

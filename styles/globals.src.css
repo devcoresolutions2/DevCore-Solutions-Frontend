@@ -79,10 +79,10 @@
   --text-muted: #9BA8AB;
   --text-muted-strong: #CCD0CF;
 
-  /* Brand Primary in Dark Mode: 4th color code from top to under (#4A5C6A) */
-  --brand-primary: #4A5C6A;
-  --brand-hover: #5A6F7F;
-  --brand-contrast: #F4F6F7;
+  /* Brand Primary in Dark Mode: Luminous silver-cyan slate for high-contrast foreground visibility */
+  --brand-primary: #8FB4C9;
+  --brand-hover: #CCD0CF;
+  --brand-contrast: #06141B;
 
   --accent-warm: #11212D;
   --accent-ink: #CCD0CF;
@@ -110,6 +110,19 @@
   --glass-shadow-hover: 0 24px 54px -12px rgba(6, 20, 27, 0.85);
   --badge-glass-bg: rgba(37, 55, 69, 0.60);
   --shimmer-highlight: rgba(204, 208, 207, 0.12);
+}
+
+/* Dark Mode High-Contrast Overrides for Icons & Micro-typography */
+[data-theme="dark"] .service-icon-box,
+.dark .service-icon-box {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .service-icon-box svg,
+.dark .service-icon-box svg {
+  color: #FFFFFF !important;
 }
 
 /* ==========================================================================
