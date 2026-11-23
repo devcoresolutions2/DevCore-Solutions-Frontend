@@ -115,7 +115,7 @@ export function TeamSection({ members }: TeamSectionProps) {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${member.name} LinkedIn`}
-                      className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-white hover:border-[var(--brand-primary)]/40 transition-colors"
+                      className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-contrast)] hover:border-[var(--brand-primary)] transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
                     >
                       <LinkedInIcon />
                     </a>
@@ -126,7 +126,7 @@ export function TeamSection({ members }: TeamSectionProps) {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${member.name} GitHub`}
-                      className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-white hover:border-[var(--brand-primary)]/40 transition-colors"
+                      className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-contrast)] hover:border-[var(--brand-primary)] transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
                     >
                       <GitHubIcon />
                     </a>
@@ -137,7 +137,7 @@ export function TeamSection({ members }: TeamSectionProps) {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${member.name} Portfolio`}
-                      className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-white hover:border-[var(--brand-primary)]/40 transition-colors"
+                      className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-contrast)] hover:border-[var(--brand-primary)] transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
                     >
                       <Globe size={14} />
                     </a>
