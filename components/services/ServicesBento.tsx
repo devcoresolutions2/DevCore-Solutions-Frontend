@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { ServiceItem } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { TechBadge } from "@/components/shared/TechBadge";
 
 interface ServicesBentoProps {
   services: ServiceItem[];
@@ -141,12 +142,7 @@ export function ServicesBento({ services }: ServicesBentoProps) {
                 {techStack.length > 0 && (
                   <div className="flex flex-wrap items-center gap-1.5 pt-1">
                     {techStack.map((tech) => (
-                      <span
-                        key={tech}
-                        className="font-mono text-[11px] px-2.5 py-0.5 rounded-md bg-[var(--bg-surface)] text-[var(--text-secondary)] border border-[var(--border-subtle)]"
-                      >
-                        {tech}
-                      </span>
+                      <TechBadge key={tech} tech={tech} size="xs" />
                     ))}
                   </div>
                 )}

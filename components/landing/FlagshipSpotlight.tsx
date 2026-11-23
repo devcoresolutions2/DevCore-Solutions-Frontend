@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ExternalLink } from "lucide-react";
 import { GlassCard } from "@/components/glass/GlassCard";
+import { TechBadge } from "@/components/shared/TechBadge";
 import { type ShowcaseItem } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -61,12 +62,7 @@ export function FlagshipSpotlight({ items }: FlagshipSpotlightProps) {
                   {/* Tech tags */}
                   <div className="flex flex-wrap gap-2 pt-2">
                     {item.techStack.map((tech) => (
-                      <span
-                        key={tech}
-                        className="font-mono text-xs px-3 py-1 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--brand-primary)]"
-                      >
-                        {tech}
-                      </span>
+                      <TechBadge key={tech} tech={tech} size="md" />
                     ))}
                   </div>
 

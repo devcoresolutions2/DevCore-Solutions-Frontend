@@ -94,7 +94,7 @@ export function ServicesHero() {
                 High-Availability SLA Target
               </span>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--brand-primary)] shrink-0 shadow-inner">
+            <div className="w-12 h-12 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--brand-primary)] service-icon-box shrink-0 shadow-inner">
               <Activity size={24} />
             </div>
           </div>
@@ -112,7 +112,7 @@ export function ServicesHero() {
                 P99 Ingestion Latency Upper-Bound
               </span>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--brand-primary)] shrink-0 shadow-inner">
+            <div className="w-12 h-12 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--brand-primary)] service-icon-box shrink-0 shadow-inner">
               <Gauge size={24} />
             </div>
           </div>
@@ -130,7 +130,7 @@ export function ServicesHero() {
                 Zero-Drift GitOps Verified
               </span>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--brand-primary)] shrink-0 shadow-inner">
+            <div className="w-12 h-12 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--brand-primary)] service-icon-box shrink-0 shadow-inner">
               <GitBranch size={24} />
             </div>
           </div>

@@ -115,7 +115,7 @@ export function TeamSection({ members }: TeamSectionProps) {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${member.name} LinkedIn`}
-                      className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--brand-primary)] hover:border-[var(--brand-primary)]/40 transition-colors"
+                      className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-white hover:border-[var(--brand-primary)]/40 transition-colors"
                     >
                       <LinkedInIcon />
                     </a>
@@ -126,7 +126,7 @@ export function TeamSection({ members }: TeamSectionProps) {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${member.name} GitHub`}
-                      className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--brand-primary)] hover:border-[var(--brand-primary)]/40 transition-colors"
+                      className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-white hover:border-[var(--brand-primary)]/40 transition-colors"
                     >
                       <GitHubIcon />
                     </a>
@@ -137,7 +137,7 @@ export function TeamSection({ members }: TeamSectionProps) {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${member.name} Portfolio`}
-                      className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--brand-primary)] hover:border-[var(--brand-primary)]/40 transition-colors"
+                      className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-white hover:border-[var(--brand-primary)]/40 transition-colors"
                     >
                       <Globe size={14} />
                     </a>

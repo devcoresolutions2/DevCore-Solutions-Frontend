@@ -12,7 +12,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
 
   return (
     <ThemeProvider
-      attribute="data-theme"
+      attribute={["class", "data-theme"]}
       defaultTheme="light"
       enableSystem={false}
       disableTransitionOnChange={false}

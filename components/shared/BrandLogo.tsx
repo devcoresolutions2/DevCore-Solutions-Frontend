@@ -1,60 +1,70 @@
 "use client";
 
-import { Cpu } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+// Cloudinary Hosted High-Resolution Logos
+export const CLOUDINARY_LOGOS = {
+  light: "https://res.cloudinary.com/vrbru3ro/image/upload/v1795471039/devcore/branding/logo-light.png",
+  dark: "https://res.cloudinary.com/vrbru3ro/image/upload/v1795471040/devcore/branding/logo-dark.png",
+};
+
 interface BrandLogoProps {
   className?: string;
-  size?: "sm" | "md" | "lg";
-  href?: string;
+  size?: "sm" | "md" | "lg" | "xl";
+  href?: string | false;
 }
 
-export function BrandLogo({ className, size = "md", href = "/" }: BrandLogoProps) {
-  const iconSize = size === "sm" ? "w-7 h-7" : size === "lg" ? "w-10 h-10" : "w-8 h-8";
-  const textSize = size === "sm" ? "text-base" : size === "lg" ? "text-2xl" : "text-lg";
-  const monoSize = size === "sm" ? "text-[8px]" : "text-[9px]";
-  const lucideSize = size === "sm" ? 14 : size === "lg" ? 20 : 16;
+export function BrandLogo({
+  className,
+  size = "md",
+  href = "/",
+}: BrandLogoProps) {
+  const heightClass =
+    size === "sm"
+      ? "h-7"
+      : size === "lg"
+      ? "h-11"
+      : size === "xl"
+      ? "h-14"
+      : "h-9";
 
-  const inner = (
-    <span className={cn("flex items-center gap-2.5 group select-none", className)}>
-      <span
+  const content = (
+    <span
+      className={cn(
+        "inline-flex items-center group select-none transition-transform duration-200 hover:opacity-95 active:scale-[0.99]",
+        className
+      )}
+    >
+      {/* Light Mode Logo (Cloudinary CDN) */}
+      <img
+        src={CLOUDINARY_LOGOS.light}
+        alt="DevCore Solutions"
         className={cn(
-          iconSize,
-          "rounded-lg bg-[var(--brand-primary)] flex items-center justify-center text-[var(--brand-contrast)] shadow-sm border border-[var(--border-subtle)]",
-          "logo-hover-glint transition-transform duration-300"
+          heightClass,
+          "w-auto max-w-full object-contain devcore-logo-light"
         )}
-      >
-        <Cpu size={lucideSize} className="text-[var(--brand-contrast)]" />
-      </span>
-      <span className="flex flex-col leading-none">
-        <span
-          className={cn(
-            "font-display font-extrabold tracking-tight text-[var(--text-primary)]",
-            textSize
-          )}
-        >
-          DevCore<span className="text-[var(--brand-primary)]">.</span>
-        </span>
-        <span
-          className={cn(
-            "font-mono uppercase tracking-wider text-[var(--text-muted)]",
-            monoSize
-          )}
-        >
-          Engineering
-        </span>
-      </span>
+      />
+
+      {/* Dark Mode Logo (Cloudinary CDN) */}
+      <img
+        src={CLOUDINARY_LOGOS.dark}
+        alt="DevCore Solutions"
+        className={cn(
+          heightClass,
+          "w-auto max-w-full object-contain devcore-logo-dark"
+        )}
+      />
     </span>
   );
 
   if (href) {
     return (
-      <Link href={href} aria-label="DevCore Solutions — Home">
-        {inner}
+      <Link href={href} aria-label="DevCore Solutions Home" className="inline-flex">
+        {content}
       </Link>
     );
   }
 
-  return inner;
+  return content;
 }

@@ -6,6 +6,7 @@ import { getShowcaseBySlug, getShowcaseList } from "@/lib/api";
 import { ReleasePill } from "@/components/glass/ReleasePill";
 import { GlassCard } from "@/components/glass/GlassCard";
 import { ShowcaseCard } from "@/components/showcase/ShowcaseCard";
+import { TechBadge } from "@/components/shared/TechBadge";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -138,12 +139,7 @@ export default async function LaunchDetailPage({ params }: PageProps) {
             <h3 className="font-display font-semibold text-sm text-[var(--text-primary)] mb-4">Tech Stack</h3>
             <div className="flex flex-wrap gap-2">
               {item.techStack.map((tech) => (
-                <span
-                  key={tech}
-                  className="font-mono text-xs px-2.5 py-1 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--brand-primary)]"
-                >
-                  {tech}
-                </span>
+                <TechBadge key={tech} tech={tech} size="sm" />
               ))}
             </div>
           </GlassCard>
@@ -177,14 +173,9 @@ export default async function LaunchDetailPage({ params }: PageProps) {
               Engineered With
             </h2>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2.5">
             {item.techStack.map((tech) => (
-              <span
-                key={tech}
-                className="font-mono text-xs px-3 py-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-primary)]"
-              >
-                {tech}
-              </span>
+              <TechBadge key={tech} tech={tech} size="md" />
             ))}
           </div>
         </GlassCard>

@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { Check, ChevronRight, Code2, CloudCog, Bot, Layout, Terminal, Layers } from "lucide-react";
+import { Check, ChevronRight, Code2, CloudCog, Bot, Layout, Terminal, Layers, Boxes } from "lucide-react";
 import { ReleasePill } from "@/components/glass/ReleasePill";
 import { GlassCard } from "@/components/glass/GlassCard";
 import { type ServiceItem } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: string; "aria-hidden"?: boolean }>> = {
-  Code2, CloudCog, Bot, Layout, Terminal,
+  Layers, Boxes, Bot, Layout, Terminal, Code2, CloudCog,
 };
 
 interface ServicesGridProps {
@@ -51,13 +51,13 @@ export function ServicesGrid({ services }: ServicesGridProps) {
               className={cn("p-8 flex flex-col justify-between", isLast && "lg:col-span-2")}
             >
               <div>
-                <div className="w-12 h-12 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--brand-primary)] shadow-sm mb-6">
+                <div className="w-12 h-12 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] dark:bg-white/[0.08] dark:border-white/20 dark:text-white flex items-center justify-center text-[var(--brand-primary)] service-icon-box shadow-sm mb-6">
                   <Icon size={24} aria-hidden={true} />
                 </div>
-                <h3 className="font-display font-bold text-xl text-[var(--text-primary)]">
+                <h3 className="font-display font-bold text-xl text-[var(--text-primary)] dark:text-white">
                   {service.title}
                 </h3>
-                <p className="text-sm text-[var(--text-secondary)] mt-3 leading-relaxed">
+                <p className="text-sm text-[var(--text-secondary)] dark:text-slate-300 mt-3 leading-relaxed">
                   {service.description}
                 </p>
 
@@ -88,12 +88,12 @@ export function ServicesGrid({ services }: ServicesGridProps) {
               </div>
 
               <div className="mt-8 pt-4 border-t border-[var(--border-subtle)] flex items-center justify-between">
-                <span className="font-mono text-xs text-[var(--text-muted)]">
+                <span className="font-mono text-xs text-[var(--text-muted)] dark:text-slate-400">
                   Service ID: {service.serviceCode}
                 </span>
                 <Link
                   href="/contact"
-                  className="text-xs font-semibold text-[var(--brand-primary)] hover:text-[var(--brand-hover)] flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:underline"
+                  className="text-xs font-semibold text-[var(--brand-primary)] hover:text-[var(--brand-hover)] dark:text-sky-300 dark:hover:text-white flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:underline"
                 >
                   Inquire <ChevronRight size={13} aria-hidden="true" />
                 </Link>

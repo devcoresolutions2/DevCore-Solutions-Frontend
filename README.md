@@ -1,5 +1,17 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## DevCore Solutions — Platform Architecture
+
+DevCore Solutions is an enterprise engineering studio specializing in high-concurrency SaaS platforms, distributed cloud infrastructure, deterministic API topologies, and AI workflow automation.
+
+### Features
+- **Liquid Glass Theme Engine**: High-contrast dark and light mode architecture with dynamic CSS variables and Tailwind utilities.
+- **Enterprise Technology Matrix**: Visual stack proficiency tiered by production deployment frequency (Core, Standard, Specialized, Emerging).
+- **Decoupled Architecture**: High-performance Next.js 16 App Router frontend paired with an Express/Prisma microservices backend.
+- **Founding Team**:
+  - **Kazi Mahedi Hasan**: Co-Founder & Systems Architect ([GitHub](https://github.com/kazi-Samin) | [LinkedIn](https://www.linkedin.com/in/kazi-mahedi-hasan))
+  - **Fourkan Bin Ilias**: Co-Founder & Infrastructure Engineer ([GitHub](https://github.com/Pinon1345) | [LinkedIn](https://www.linkedin.com/in/fourkan-bin-ilias/))
+
 ## Getting Started
 
 First, run the development server:

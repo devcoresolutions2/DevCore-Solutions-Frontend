@@ -812,21 +812,21 @@ export const INITIAL_TEAM_MEMBERS: TeamMemberItem[] = [
     bio: "Co-founder leading core distributed architecture, scalable cloud systems, and modern full-stack web platforms.",
     initials: "KM",
     badge: "FOUNDER",
-    githubUrl: "https://github.com/kazisamin0173-byte",
-    linkedinUrl: "https://www.linkedin.com/company/devcoresolutions2",
+    githubUrl: "https://github.com/kazi-Samin",
+    linkedinUrl: "https://www.linkedin.com/in/kazi-mahedi-hasan",
     isFeatured: true,
     isPublished: true,
     displayOrder: 1,
   },
   {
     id: "team-2",
-    name: "The Fourkan Bin Ilias",
+    name: "Fourkan Bin Ilias",
     role: "Founder & Full Stack Developer",
     bio: "Co-founder focusing on distributed backend infrastructure, microservices reliability, and deterministic database design.",
-    initials: "TF",
+    initials: "FI",
     badge: "FOUNDER",
-    githubUrl: "https://github.com/devcoresolutions2",
-    linkedinUrl: "https://www.linkedin.com/company/devcoresolutions2",
+    githubUrl: "https://github.com/Pinon1345",
+    linkedinUrl: "https://www.linkedin.com/in/fourkan-bin-ilias/",
     isFeatured: true,
     isPublished: true,
     displayOrder: 2,
@@ -876,4 +876,423 @@ export const INITIAL_TEAM_MEMBERS: TeamMemberItem[] = [
 export let IN_MEMORY_ABOUT_CONTENT: AboutGeneralContent = { ...DEFAULT_ABOUT_CONTENT };
 export let IN_MEMORY_ENGINEERING_PRINCIPLES: EngineeringPrincipleItem[] = [...INITIAL_ENGINEERING_PRINCIPLES];
 export let IN_MEMORY_TEAM_MEMBERS: TeamMemberItem[] = [...INITIAL_TEAM_MEMBERS];
+
+// ─── BLOG TYPES & MOCK DATA ───────────────────────────────────────────────────
+export type BlogArticleItem = {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  excerpt: string;
+  content: string;
+  coverImageUrl?: string;
+  category: string;
+  categorySlug: string;
+  authorId: string;
+  authorName: string;
+  authorRole: string;
+  authorAvatar?: string;
+  authorInitials: string;
+  readingMinutes: number;
+  readTime: string;
+  status: "DRAFT" | "PUBLISHED" | "SCHEDULED";
+  isFeatured: boolean;
+  publishedAt: string;
+  updatedAt?: string;
+  tags: string[];
+  rfcCode?: string;
+  codeSnippet?: {
+    filename: string;
+    language: string;
+    code: string;
+    footnote?: string;
+  };
+  seoTitle?: string;
+  seoDescription?: string;
+};
+
+export type BlogCategoryItem = {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  count: number;
+  isActive: boolean;
+};
+
+export type BlogAuthorItem = {
+  id: string;
+  name: string;
+  role: string;
+  bio?: string;
+  avatarUrl?: string;
+  initials: string;
+  linkedinUrl?: string;
+  githubUrl?: string;
+  isActive: boolean;
+};
+
+export type NewsletterSubscriberItem = {
+  id: string;
+  email: string;
+  status: "ACTIVE" | "UNSUBSCRIBED";
+  subscribedAt: string;
+};
+
+export type BlogHeroConfig = {
+  badge: string;
+  title: string;
+  description: string;
+  breadcrumbLabel: string;
+  showCustomMetrics: boolean;
+  metric1Label?: string;
+  metric1Value?: string;
+  metric2Label?: string;
+  metric2Value?: string;
+};
+
+export const DEFAULT_BLOG_HERO_CONFIG: BlogHeroConfig = {
+  badge: "PEER-REVIEWED RFCS & BENCHMARKS",
+  title: "Technical Engineering Blog & System Dispatches",
+  description:
+    "In-depth case breakdowns, distributed consensus proofs, kernel tuning notes, and zero-drift platform architectures from our engineering founders and fellows.",
+  breadcrumbLabel: "Architectural Dispatches",
+  showCustomMetrics: false,
+};
+
+export const INITIAL_BLOG_CATEGORIES: BlogCategoryItem[] = [
+  { id: "cat-1", name: "All Articles", slug: "all", count: 5, isActive: true },
+  { id: "cat-2", name: "Distributed Systems", slug: "distributed-systems", count: 2, isActive: true },
+  { id: "cat-3", name: "Kernel & eBPF", slug: "kernel-ebpf", count: 1, isActive: true },
+  { id: "cat-4", name: "AI & Automation", slug: "ai-automation", count: 1, isActive: true },
+  { id: "cat-5", name: "Cloud & DevOps", slug: "cloud-devops", count: 1, isActive: true },
+];
+
+export const INITIAL_BLOG_AUTHORS: BlogAuthorItem[] = [
+  {
+    id: "auth-1",
+    name: "Kazi Mahedi Hasan",
+    role: "Founder & Full Stack Developer",
+    bio: "Directs full-stack architecture, high-concurrency API gateways, and distributed database reliability.",
+    initials: "KM",
+    githubUrl: "https://github.com/kazi-Samin",
+    linkedinUrl: "https://www.linkedin.com/in/kazi-mahedi-hasan",
+    isActive: true,
+  },
+  {
+    id: "auth-2",
+    name: "Fourkan Bin Ilias",
+    role: "Founder & Full Stack Developer",
+    bio: "Focuses on microservices orchestration, low-latency networking, and deterministic cloud infrastructure.",
+    initials: "FI",
+    githubUrl: "https://github.com/Pinon1345",
+    linkedinUrl: "https://www.linkedin.com/in/fourkan-bin-ilias/",
+    isActive: true,
+  },
+  {
+    id: "auth-3",
+    name: "Senior Systems Engineer",
+    role: "Senior Cloud & Systems Architect",
+    bio: "Specializes in multi-region PostgreSQL topologies, eBPF telemetry, and container mesh reliability.",
+    initials: "SE",
+    githubUrl: "https://github.com/devcoresolutions2",
+    linkedinUrl: "https://www.linkedin.com/company/devcoresolutions2",
+    isActive: true,
+  },
+];
+
+export const INITIAL_BLOG_ARTICLES: BlogArticleItem[] = [
+  {
+    id: "article-1",
+    slug: "eliminating-cloud-drift-sqlite-wal-crdt",
+    title: "Eliminating Cloud Drift: Implementing Offline-First SQLite WAL & CRDT Gossiping at Scale",
+    subtitle: "How DevCore removed cloud uptime dependencies for local nodes with embedded Go and WAL sync.",
+    excerpt:
+      "How DevCore removed cloud uptime dependencies for distributed physical nodes by packaging a lightweight Go daemon with SQLite Write-Ahead Logging (WAL) and peer-to-peer state vector gossip.",
+    category: "Distributed Systems",
+    categorySlug: "distributed-systems",
+    authorId: "auth-1",
+    authorName: "Kazi Mahedi Hasan",
+    authorRole: "Founder & Full Stack Developer",
+    authorInitials: "KM",
+    readingMinutes: 14,
+    readTime: "14 min read",
+    status: "PUBLISHED",
+    isFeatured: true,
+    publishedAt: "2026-02-15T00:00:00Z",
+    tags: ["Distributed Systems", "SQLite", "CRDT", "Go", "Offline-First"],
+    rfcCode: "RFC-0842-REV3",
+    codeSnippet: {
+      filename: "crdt_wal_mesh.go",
+      language: "go",
+      code: `// VectorClock deterministic state merge protocol
+func (n *Node) ReconcileCRDT(remote *LogEntry) error {
+    if n.VectorClock.HappenedBefore(remote.Clock) {
+        return n.walWriter.ApplyDeterministic(remote.Payload)
+    }
+    return n.gossipPeerSync(remote)
+}`,
+      footnote: "Deterministic Replay: 0.18ms • Sync Drift: 0.000%",
+    },
+    seoTitle: "Eliminating Cloud Drift with SQLite WAL & CRDTs — DevCore",
+    seoDescription:
+      "A technical deep dive into deterministic offline-first synchronization using SQLite Write-Ahead Logging and CRDT vector clocks.",
+    content: `## Executive Overview
+
+Modern distributed client installations—such as hospitality Point-of-Sale (POS) systems, edge IoT controllers, and field service consoles—frequently encounter temporary network partitions. When an application assumes synchronous round-trips to a centralized cloud database, any transient network degradation causes user-visible freezes or catastrophic data drift.
+
+At **DevCore Solutions**, we architected an offline-first data replication pipeline for high-throughput venues that ensures zero data loss and sub-millisecond local latency even during complete internet blackouts.
+
+---
+
+## The Architectural Challenge
+
+Traditional cloud-dependent setups present three fatal failure modes:
+
+1. **Synchronous Cloud Coupling**: If the uplink drops, order placement or transaction checkout halts immediately.
+2. **Asymmetric State Conflicts**: When two offline registers concurrently update the same inventory item or table state, naive "last-write-wins" timestamps overwrite critical mutations.
+3. **Write Amplification on Reconnect**: When network connectivity restores after a 45-minute outage, a burst of batched HTTP POST requests overwhelms the backend API gateway.
+
+---
+
+## The Solution: Embedded SQLite WAL + P2P Gossiping
+
+We resolved this by deploying an embedded Go daemon alongside each local terminal. Rather than communicating directly with remote cloud APIs, every read and write operation commits locally to an embedded SQLite instance operating in **Write-Ahead Logging (WAL)** mode.
+
+\`\`\`go
+// VectorClock deterministic state merge protocol
+func (n *Node) ReconcileCRDT(remote *LogEntry) error {
+    if n.VectorClock.HappenedBefore(remote.Clock) {
+        return n.walWriter.ApplyDeterministic(remote.Payload)
+    }
+    return n.gossipPeerSync(remote)
+}
+\`\`\`
+
+### 1. Conflict-Free Replicated Data Types (CRDTs)
+Each database row is modeled with deterministic State-based or Operation-based CRDT semantics:
+- **Observed-Remove Sets (OR-Set)** for dining items, orders, and seat assignments.
+- **Positive-Negative Counters (PN-Counter)** for real-time inventory balances.
+- **Lamport Vector Clocks** tracking causal precedence across nodes.
+
+### 2. Local-Area UDP Mesh Gossip
+If the venue's internet uplink fails, nodes on the local Wi-Fi or Ethernet switch continue communicating directly over a peer-to-peer UDP broadcast mesh. When terminal A completes an order, terminal B and the kitchen display controller receive the mutation in under **2 milliseconds**, regardless of whether the external ISP is operational.
+
+---
+
+## Results & Operational Learnings
+
+- **0% Transaction Drop Rate**: Peak hour connectivity loss no longer disrupts front-of-house operations.
+- **Sub-Millisecond Execution**: Local SQLite write latency averaged **0.18ms**, delivering a fluid user interface.
+- **Deterministic Reconciliation**: When cloud connectivity resumed, over 10,000 offline mutations merged without human reconciliation intervention.`,
+  },
+  {
+    id: "article-2",
+    slug: "achieving-high-throughput-ebpf-socket-filters",
+    title: "Achieving High-Throughput Edge Performance with Linux Kernel eBPF Socket Filters",
+    subtitle: "Bypassing standard socket buffer copies directly at the network interface layer.",
+    excerpt:
+      "Bypassing standard socket buffer copies directly at the network interface layer to accelerate distributed consensus messaging on commodity server clusters.",
+    category: "Kernel & eBPF",
+    categorySlug: "kernel-ebpf",
+    authorId: "auth-2",
+    authorName: "Fourkan Bin Ilias",
+    authorRole: "Founder & Full Stack Developer",
+    authorInitials: "FI",
+    readingMinutes: 12,
+    readTime: "12 min read",
+    status: "PUBLISHED",
+    isFeatured: false,
+    publishedAt: "2026-02-10T00:00:00Z",
+    tags: ["Kernel", "eBPF", "Linux", "Networking", "Performance"],
+    rfcCode: "RFC-0711-REV1",
+    seoTitle: "Linux eBPF Socket Filters for High-Throughput Edge Nodes — DevCore",
+    seoDescription:
+      "How to use eBPF socket filters and XDP programs to bypass kernel memory overhead in high-throughput microservices.",
+    content: `## Motivation: Kernel Network Stack Overhead
+
+In high-concurrency microservice architectures, traditional socket I/O incurs significant overhead due to memory allocation, kernel-to-userspace copies, and context switches. When processing hundreds of thousands of small consensus packets per second, these overheads dominate CPU time.
+
+---
+
+## eBPF Socket Programs
+
+Extended Berkeley Packet Filter (eBPF) allows verified sandboxed programs to execute directly within the Linux kernel in response to system calls and network events.
+
+By attaching eBPF programs to **eXpress Data Path (XDP)** hooks and **sockops** hooks, we filter, inspect, and route packets before they reach the heavier layers of the TCP/IP network stack:
+
+\`\`\`c
+SEC("sockops")
+int bpf_sockmap_forward(struct bpf_sock_ops *skops) {
+    if (skops->op == BPF_SOCK_OPS_PASSIVE_ESTABLISHED_CB ||
+        skops->op == BPF_SOCK_OPS_ACTIVE_ESTABLISHED_CB) {
+        bpf_sock_ops_ipv4(skops);
+    }
+    return 0;
+}
+\`\`\`
+
+---
+
+## Key Benefits
+1. **Zero-Copy Forwarding**: Direct kernel sockmap redirects avoid userspace socket roundtrips.
+2. **Predictable Tail Latency**: Drastic reduction in P99 latency spikes during packet bursts.
+3. **Safe Runtime Programmability**: The in-kernel eBPF verifier guarantees programs cannot cause kernel panics or infinite loops.`,
+  },
+  {
+    id: "article-3",
+    slug: "deterministic-guardrails-enterprise-llm-schemas",
+    title: "Deterministic Guardrails for Enterprise LLMs: Mitigating Semantic Drift under Strict Schemas",
+    subtitle: "Context-free grammar constraints and embedding projection fences.",
+    excerpt:
+      "Employing context-free grammar constraints and embedding projection fences to guarantee deterministic, zero-hallucination JSON schema output.",
+    category: "AI & Automation",
+    categorySlug: "ai-automation",
+    authorId: "auth-1",
+    authorName: "Kazi Mahedi Hasan",
+    authorRole: "Founder & Full Stack Developer",
+    authorInitials: "KM",
+    readingMinutes: 10,
+    readTime: "10 min read",
+    status: "PUBLISHED",
+    isFeatured: false,
+    publishedAt: "2026-01-28T00:00:00Z",
+    tags: ["AI", "LLM", "Prompt Engineering", "Validation", "TypeScript"],
+    rfcCode: "RFC-0914-REV2",
+    seoTitle: "Deterministic Guardrails for Enterprise LLMs — DevCore",
+    seoDescription:
+      "Technical implementation patterns to force Large Language Models into strict schemas with zero hallucinations.",
+    content: `## The Enterprise Challenge of LLM Output Drift
+
+Large Language Models (LLMs) are probabilistic token generators by design. While exceptional at synthesizing unstructured text, deploying them within enterprise operational pipelines requires **100% deterministic schema conformance**.
+
+If an LLM produces a single missing comma, unexpected null, or invented JSON key, downstream database insertions and webhook dispatchers fail.
+
+---
+
+## Dual-Layer Guardrail Architecture
+
+At DevCore, we enforce a two-stage deterministic verification pipeline:
+
+1. **Constrained Grammar Decoding**: At the inference token sampler level, tokens that violate the target JSON schema or BNF grammar are dynamically assigned $-\\infty$ logit probability, making malformed outputs mathematically impossible.
+2. **Strict Zod Runtime Validation**: Every response is piped through strict TypeScript Zod schemas with sanitization and type coercion fallbacks.
+
+\`\`\`typescript
+import { z } from "zod";
+
+export const EnterpriseDispatchSchema = z.object({
+  action: z.enum(["NOTIFY_CLIENT", "SCHEDULE_TASK", "ESCALATE_INCIDENT"]),
+  targetId: z.string().cuid(),
+  confidence: z.number().min(0.0).max(1.0),
+  parameters: z.record(z.string(), z.any()),
+});
+\`\`\`
+
+---
+
+## Key Takeaways
+- Never accept raw unstructured markdown from LLMs in enterprise production pipelines.
+- Combine logit masking, schema enforcement, and strongly-typed compiler verification.`,
+  },
+  {
+    id: "article-4",
+    slug: "multi-tenant-postgres-isolation-benchmarks",
+    title: "Multi-Tenant PostgreSQL Isolation: Row-Level Security vs Schema-per-Tenant Tradeoffs",
+    subtitle: "Empirical memory consumption, cache hit ratios, and connection pool thresholds.",
+    excerpt:
+      "Empirical memory consumption, cache hit ratios, and connection pool exhaustion thresholds measured across multi-tenant database clusters.",
+    category: "Distributed Systems",
+    categorySlug: "distributed-systems",
+    authorId: "auth-3",
+    authorName: "Senior Systems Engineer",
+    authorRole: "Senior Cloud & Systems Architect",
+    authorInitials: "SE",
+    readingMinutes: 11,
+    readTime: "11 min read",
+    status: "PUBLISHED",
+    isFeatured: false,
+    publishedAt: "2026-01-14T00:00:00Z",
+    tags: ["PostgreSQL", "Multi-Tenancy", "Databases", "Performance"],
+    rfcCode: "RFC-0650-REV4",
+    seoTitle: "PostgreSQL Multi-Tenancy Benchmarks — DevCore",
+    seoDescription:
+      "Detailed architectural evaluation of Row-Level Security vs schema-per-tenant isolation in enterprise PostgreSQL.",
+    content: `## Architectural Overview
+
+When designing a modern SaaS platform, deciding how to isolate tenant data is one of the most critical structural decisions. The two primary patterns in PostgreSQL are:
+
+1. **Row-Level Security (RLS)**: Shared tables where every row contains a \`tenant_id\` column enforced by Postgres policies.
+2. **Schema-per-Tenant**: Separate PostgreSQL schemas inside a single database instance.
+
+---
+
+## Benchmarking Results
+
+| Metric | Row-Level Security (RLS) | Schema-per-Tenant |
+| :--- | :--- | :--- |
+| **Catalog Memory Overhead** | Fixed (~24MB) | Scales with tenant count (~1.2GB at 1,000 tenants) |
+| **Migration Velocity** | Fast (single migration) | Linear slowdown (iterates across $N$ schemas) |
+| **Connection Pooling** | High reuse efficiency | Pool fragmentation across schemas |
+| **Data Leak Isolation** | Policy-level guarantee | Schema namespace boundary |
+
+---
+
+## Conclusion
+For most modern multi-tenant cloud platforms, **PostgreSQL Row-Level Security paired with connection pooling** delivers the optimal balance of memory efficiency, fast migration deployment, and strict cryptographic isolation.`,
+  },
+  {
+    id: "article-5",
+    slug: "zero-copy-cloud-microservices-topologies",
+    title: "Zero-Copy Networking Topologies in Modern Cloud Microservices",
+    subtitle: "Streamlining inter-service communication overhead using shared memory and gRPC.",
+    excerpt:
+      "Streamlining inter-service communication overhead using shared memory ring buffers and gRPC streaming protocols.",
+    category: "Cloud & DevOps",
+    categorySlug: "cloud-devops",
+    authorId: "auth-2",
+    authorName: "Fourkan Bin Ilias",
+    authorRole: "Founder & Full Stack Developer",
+    authorInitials: "FI",
+    readingMinutes: 8,
+    readTime: "8 min read",
+    status: "PUBLISHED",
+    isFeatured: false,
+    publishedAt: "2025-12-20T00:00:00Z",
+    tags: ["Microservices", "gRPC", "Cloud", "Zero-Copy", "Docker"],
+    rfcCode: "RFC-0544-REV1",
+    seoTitle: "Zero-Copy Microservices Networking — DevCore",
+    seoDescription:
+      "Strategies to reduce serialization and buffer copy overhead in distributed cloud services.",
+    content: `## The Microservices Serialization Tax
+
+As enterprise architectures decompose monolithic applications into microservice meshes, services spend an increasing percentage of their CPU cycles serializing, marshaling, and deserializing JSON payloads over TCP sockets.
+
+---
+
+## Architectural Strategy: gRPC & FlatBuffers
+
+By shifting high-throughput inter-service communication to **gRPC with HTTP/2 multiplexing** and binary protocol buffers, we achieve:
+
+1. **Compact Wire Footprint**: Binary protocol encoding reduces bandwidth consumption by 60% compared to equivalent verbose JSON.
+2. **Compile-Time Type Contracts**: Strict Protobuf schemas prevent breaking changes across independent engineering teams.
+3. **Bidirectional Streaming**: Eliminates repeated handshake negotiation for continuous telemetry and events.`,
+  },
+];
+
+export const INITIAL_SUBSCRIBERS: NewsletterSubscriberItem[] = [
+  {
+    id: "sub-1",
+    email: "dev.core.solution2@gmail.com",
+    status: "ACTIVE",
+    subscribedAt: "2026-02-01T12:00:00Z",
+  },
+];
+
+// Global in-memory mutable stores for Blog CMS runtime
+export let IN_MEMORY_BLOG_HERO_CONFIG: BlogHeroConfig = { ...DEFAULT_BLOG_HERO_CONFIG };
+export let IN_MEMORY_BLOG_CATEGORIES: BlogCategoryItem[] = [...INITIAL_BLOG_CATEGORIES];
+export let IN_MEMORY_BLOG_AUTHORS: BlogAuthorItem[] = [...INITIAL_BLOG_AUTHORS];
+export let IN_MEMORY_BLOG_ARTICLES: BlogArticleItem[] = [...INITIAL_BLOG_ARTICLES];
+export let IN_MEMORY_SUBSCRIBERS: NewsletterSubscriberItem[] = [...INITIAL_SUBSCRIBERS];
+
 
