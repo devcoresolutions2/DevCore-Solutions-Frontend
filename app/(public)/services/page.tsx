@@ -1,41 +1,47 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Home, ChevronRight } from "lucide-react";
-import { getServices } from "@/lib/api";
-import { ServicesGrid } from "@/components/landing/ServicesGrid";
-import { TalkToUsBanner } from "@/components/landing/TalkToUsBanner";
-import { getContactSettings } from "@/lib/api";
+import {
+  getServices,
+  getLifecycleStages,
+  getEngagementTiers,
+  getContactSettings,
+} from "@/lib/api";
+import { ServicesHero } from "@/components/services/ServicesHero";
+import { ServicesBento } from "@/components/services/ServicesBento";
+import { EngineeringLifecycle } from "@/components/services/EngineeringLifecycle";
+import { EngagementMatrix } from "@/components/services/EngagementMatrix";
+import { ServicesCTA } from "@/components/services/ServicesCTA";
 
 export const metadata: Metadata = {
-  title: "Engineering Services & Architecture Consultation",
-  description: "Specialized engineering disciplines for scaled software platforms, cloud infrastructure, and AI workflow automation.",
+  title: "Engineered Services & Architectural Capabilities — DevCore Solutions",
+  description:
+    "Rigorous engineering squads delivering mission-critical cloud infrastructure, high-throughput distributed systems, and deterministic AI pipelines with mathematically bounded latency.",
 };
 
 export default async function ServicesPage() {
-  const [services, contactSettings] = await Promise.all([
-    getServices(),
-    getContactSettings(),
-  ]);
+  const [services, lifecycleStages, engagementTiers, contactSettings] =
+    await Promise.all([
+      getServices(),
+      getLifecycleStages(),
+      getEngagementTiers(),
+      getContactSettings(),
+    ]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-mono text-[var(--text-muted)] mb-8">
-        <Link href="/" className="flex items-center gap-1 hover:text-[var(--text-primary)] transition-colors">
-          <Home size={13} />
-          Home
-        </Link>
-        <ChevronRight size={12} />
-        <span className="text-[var(--text-primary)] font-medium">Services</span>
-      </nav>
+    <div className="w-full flex flex-col gap-6 pb-8 animate-fadeIn">
+      {/* SECTION 1: HEADER & TELEMETRY KPI BANNER */}
+      <ServicesHero />
 
-      {/* Services Grid */}
-      <ServicesGrid services={services} />
+      {/* SECTION 2: THE 5 CORE ARCHITECTURAL DISCIPLINES (BENTO GRID) */}
+      <ServicesBento services={services} />
 
-      {/* Pre-footer talk banner */}
-      <div className="mt-12">
-        <TalkToUsBanner settings={contactSettings} />
-      </div>
+      {/* SECTION 3: ENGINEERING LIFECYCLE & TELEMETRY */}
+      <EngineeringLifecycle stages={lifecycleStages} />
+
+      {/* SECTION 4: SERVICE ENGAGEMENT MATRIX TABLE */}
+      <EngagementMatrix tiers={engagementTiers} />
+
+      {/* SECTION 5: FINAL CTA BANNER */}
+      <ServicesCTA settings={contactSettings} />
     </div>
   );
 }

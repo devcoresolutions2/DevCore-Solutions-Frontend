@@ -1,132 +1,113 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Home, ChevronRight, MessageCircle, Phone, Mail, Clock, MapPin, ShieldCheck } from "lucide-react";
-import { getContactSettings } from "@/lib/api";
-import { QuickCallbackForm } from "@/components/contact/QuickCallbackForm";
-import { GlassCard } from "@/components/glass/GlassCard";
+import { Home, ChevronRight, Clock, ShieldCheck, Zap } from "lucide-react";
+import { getContactSettings, getServices, getShowcaseList } from "@/lib/api";
+import { EstimatorForm } from "@/components/contact/EstimatorForm";
+import { QuickChannelsPanel } from "@/components/contact/QuickChannelsPanel";
 
 export const metadata: Metadata = {
-  title: "Contact & Technical Scoping — DevCore Solutions",
-  description: "Direct engagement with DevCore principal software architects. Reach out via WhatsApp, phone, or schedule a technical review.",
+  title: "Start a Project — Engineering Estimator & Technical Scoping",
+  description:
+    "Direct technical engagement with DevCore Solutions systems architects. Estimate your project scope, budget, and timeline with guaranteed response within 1 business hour.",
 };
 
 interface ContactPageProps {
-  searchParams: Promise<{ project?: string }>;
+  searchParams: Promise<{ project?: string; service?: string }>;
 }
 
 export default async function ContactPage({ searchParams }: ContactPageProps) {
-  const { project } = await searchParams;
-  const settings = await getContactSettings();
-
-  const waHref = `https://wa.me/${settings.whatsappNumber}?text=${encodeURIComponent(
-    project
-      ? `Hello DevCore, I would like to discuss an engineering build similar to ${project}.`
-      : "Hello DevCore, I would like to schedule an engineering scoping call."
-  )}`;
+  const { project, service } = await searchParams;
+  const [settings, services, showcase] = await Promise.all([
+    getContactSettings(),
+    getServices(),
+    getShowcaseList({ limit: 4 }),
+  ]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-mono text-[var(--text-muted)] mb-8">
-        <Link href="/" className="flex items-center gap-1 hover:text-[var(--text-primary)] transition-colors">
-          <Home size={13} />
-          Home
+    <div className="w-full min-h-[calc(100vh-20rem)] py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      {/* Breadcrumb Navigation */}
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-mono text-[var(--text-muted)] mb-6">
+        <Link href="/" className="flex items-center gap-1.5 hover:text-[var(--text-primary)] transition-colors">
+          <Home size={13} className="text-[var(--brand-primary)]" />
+          <span>Home</span>
         </Link>
-        <ChevronRight size={12} />
-        <span className="text-[var(--text-primary)] font-medium">Contact & Scoping</span>
+        <span>/</span>
+        <span className="text-[var(--text-secondary)]">Contact</span>
+        <span>/</span>
+        <span className="text-[var(--text-primary)] font-semibold">Project Estimator</span>
       </nav>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-        {/* Left Information Column */}
-        <div className="lg:col-span-5 space-y-6">
-          <div>
-            <span className="devcore-glass-badge inline-flex items-center font-mono text-xs rounded-full px-3.5 py-1 text-[var(--accent-ink)] mb-3">
-              DIRECT ARCHITECT ENGAGEMENT
-            </span>
+      {/* Header Region */}
+      <section className="mb-10 space-y-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] shadow-sm">
+          <span className="w-2 h-2 rounded-full bg-[var(--brand-primary)] animate-pulse" />
+          <span className="font-mono text-xs font-semibold uppercase tracking-wider">
+            Enterprise Ingestion &bull; Scoping
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
+          <div className="lg:col-span-8 space-y-2">
             <h1 className="font-display font-extrabold text-3xl sm:text-4xl text-[var(--text-primary)] tracking-tight">
-              Start Your Engineering Engagement
+              Initiate Engineering Discovery & Project Scoping
             </h1>
-            <p className="text-sm text-[var(--text-secondary)] mt-3 leading-relaxed">
-              Have a high-scale platform to architect or critical infrastructure bottlenecks to resolve? Talk directly with our senior engineering staff.
+            <p className="text-sm sm:text-base text-[var(--text-secondary)] max-w-2xl leading-relaxed">
+              Direct technical engagement with principal software architects. We analyze system architecture, database performance, and API topologies without sales intermediary delays.
             </p>
           </div>
 
-          {/* Quick Channels */}
-          <div className="space-y-3">
-            {/* WhatsApp */}
-            <a
-              href={waHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-4 rounded-xl devcore-glass-card border border-[var(--border-subtle)] hover:border-[var(--brand-primary)] transition-all flex items-center justify-between group shadow-sm bg-[var(--bg-elevated)]"
-            >
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-lg bg-[var(--success)]/10 text-[var(--success)] flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <MessageCircle size={20} />
-                </div>
+          {/* Header KPI Stat Cards (only rendered when values exist) */}
+          <div className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {settings.callbackPromise && (
+              <div className="p-3.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] shadow-sm flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-bold text-[var(--text-primary)]">WhatsApp Direct Line</div>
-                  <div className="text-[11px] text-[var(--text-muted)] font-mono">Instant response in business hours</div>
+                  <span className="block font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider">
+                    Response SLA
+                  </span>
+                  <span className="font-display font-bold text-sm text-[var(--text-primary)] mt-0.5 block">
+                    {settings.callbackPromise}
+                  </span>
                 </div>
+                <Zap size={20} className="text-[var(--brand-primary)]" />
               </div>
-              <span className="text-xs font-semibold text-[var(--success)]">&rarr;</span>
-            </a>
+            )}
 
-            {/* Direct Call */}
-            <a
-              href={`tel:${settings.phone}`}
-              className="p-4 rounded-xl devcore-glass-card border border-[var(--border-subtle)] hover:border-[var(--brand-primary)] transition-all flex items-center justify-between group shadow-sm bg-[var(--bg-elevated)]"
-            >
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-lg bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Phone size={20} />
-                </div>
+            {settings.timezone && (
+              <div className="p-3.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] shadow-sm flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-bold text-[var(--text-primary)]">Direct Voice Line</div>
-                  <div className="text-[11px] text-[var(--text-muted)] font-mono">{settings.phone}</div>
+                  <span className="block font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider">
+                    Timezone
+                  </span>
+                  <span className="font-display font-bold text-sm text-[var(--text-primary)] mt-0.5 block">
+                    {settings.timezone}
+                  </span>
                 </div>
+                <Clock size={20} className="text-[var(--brand-primary)]" />
               </div>
-              <span className="text-xs font-semibold text-[var(--brand-primary)]">&rarr;</span>
-            </a>
-
-            {/* Email */}
-            <a
-              href={`mailto:${settings.email}`}
-              className="p-4 rounded-xl devcore-glass-card border border-[var(--border-subtle)] hover:border-[var(--brand-primary)] transition-all flex items-center justify-between group shadow-sm bg-[var(--bg-elevated)]"
-            >
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-lg bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Mail size={20} />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-[var(--text-primary)]">Email Dispatch</div>
-                  <div className="text-[11px] text-[var(--text-muted)] font-mono">{settings.email}</div>
-                </div>
-              </div>
-              <span className="text-xs font-semibold text-[var(--brand-primary)]">&rarr;</span>
-            </a>
+            )}
           </div>
+        </div>
+      </section>
 
-          {/* Availability & Location Badge */}
-          <GlassCard className="p-5 space-y-3 bg-[var(--bg-surface)]">
-            <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-primary)]">
-              <Clock size={15} className="text-[var(--brand-primary)]" />
-              <span>Business Hours: 09:00 — 18:00 ({settings.timezone})</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-              <MapPin size={15} className="text-[var(--brand-primary)]" />
-              <span>Dhaka & Chattogram Engineering Hubs, Bangladesh</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] pt-2 border-t border-[var(--border-subtle)]">
-              <ShieldCheck size={15} className="text-[var(--success)]" />
-              <span>All communications protected by Mutual Non-Disclosure Agreements</span>
-            </div>
-          </GlassCard>
+      {/* Main Dual-Column Workspace */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Column (8 of 12 cols): Multi-step Project Estimator */}
+        <div className="lg:col-span-8">
+          <EstimatorForm
+            settings={settings}
+            servicesList={services}
+            relatedItems={showcase.items}
+            initialProject={project}
+            initialService={service}
+          />
         </div>
 
-        {/* Right Form Column */}
-        <div className="lg:col-span-7">
-          <QuickCallbackForm initialProject={project} />
+        {/* Right Column (4 of 12 cols): Direct Channels & Fast Dispatch */}
+        <div className="lg:col-span-4">
+          <QuickChannelsPanel
+            settings={settings}
+            pageTitle="DevCore Solutions Contact Page"
+          />
         </div>
       </div>
     </div>

@@ -10,10 +10,12 @@ interface CallButtonProps {
 }
 
 export function CallButton({
-  phone = "+8801700000000",
+  phone,
   className,
   showText = false,
 }: CallButtonProps) {
+  if (!phone) return null;
+
   return (
     <a
       href={`tel:${phone}`}
