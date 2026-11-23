@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Cpu } from "lucide-react";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 import { cn } from "@/lib/utils";
 
 const CAPABILITIES = [
@@ -83,13 +84,8 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[var(--border-subtle)]">
           {/* Brand col */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[var(--brand-primary)] flex items-center justify-center text-[var(--brand-contrast)]">
-                <Cpu size={16} aria-hidden="true" />
-              </div>
-              <span className="font-display font-extrabold text-xl text-[var(--text-primary)] tracking-tight">
-                DevCore Solutions
-              </span>
+            <div className="flex items-center">
+              <BrandLogo size="lg" />
             </div>
 
             <p className="text-xs text-[var(--text-secondary)] max-w-sm leading-relaxed">
