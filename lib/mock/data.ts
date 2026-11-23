@@ -665,3 +665,215 @@ export const MOCK_JOBS: JobItem[] = [
 
 // In-memory store for submitted applications during dev / session
 export const IN_MEMORY_APPLICATIONS: SubmittedApplicationItem[] = [];
+
+// ─── ABOUT PAGE TYPES & MOCK DATA ──────────────────────────────────────────
+export type AboutGeneralContent = {
+  heroBadge: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  foundingTag: string;
+  visionTitle: string;
+  visionText: string;
+  missionTitle: string;
+  missionText: string;
+  philosophyTitle: string;
+  philosophyText: string;
+  philosophyStats: Array<{ label: string; value: string }>;
+  ctaTitle: string;
+  ctaSubtitle: string;
+  ctaPrimaryText: string;
+  ctaPrimaryUrl: string;
+  ctaSecondaryText: string;
+  ctaSecondaryUrl: string;
+  locationEnabled: boolean;
+  locationName: string;
+  locationAddress: string;
+  locationTimezone: string;
+  locationStatus: string;
+};
+
+export type EngineeringPrincipleItem = {
+  id: string;
+  orderIndex: number;
+  number: string;
+  title: string;
+  description: string;
+  icon: "cpu" | "layers" | "eye" | "shield" | "terminal" | "code";
+  supportingLabel: string;
+  supportingText: string;
+  isPublished: boolean;
+};
+
+export type TeamMemberItem = {
+  id: string;
+  name: string;
+  role: string;
+  bio?: string;
+  avatarUrl?: string;
+  initials: string;
+  badge?: string;
+  linkedinUrl?: string;
+  githubUrl?: string;
+  portfolioUrl?: string;
+  isFeatured: boolean;
+  isPublished: boolean;
+  displayOrder: number;
+};
+
+export const DEFAULT_ABOUT_CONTENT: AboutGeneralContent = {
+  heroBadge: "ARCHITECTURAL DOSSIER",
+  heroTitle: "Building the Digital Core for a Smarter Tomorrow",
+  heroSubtitle:
+    "DevCore Solutions is an elite software engineering and systems architecture firm. We reject software bloat and shallow wrappers in favor of rigorous, deterministic engineering and provable fault tolerance.",
+  foundingTag: "FOUNDED 2019 • DISTRIBUTED CORE",
+  visionTitle: "Our Vision",
+  visionText:
+    "To set the global benchmark for enterprise software reliability, where downtime is obsolete and system state is mathematically provable across high-throughput distributed boundaries.",
+  missionTitle: "Our Mission",
+  missionText:
+    "To empower ambitious enterprises with custom-tailored, resilient digital platforms engineered with zero bloat, uncompromising type safety, and predictable execution.",
+  philosophyTitle: "The Core Philosophy",
+  philosophyText:
+    "We eliminate organizational friction by embedding verified systems architects and senior engineers directly on the operational frontlines. Every line of code is held to strict verification standards.",
+  philosophyStats: [
+    { label: "Direct Senior Engineering", value: "100%" },
+    { label: "Deterministic SLA Bound", value: "99.9%" },
+  ],
+  ctaTitle: "Let's Build Something Meaningful",
+  ctaSubtitle:
+    "Have an idea, a challenge, or a project in mind? Let's discuss how we can turn it into a reliable digital solution.",
+  ctaPrimaryText: "Start System Scoping",
+  ctaPrimaryUrl: "/contact",
+  ctaSecondaryText: "View Open Guild Seats",
+  ctaSecondaryUrl: "/careers",
+  locationEnabled: true,
+  locationName: "Chattogram Engineering Hub",
+  locationAddress: "North Agrabad, Chattogram, Bangladesh",
+  locationTimezone: "Asia/Dhaka",
+  locationStatus: "ONLINE • UTC+6",
+};
+
+export const INITIAL_ENGINEERING_PRINCIPLES: EngineeringPrincipleItem[] = [
+  {
+    id: "principle-1",
+    orderIndex: 1,
+    number: "01",
+    title: "Deterministic Execution",
+    description:
+      "Systems must exhibit verifiable behavior under network partitions, hardware drops, and cold reboots. No unhandled states, no silent failures.",
+    icon: "cpu",
+    supportingLabel: "Invariant:",
+    supportingText: "state_t == replay(log)",
+    isPublished: true,
+  },
+  {
+    id: "principle-2",
+    orderIndex: 2,
+    number: "02",
+    title: "Zero-Drift Architecture",
+    description:
+      "State replication and schemas must align across distributed edges via CRDTs and WAL persistence with zero manual drift reconciliation.",
+    icon: "layers",
+    supportingLabel: "Convergence:",
+    supportingText: "delta_sync.converge()",
+    isPublished: true,
+  },
+  {
+    id: "principle-3",
+    orderIndex: 3,
+    number: "03",
+    title: "Radical Transparency",
+    description:
+      "Complete client visibility into git commit histories, benchmark logs, and live telemetry. Direct architect collaboration without proxy gatekeepers.",
+    icon: "eye",
+    supportingLabel: "Pipeline:",
+    supportingText: "git log --unredacted",
+    isPublished: true,
+  },
+  {
+    id: "principle-4",
+    orderIndex: 4,
+    number: "04",
+    title: "Defense-in-Depth Security",
+    description:
+      "Cryptographic verification, rigorous input validation, continuous automated audits, and mutual TLS across all microservice boundaries.",
+    icon: "shield",
+    supportingLabel: "Standard:",
+    supportingText: "mTLS + Zero-Trust IAM",
+    isPublished: true,
+  },
+];
+
+export const INITIAL_TEAM_MEMBERS: TeamMemberItem[] = [
+  {
+    id: "team-1",
+    name: "Kazi Mahedi Hasan",
+    role: "Founder & Full Stack Developer",
+    bio: "Co-founder leading core distributed architecture, scalable cloud systems, and modern full-stack web platforms.",
+    initials: "KM",
+    badge: "FOUNDER",
+    githubUrl: "https://github.com/kazisamin0173-byte",
+    linkedinUrl: "https://www.linkedin.com/company/devcoresolutions2",
+    isFeatured: true,
+    isPublished: true,
+    displayOrder: 1,
+  },
+  {
+    id: "team-2",
+    name: "The Fourkan Bin Ilias",
+    role: "Founder & Full Stack Developer",
+    bio: "Co-founder focusing on distributed backend infrastructure, microservices reliability, and deterministic database design.",
+    initials: "TF",
+    badge: "FOUNDER",
+    githubUrl: "https://github.com/devcoresolutions2",
+    linkedinUrl: "https://www.linkedin.com/company/devcoresolutions2",
+    isFeatured: true,
+    isPublished: true,
+    displayOrder: 2,
+  },
+  {
+    id: "team-3",
+    name: "Senior Systems Engineer",
+    role: "Senior Systems & Cloud Architect",
+    bio: "Focuses on event-driven architectures, container mesh reliability, and low-latency API performance.",
+    initials: "SE",
+    badge: "ENGINEERING",
+    githubUrl: "https://github.com/devcoresolutions2",
+    linkedinUrl: "https://www.linkedin.com/company/devcoresolutions2",
+    isFeatured: false,
+    isPublished: true,
+    displayOrder: 3,
+  },
+  {
+    id: "team-4",
+    name: "Lead Product Designer",
+    role: "UI/UX Design Specialist",
+    bio: "Directs accessible design systems, user workflow ergonomics, and high-fidelity interactive digital experiences.",
+    initials: "PD",
+    badge: "PRODUCT",
+    githubUrl: "https://github.com/devcoresolutions2",
+    linkedinUrl: "https://www.linkedin.com/company/devcoresolutions2",
+    isFeatured: false,
+    isPublished: true,
+    displayOrder: 4,
+  },
+  {
+    id: "team-5",
+    name: "Applied AI Engineer",
+    role: "Applied AI & Machine Learning Specialist",
+    bio: "Specializes in deterministic prompt architectures, retrieval-augmented systems, and intelligent workflow automation.",
+    initials: "AI",
+    badge: "AI LAB",
+    githubUrl: "https://github.com/devcoresolutions2",
+    linkedinUrl: "https://www.linkedin.com/company/devcoresolutions2",
+    isFeatured: false,
+    isPublished: true,
+    displayOrder: 5,
+  },
+];
+
+// Global in-memory mutable stores for runtime admin mutations
+export let IN_MEMORY_ABOUT_CONTENT: AboutGeneralContent = { ...DEFAULT_ABOUT_CONTENT };
+export let IN_MEMORY_ENGINEERING_PRINCIPLES: EngineeringPrincipleItem[] = [...INITIAL_ENGINEERING_PRINCIPLES];
+export let IN_MEMORY_TEAM_MEMBERS: TeamMemberItem[] = [...INITIAL_TEAM_MEMBERS];
+
