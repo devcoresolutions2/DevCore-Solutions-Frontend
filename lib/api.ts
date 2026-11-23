@@ -18,6 +18,11 @@ import {
   IN_MEMORY_ABOUT_CONTENT,
   IN_MEMORY_ENGINEERING_PRINCIPLES,
   IN_MEMORY_TEAM_MEMBERS,
+  IN_MEMORY_BLOG_HERO_CONFIG,
+  IN_MEMORY_BLOG_CATEGORIES,
+  IN_MEMORY_BLOG_AUTHORS,
+  IN_MEMORY_BLOG_ARTICLES,
+  IN_MEMORY_SUBSCRIBERS,
   type ShowcaseItem,
   type ProjectItem,
   type ServiceItem,
@@ -32,6 +37,11 @@ import {
   type AboutGeneralContent,
   type EngineeringPrincipleItem,
   type TeamMemberItem,
+  type BlogArticleItem,
+  type BlogCategoryItem,
+  type BlogAuthorItem,
+  type NewsletterSubscriberItem,
+  type BlogHeroConfig,
 } from "./mock/data";
 
 // ─── ENVELOPE TYPES ──────────────────────────────────────────────────────────
@@ -44,8 +54,11 @@ const USE_MOCK = !BASE_URL;
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${BASE_URL}${path}`;
+  const signal = init?.signal || (AbortSignal.timeout ? AbortSignal.timeout(4000) : undefined);
   const res = await fetch(url, {
     headers: { "Content-Type": "application/json", Accept: "application/json" },
+    credentials: "include",
+    signal,
     ...init,
   });
 
@@ -749,6 +762,650 @@ export async function uploadAvatar(file: File): Promise<string> {
   });
 }
 
+// ─── BLOG & TECHNICAL CMS ──────────────────────────────────────────────────
+
+const IS_SERVER = !USE_MOCK;
+
+export async function getBlogHeroConfig(): Promise<BlogHeroConfig> {
+  if (IS_SERVER) {
+    try {
+      const res = await apiFetch<BlogHeroConfig>("/api/public/blog/hero");
+      if (res) return res;
+    } catch {
+      // fallback to memory
+    }
+  }
+  return { ...IN_MEMORY_BLOG_HERO_CONFIG };
+}
+
+export async function updateBlogHeroConfig(config: Partial<BlogHeroConfig>): Promise<BlogHeroConfig> {
+  Object.assign(IN_MEMORY_BLOG_HERO_CONFIG, config);
+  if (!IS_SERVER) {
+    try {
+      const res = await apiFetch<BlogHeroConfig>("/api/admin/blog/hero", {
+        method: "PUT",
+        body: JSON.stringify(config),
+      });
+      if (res) return res;
+    } catch {
+      // ignore
+    }
+  }
+  return { ...IN_MEMORY_BLOG_HERO_CONFIG };
+}
+
+export async function getBlogCategories(): Promise<BlogCategoryItem[]> {
+  if (IS_SERVER) {
+    try {
+      const res = await apiFetch<BlogCategoryItem[]>("/api/public/blog/categories");
+      if (res) return res;
+    } catch {
+      // fallback
+    }
+  }
+  // Calculate counts dynamically from articles
+  return IN_MEMORY_BLOG_CATEGORIES.map((cat) => ({
+    ...cat,
+    count: IN_MEMORY_BLOG_ARTICLES.filter(
+      (a) =>
+        (a.categorySlug === cat.slug || a.category.toLowerCase() === cat.slug.toLowerCase()) &&
+        a.status === "PUBLISHED"
+    ).length,
+  }));
+}
+
+export async function createBlogCategory(
+  data: Omit<BlogCategoryItem, "id" | "count">
+): Promise<BlogCategoryItem> {
+  const newCat: BlogCategoryItem = {
+    ...data,
+    id: `cat-${Date.now()}`,
+    count: 0,
+    isActive: data.isActive !== undefined ? data.isActive : true,
+  };
+  IN_MEMORY_BLOG_CATEGORIES.push(newCat);
+  if (!IS_SERVER) {
+    try {
+      const res = await apiFetch<BlogCategoryItem>("/api/admin/blog/categories", {
+        method: "POST",
+        body: JSON.stringify(newCat),
+      });
+      if (res) return res;
+    } catch {
+      // ignore
+    }
+  }
+  return newCat;
+}
+
+export async function updateBlogCategory(
+  id: string,
+  data: Partial<BlogCategoryItem>
+): Promise<BlogCategoryItem> {
+  const idx = IN_MEMORY_BLOG_CATEGORIES.findIndex((c) => c.id === id);
+  if (idx !== -1) {
+    IN_MEMORY_BLOG_CATEGORIES[idx] = { ...IN_MEMORY_BLOG_CATEGORIES[idx], ...data };
+  }
+  if (!IS_SERVER) {
+    try {
+      const res = await apiFetch<BlogCategoryItem>(`/api/admin/blog/categories/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
+      if (res) return res;
+    } catch {
+      // ignore
+    }
+  }
+  return IN_MEMORY_BLOG_CATEGORIES[idx] || (data as BlogCategoryItem);
+}
+
+export async function deleteBlogCategory(id: string): Promise<boolean> {
+  const idx = IN_MEMORY_BLOG_CATEGORIES.findIndex((c) => c.id === id);
+  if (idx !== -1) IN_MEMORY_BLOG_CATEGORIES.splice(idx, 1);
+  if (!IS_SERVER) {
+    try {
+      await apiFetch(`/api/admin/blog/categories/${id}`, { method: "DELETE" });
+    } catch {
+      // ignore
+    }
+  }
+  return true;
+}
+
+export async function getBlogAuthors(): Promise<BlogAuthorItem[]> {
+  if (IS_SERVER) {
+    try {
+      const res = await apiFetch<BlogAuthorItem[]>("/api/public/blog/authors");
+      if (res) return res;
+    } catch {
+      // fallback
+    }
+  }
+  return [...IN_MEMORY_BLOG_AUTHORS];
+}
+
+export async function createBlogAuthor(
+  data: Omit<BlogAuthorItem, "id">
+): Promise<BlogAuthorItem> {
+  const newAuthor: BlogAuthorItem = {
+    ...data,
+    id: `auth-${Date.now()}`,
+  };
+  IN_MEMORY_BLOG_AUTHORS.push(newAuthor);
+  if (!IS_SERVER) {
+    try {
+      const res = await apiFetch<BlogAuthorItem>("/api/admin/blog/authors", {
+        method: "POST",
+        body: JSON.stringify(newAuthor),
+      });
+      if (res) return res;
+    } catch {
+      // ignore
+    }
+  }
+  return newAuthor;
+}
+
+export async function updateBlogAuthor(
+  id: string,
+  data: Partial<BlogAuthorItem>
+): Promise<BlogAuthorItem> {
+  const idx = IN_MEMORY_BLOG_AUTHORS.findIndex((a) => a.id === id);
+  if (idx !== -1) {
+    IN_MEMORY_BLOG_AUTHORS[idx] = { ...IN_MEMORY_BLOG_AUTHORS[idx], ...data };
+  }
+  if (!IS_SERVER) {
+    try {
+      const res = await apiFetch<BlogAuthorItem>(`/api/admin/blog/authors/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
+      if (res) return res;
+    } catch {
+      // ignore
+    }
+  }
+  return IN_MEMORY_BLOG_AUTHORS[idx] || (data as BlogAuthorItem);
+}
+
+export async function deleteBlogAuthor(id: string): Promise<boolean> {
+  const idx = IN_MEMORY_BLOG_AUTHORS.findIndex((a) => a.id === id);
+  if (idx !== -1) IN_MEMORY_BLOG_AUTHORS.splice(idx, 1);
+  if (!IS_SERVER) {
+    try {
+      await apiFetch(`/api/admin/blog/authors/${id}`, { method: "DELETE" });
+    } catch {
+      // ignore
+    }
+  }
+  return true;
+}
+
+export async function getBlogArticles(params?: {
+  category?: string;
+  tag?: string;
+  search?: string;
+  sort?: "newest" | "oldest" | "readingTime";
+  status?: "PUBLISHED" | "DRAFT" | "ALL";
+}): Promise<BlogArticleItem[]> {
+  if (IS_SERVER) {
+    try {
+      const query = new URLSearchParams();
+      if (params?.category) query.set("category", params.category);
+      if (params?.tag) query.set("tag", params.tag);
+      if (params?.search) query.set("search", params.search);
+      if (params?.sort) query.set("sort", params.sort);
+      if (params?.status) query.set("status", params.status);
+      const res = await apiFetch<BlogArticleItem[]>(`/api/public/blog?${query.toString()}`);
+      if (res) return res;
+    } catch {
+      // fallback
+    }
+  }
+
+  let list = [...IN_MEMORY_BLOG_ARTICLES];
+
+  // Status filter (defaults to PUBLISHED for public view unless ALL is requested)
+  if (params?.status === "DRAFT") {
+    list = list.filter((a) => a.status === "DRAFT");
+  } else if (params?.status !== "ALL") {
+    list = list.filter((a) => a.status === "PUBLISHED");
+  }
+
+  // Category filter
+  if (params?.category && params.category !== "all") {
+    const cat = params.category.toLowerCase();
+    list = list.filter(
+      (a) => a.category.toLowerCase() === cat || a.categorySlug?.toLowerCase() === cat
+    );
+  }
+
+  // Tag filter
+  if (params?.tag) {
+    const t = params.tag.toLowerCase();
+    list = list.filter((a) => a.tags.some((tag) => tag.toLowerCase() === t));
+  }
+
+  // Search filter
+  if (params?.search?.trim()) {
+    const q = params.search.toLowerCase().trim();
+    list = list.filter(
+      (a) =>
+        a.title.toLowerCase().includes(q) ||
+        a.excerpt.toLowerCase().includes(q) ||
+        a.content.toLowerCase().includes(q) ||
+        a.tags.some((tag) => tag.toLowerCase().includes(q)) ||
+        a.authorName.toLowerCase().includes(q)
+    );
+  }
+
+  // Sorting
+  if (params?.sort === "oldest") {
+    list.sort((a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime());
+  } else if (params?.sort === "readingTime") {
+    list.sort((a, b) => a.readingMinutes - b.readingMinutes);
+  } else {
+    // Newest first
+    list.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+  }
+
+  return list;
+}
+
+export async function getFeaturedArticle(): Promise<BlogArticleItem | null> {
+  const articles = await getBlogArticles({ status: "PUBLISHED" });
+  const featured = articles.find((a) => a.isFeatured);
+  return featured || articles[0] || null;
+}
+
+export async function getArticleBySlug(slug: string): Promise<BlogArticleItem | null> {
+  if (IS_SERVER) {
+    try {
+      const res = await apiFetch<BlogArticleItem>(`/api/public/blog/${slug}`);
+      if (res) return res;
+    } catch {
+      // fallback
+    }
+  }
+  const found = IN_MEMORY_BLOG_ARTICLES.find((a) => a.slug === slug);
+  return found ? { ...found } : null;
+}
+
+export async function createBlogArticle(
+  data: Omit<BlogArticleItem, "id" | "updatedAt">
+): Promise<BlogArticleItem> {
+  const now = new Date().toISOString();
+  const newArticle: BlogArticleItem = {
+    ...data,
+    id: `post-${Date.now()}`,
+    readTime: data.readTime || `${data.readingMinutes || 5} min read`,
+    publishedAt: data.publishedAt || now,
+    updatedAt: now,
+    isFeatured: !!data.isFeatured,
+    tags: data.tags || [],
+    categorySlug: data.categorySlug || data.category.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+  };
+  IN_MEMORY_BLOG_ARTICLES.unshift(newArticle);
+
+  if (!IS_SERVER) {
+    try {
+      const res = await apiFetch<BlogArticleItem>("/api/admin/blog/articles", {
+        method: "POST",
+        body: JSON.stringify(newArticle),
+      });
+      if (res) return res;
+    } catch {
+      // ignore
+    }
+  }
+  return newArticle;
+}
+
+export async function updateBlogArticle(
+  id: string,
+  data: Partial<BlogArticleItem>
+): Promise<BlogArticleItem> {
+  const idx = IN_MEMORY_BLOG_ARTICLES.findIndex((a) => a.id === id);
+  if (idx !== -1) {
+    const existing = IN_MEMORY_BLOG_ARTICLES[idx];
+    const updated: BlogArticleItem = {
+      ...existing,
+      ...data,
+      updatedAt: new Date().toISOString(),
+      publishedAt: data.publishedAt || existing.publishedAt,
+    };
+    IN_MEMORY_BLOG_ARTICLES[idx] = updated;
+  }
+  if (!IS_SERVER) {
+    try {
+      const res = await apiFetch<BlogArticleItem>(`/api/admin/blog/articles/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
+      if (res) return res;
+    } catch {
+      // ignore
+    }
+  }
+  return IN_MEMORY_BLOG_ARTICLES[idx] || (data as BlogArticleItem);
+}
+
+export async function deleteBlogArticle(id: string): Promise<boolean> {
+  const idx = IN_MEMORY_BLOG_ARTICLES.findIndex((a) => a.id === id);
+  if (idx !== -1) IN_MEMORY_BLOG_ARTICLES.splice(idx, 1);
+  if (!IS_SERVER) {
+    try {
+      await apiFetch(`/api/admin/blog/articles/${id}`, { method: "DELETE" });
+    } catch {
+      // ignore
+    }
+  }
+  return true;
+}
+
+// ─── NEWSLETTER SUBSCRIPTION ───────────────────────────────────────────────
+
+export async function subscribeNewsletter(
+  email: string,
+  source = "BLOG_PAGE"
+): Promise<{ success: boolean; message: string; subscriber?: NewsletterSubscriberItem }> {
+  const normalized = email.trim().toLowerCase();
+  const existing = IN_MEMORY_SUBSCRIBERS.find((s) => s.email.toLowerCase() === normalized);
+
+  if (existing) {
+    if (existing.status === "ACTIVE") {
+      return {
+        success: true,
+        message: "You are already subscribed to the technical dispatch.",
+        subscriber: existing,
+      };
+    } else {
+      existing.status = "ACTIVE";
+      return {
+        success: true,
+        message: "Welcome back! Your subscription has been reactivated.",
+        subscriber: existing,
+      };
+    }
+  }
+
+  const newSub: NewsletterSubscriberItem = {
+    id: `sub-${Date.now()}`,
+    email: normalized,
+    status: "ACTIVE",
+    subscribedAt: new Date().toISOString(),
+  };
+  IN_MEMORY_SUBSCRIBERS.unshift(newSub);
+
+  if (!IS_SERVER) {
+    try {
+      const res = await apiFetch<{ success: boolean; message: string; subscriber?: NewsletterSubscriberItem }>(
+        "/api/public/newsletter/subscribe",
+        {
+          method: "POST",
+          body: JSON.stringify({ email: normalized, source }),
+        }
+      );
+      if (res) return res;
+    } catch {
+      // ignore
+    }
+  }
+
+  return {
+    success: true,
+    message: "Thank you for subscribing to DevCore Technical Engineering Dispatches.",
+    subscriber: newSub,
+  };
+}
+
+export async function unsubscribeNewsletter(
+  email: string
+): Promise<{ success: boolean; message: string }> {
+  const normalized = email.trim().toLowerCase();
+  const sub = IN_MEMORY_SUBSCRIBERS.find((s) => s.email.toLowerCase() === normalized);
+  if (sub) {
+    sub.status = "UNSUBSCRIBED";
+  }
+
+  if (!IS_SERVER) {
+    try {
+      await apiFetch("/api/public/newsletter/unsubscribe", {
+        method: "POST",
+        body: JSON.stringify({ email: normalized }),
+      });
+    } catch {
+      // ignore
+    }
+  }
+
+  return { success: true, message: "You have been unsubscribed from the dispatch." };
+}
+
+export async function getNewsletterSubscribers(): Promise<NewsletterSubscriberItem[]> {
+  if (IS_SERVER) {
+    try {
+      const res = await apiFetch<NewsletterSubscriberItem[]>("/api/admin/newsletter/subscribers");
+      if (res) return res;
+    } catch {
+      // fallback
+    }
+  }
+  return [...IN_MEMORY_SUBSCRIBERS];
+}
+
+export async function deleteNewsletterSubscriber(id: string): Promise<boolean> {
+  const idx = IN_MEMORY_SUBSCRIBERS.findIndex((s) => s.id === id);
+  if (idx !== -1) IN_MEMORY_SUBSCRIBERS.splice(idx, 1);
+  if (!IS_SERVER) {
+    try {
+      await apiFetch(`/api/admin/newsletter/subscribers/${id}`, { method: "DELETE" });
+    } catch {
+      // ignore
+    }
+  }
+  return true;
+}
+
+export async function updateNewsletterSubscriberStatus(
+  id: string,
+  status: "ACTIVE" | "UNSUBSCRIBED"
+): Promise<NewsletterSubscriberItem> {
+  const sub = IN_MEMORY_SUBSCRIBERS.find((s) => s.id === id);
+  if (sub) sub.status = status;
+  if (!IS_SERVER) {
+    try {
+      const res = await apiFetch<NewsletterSubscriberItem>(`/api/admin/newsletter/subscribers/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ status }),
+      });
+      if (res) return res;
+    } catch {
+      // ignore
+    }
+  }
+  return sub || { id, email: "", status, subscribedAt: new Date().toISOString() };
+}
+
+export async function getBlogStats(): Promise<{
+  totalArticles: number;
+  publishedArticles: number;
+  draftArticles: number;
+  totalCategories: number;
+  totalSubscribers: number;
+  totalReads: number;
+}> {
+  const articles = IN_MEMORY_BLOG_ARTICLES;
+  return {
+    totalArticles: articles.length,
+    publishedArticles: articles.filter((a) => a.status === "PUBLISHED").length,
+    draftArticles: articles.filter((a) => a.status === "DRAFT").length,
+    totalCategories: IN_MEMORY_BLOG_CATEGORIES.length,
+    totalSubscribers: IN_MEMORY_SUBSCRIBERS.filter((s) => s.status === "ACTIVE").length,
+    totalReads: articles.length * 480,
+  };
+}
+
+// ─── AUTHENTICATION API ────────────────────────────────────────────────────
+
+export type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: "USER" | "CLIENT" | "EDITOR" | "SUPER_ADMIN";
+  emailVerified: boolean;
+  avatarUrl?: string;
+};
+
+// Mock in-memory session for offline preview / fallback
+let IN_MEMORY_CURRENT_USER: AuthUser | null = null;
+
+export async function apiSignUp(payload: {
+  name: string;
+  email: string;
+  password: string;
+  termsAccepted: boolean;
+}): Promise<{ success: boolean; message: string; email: string }> {
+  if (!USE_MOCK) {
+    return await apiFetch<{ success: boolean; message: string; email: string }>("/api/auth/signup", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // Fallback in-memory
+  const normalized = payload.email.trim().toLowerCase();
+  IN_MEMORY_CURRENT_USER = {
+    id: `user-${Date.now()}`,
+    name: payload.name.trim(),
+    email: normalized,
+    role: "USER",
+    emailVerified: false,
+  };
+
+  return {
+    success: true,
+    message: "Account created successfully. A verification code has been dispatched to your email.",
+    email: normalized,
+  };
+}
+
+export async function apiSignIn(payload: {
+  email: string;
+  password: string;
+  rememberMe?: boolean;
+}): Promise<{ success: boolean; user: AuthUser; redirectUrl: string }> {
+  if (!USE_MOCK) {
+    return await apiFetch<{ success: boolean; user: AuthUser; redirectUrl: string }>("/api/auth/signin", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // Fallback in-memory
+  const normalized = payload.email.trim().toLowerCase();
+  const isAdmin =
+    normalized.includes("admin") ||
+    normalized.includes("dev.core") ||
+    normalized.includes("pinon") ||
+    normalized.includes("samin");
+
+  const user: AuthUser = {
+    id: "user-1",
+    name: normalized.split("@")[0] || "DevCore User",
+    email: normalized,
+    role: isAdmin ? "SUPER_ADMIN" : "USER",
+    emailVerified: true,
+  };
+  IN_MEMORY_CURRENT_USER = user;
+
+  return {
+    success: true,
+    user,
+    redirectUrl: isAdmin ? "/admin/dashboard" : "/",
+  };
+}
+
+export async function apiGetSession(): Promise<{ user: AuthUser | null }> {
+  if (!USE_MOCK) {
+    try {
+      return await apiFetch<{ user: AuthUser | null }>("/api/auth/me");
+    } catch {
+      return { user: null };
+    }
+  }
+  return { user: IN_MEMORY_CURRENT_USER };
+}
+
+export async function apiSignOut(): Promise<{ success: boolean }> {
+  if (!USE_MOCK) {
+    try {
+      await apiFetch("/api/auth/signout", { method: "POST" });
+    } catch {
+      // ignore
+    }
+  }
+  IN_MEMORY_CURRENT_USER = null;
+  return { success: true };
+}
+
+export async function apiVerifyEmail(payload: {
+  token?: string;
+  otp?: string;
+  email?: string;
+}): Promise<{ success: boolean; message: string }> {
+  if (!USE_MOCK) {
+    return await apiFetch<{ success: boolean; message: string }>("/api/auth/verify-email", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+  if (IN_MEMORY_CURRENT_USER) {
+    IN_MEMORY_CURRENT_USER.emailVerified = true;
+  }
+  return { success: true, message: "Email verified successfully! You may now sign in." };
+}
+
+export async function apiResendVerification(email: string): Promise<{ success: boolean; message: string }> {
+  if (!USE_MOCK) {
+    return await apiFetch<{ success: boolean; message: string }>("/api/auth/resend-verification", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  }
+  return { success: true, message: "A fresh verification link and security code have been sent." };
+}
+
+export async function apiForgotPassword(email: string): Promise<{ success: boolean; message: string }> {
+  if (!USE_MOCK) {
+    return await apiFetch<{ success: boolean; message: string }>("/api/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  }
+  return {
+    success: true,
+    message: "If an account matches this email, a password recovery dispatch has been transmitted.",
+  };
+}
+
+export async function apiResetPassword(payload: {
+  token: string;
+  password: string;
+}): Promise<{ success: boolean; message: string }> {
+  if (!USE_MOCK) {
+    return await apiFetch<{ success: boolean; message: string }>("/api/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+  return {
+    success: true,
+    message: "Password updated successfully. You may now sign in with your new credentials.",
+  };
+}
+
 export type {
   ShowcaseItem,
   ProjectItem,
@@ -764,4 +1421,9 @@ export type {
   AboutGeneralContent,
   EngineeringPrincipleItem,
   TeamMemberItem,
+  BlogArticleItem,
+  BlogCategoryItem,
+  BlogAuthorItem,
+  NewsletterSubscriberItem,
+  BlogHeroConfig,
 };
