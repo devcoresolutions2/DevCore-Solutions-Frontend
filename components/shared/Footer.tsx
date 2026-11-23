@@ -3,11 +3,11 @@ import { Cpu } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const CAPABILITIES = [
-  { label: "Custom Web & SaaS", href: "/#services" },
-  { label: "Cloud & API Architecture", href: "/#services" },
-  { label: "AI & Workflow Automation", href: "/#services" },
-  { label: "UI/UX Design Systems", href: "/#services" },
-  { label: "IT Technical Consultation", href: "/#services" },
+  { label: "Custom Web & SaaS", href: "/services" },
+  { label: "Cloud & API Architecture", href: "/services" },
+  { label: "AI & Workflow Automation", href: "/services" },
+  { label: "UI/UX Design Systems", href: "/services" },
+  { label: "IT Technical Consultation", href: "/services" },
 ];
 
 const PRODUCTS = [

@@ -11,11 +11,13 @@ interface WhatsAppButtonProps {
 }
 
 export function WhatsAppButton({
-  whatsappNumber = "8801700000000",
+  whatsappNumber,
   className,
   showText = false,
   message = "Hi, I'd like to discuss a project with DevCore Solutions.",
 }: WhatsAppButtonProps) {
+  if (!whatsappNumber) return null;
+
   const href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
   return (

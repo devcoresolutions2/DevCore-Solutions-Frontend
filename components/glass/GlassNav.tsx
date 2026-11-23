@@ -9,12 +9,14 @@ import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
-  { label: "Services", href: "/#services" },
+  { label: "Services", href: "/services" },
+  { label: "Careers", href: "/careers" },
   { label: "Launches", href: "/launches" },
   { label: "Portfolio", href: "/projects" },
   { label: "Process", href: "/#process" },
   { label: "About", href: "/about" },
   { label: "Blog", href: "/blog" },
+  { label: "Contact", href: "/contact" },
 ];
 
 interface GlassNavProps {
@@ -22,7 +24,7 @@ interface GlassNavProps {
   phone?: string;
 }
 
-export function GlassNav({ whatsappNumber = "8801700000000", phone = "+8801700000000" }: GlassNavProps) {
+export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
@@ -44,7 +46,9 @@ export function GlassNav({ whatsappNumber = "8801700000000", phone = "+880170000
     return () => window.removeEventListener("keydown", handler);
   }, [isOpen]);
 
-  const waHref = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Hi, I'd like to discuss a project with DevCore Solutions.")}`;
+  const waHref = whatsappNumber
+    ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Hi, I'd like to discuss a project with DevCore Solutions.")}`
+    : "";
 
   return (
     <>
@@ -105,37 +109,41 @@ export function GlassNav({ whatsappNumber = "8801700000000", phone = "+880170000
             <ThemeToggle />
 
             {/* WhatsApp */}
-            <a
-              href={waHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(
-                "w-9 h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)]/70",
-                "flex items-center justify-center text-[var(--success)]",
-                "hover:bg-[var(--bg-elevated)] hover:border-[var(--brand-primary)] transition-colors duration-150",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2"
-              )}
-              aria-label="Chat on WhatsApp"
-              title="Chat on WhatsApp"
-            >
-              <MessageCircle size={16} aria-hidden="true" />
-            </a>
+            {whatsappNumber && (
+              <a
+                href={waHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  "w-9 h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)]/70",
+                  "flex items-center justify-center text-[var(--success)]",
+                  "hover:bg-[var(--bg-elevated)] hover:border-[var(--brand-primary)] transition-colors duration-150",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2"
+                )}
+                aria-label="Chat on WhatsApp"
+                title="Chat on WhatsApp"
+              >
+                <MessageCircle size={16} aria-hidden="true" />
+              </a>
+            )}
 
             {/* Phone */}
-            <a
-              href={`tel:${phone}`}
-              className={cn(
-                "w-9 h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)]/70",
-                "flex items-center justify-center text-[var(--text-primary)]",
-                "hover:bg-[var(--bg-elevated)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors duration-150",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2",
-                "hidden sm:flex"
-              )}
-              aria-label={`Call ${phone}`}
-              title="Call us"
-            >
-              <Phone size={16} aria-hidden="true" />
-            </a>
+            {phone && (
+              <a
+                href={`tel:${phone}`}
+                className={cn(
+                  "w-9 h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)]/70",
+                  "flex items-center justify-center text-[var(--text-primary)]",
+                  "hover:bg-[var(--bg-elevated)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors duration-150",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2",
+                  "hidden sm:flex"
+                )}
+                aria-label={`Call ${phone}`}
+                title="Call us"
+              >
+                <Phone size={16} aria-hidden="true" />
+              </a>
+            )}
 
             {/* Sign In */}
             <Link
