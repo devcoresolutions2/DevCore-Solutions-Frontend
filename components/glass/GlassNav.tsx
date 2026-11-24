@@ -268,22 +268,40 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
               </Link>
             )}
 
-            {/* Primary CTA */}
-            <Link
-              href="/contact"
-              className={cn(
-                "hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold",
-                "h-10 px-4 rounded-[10px]",
-                "bg-[var(--brand-primary)] text-[var(--brand-contrast)]",
-                "hover:bg-[var(--brand-hover)] transition-colors duration-150",
-                "shadow-sm btn-liquid-hover",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2"
-              )}
-            >
-              <Rocket size={13} aria-hidden="true" />
-              Start a Project
-              <ArrowRight size={13} aria-hidden="true" />
-            </Link>
+            {/* Primary CTA — Admins go to dashboard; others go to contact */}
+            {user && (user.role === "SUPER_ADMIN" || user.role === "EDITOR") ? (
+              <Link
+                href="/admin/dashboard"
+                className={cn(
+                  "hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold",
+                  "h-10 px-4 rounded-[10px]",
+                  "bg-[var(--brand-primary)] text-[var(--brand-contrast)]",
+                  "hover:bg-[var(--brand-hover)] transition-colors duration-150",
+                  "shadow-sm btn-liquid-hover",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2"
+                )}
+              >
+                <Shield size={13} aria-hidden="true" />
+                Admin Dashboard
+                <ArrowRight size={13} aria-hidden="true" />
+              </Link>
+            ) : (
+              <Link
+                href="/contact"
+                className={cn(
+                  "hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold",
+                  "h-10 px-4 rounded-[10px]",
+                  "bg-[var(--brand-primary)] text-[var(--brand-contrast)]",
+                  "hover:bg-[var(--brand-hover)] transition-colors duration-150",
+                  "shadow-sm btn-liquid-hover",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2"
+                )}
+              >
+                <Rocket size={13} aria-hidden="true" />
+                Start a Project
+                <ArrowRight size={13} aria-hidden="true" />
+              </Link>
+            )}
 
             {/* Mobile hamburger */}
             <button
@@ -334,6 +352,15 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
             <div className="mt-3 pt-3 border-t border-[var(--border-subtle)] flex flex-col gap-2">
               {user ? (
                 <>
+                  {(user.role === "SUPER_ADMIN" || user.role === "EDITOR") && (
+                    <Link
+                      href="/admin/dashboard"
+                      className="flex items-center justify-center gap-2 h-11 rounded-[10px] bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-sm font-semibold hover:bg-[var(--brand-hover)] transition-colors"
+                    >
+                      <Shield size={15} />
+                      Admin Dashboard
+                    </Link>
+                  )}
                   <Link
                     href="/account/settings"
                     className="flex items-center justify-center gap-2 h-11 rounded-[10px] border border-[var(--border-subtle)] text-sm font-medium text-[var(--text-primary)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors"

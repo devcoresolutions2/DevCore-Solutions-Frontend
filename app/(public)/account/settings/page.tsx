@@ -40,10 +40,10 @@ const NAV_ITEMS: {
   icon: React.ComponentType<{ size?: number; className?: string }>;
 }[] = [
   { key: "profile", label: "Profile & Identity", icon: BadgeCheck },
-  { key: "security", label: "Security & Passwords", icon: KeyRound },
-  { key: "providers", label: "Connected Providers", icon: Link2 },
+  { key: "security", label: "Security & Password", icon: KeyRound },
+  { key: "providers", label: "Connected Accounts", icon: Link2 },
   { key: "sessions", label: "Active Sessions", icon: MonitorSmartphone },
-  { key: "audit", label: "Audit Traces", icon: History },
+  { key: "audit", label: "Security Activity", icon: History },
 ];
 
 function AccountSettingsContent() {
@@ -181,7 +181,7 @@ function AccountSettingsContent() {
     return (
       <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-16 flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <Loader2 size={32} className="animate-spin text-[var(--brand-primary)]" />
-        <p className="font-mono text-xs text-[var(--text-muted)]">Verifying session custody...</p>
+        <p className="font-mono text-xs text-[var(--text-muted)]">Loading your account...</p>
       </div>
     );
   }
@@ -193,13 +193,13 @@ function AccountSettingsContent() {
         <div className="space-y-2 max-w-2xl">
           <div className="inline-flex items-center gap-2 font-mono text-xs text-[var(--brand-primary)] uppercase tracking-wider">
             <ShieldCheck size={14} />
-            <span>Authenticated Identity &amp; Security</span>
+            <span>Account &amp; Security</span>
           </div>
           <h1 className="font-display font-extrabold text-3xl sm:text-4xl text-[var(--text-primary)] tracking-tight">
-            Account Settings &amp; Identity Mesh
+            Account Settings
           </h1>
           <p className="text-sm sm:text-base text-[var(--text-secondary)]">
-            Manage your personal information, account security, connected login providers, and active devices.
+            Manage your personal profile, password security, connected login accounts, and active sessions.
           </p>
         </div>
 
@@ -266,7 +266,7 @@ function AccountSettingsContent() {
             className="devcore-glass-card rounded-2xl p-3 flex flex-col gap-1"
           >
             <span className="font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] px-3 py-2">
-              Identity &amp; Control
+              Account Menu
             </span>
             {NAV_ITEMS.map(({ key, label, icon: Icon }) => {
               const isActive = activeTab === key;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -33,6 +33,8 @@ import {
   Search,
   Mail,
   Shield,
+  KeyRound,
+  MonitorSmartphone,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { UserAvatar } from "@/components/shared/UserAvatar";
@@ -47,36 +49,36 @@ const NAV_GROUPS = [
   {
     label: "Overview",
     items: [
-      { href: "/admin/dashboard", label: "Executive Overview", icon: LayoutDashboard },
+      { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
     ],
   },
   {
     label: "Content & CMS",
     items: [
-      { href: "/admin/content", label: "Content Operations", icon: FileText },
-      { href: "/admin/dashboard?tab=blog", label: "Blog & Technical CMS", icon: BookOpen },
+      { href: "/admin/content", label: "Content Manager", icon: FileText },
+      { href: "/admin/dashboard?tab=blog", label: "Blog Articles", icon: BookOpen },
       { href: "/admin/dashboard?tab=jobs", label: "Job Postings", icon: Briefcase },
-      { href: "/admin/dashboard?tab=applications", label: "Applications Inbox", icon: Users },
-      { href: "/admin/dashboard?tab=services", label: "Services & Capabilities", icon: Layers },
-      { href: "/admin/dashboard?tab=about", label: "About Page CMS", icon: Compass },
+      { href: "/admin/dashboard?tab=applications", label: "Applications", icon: Users },
+      { href: "/admin/dashboard?tab=services", label: "Services", icon: Layers },
+      { href: "/admin/dashboard?tab=about", label: "About Page", icon: Compass },
       { href: "/admin/media", label: "Media Library", icon: ImageIcon },
     ],
   },
   {
     label: "Growth & Social",
     items: [
-      { href: "/admin/leads", label: "Leads Pipeline", icon: Inbox },
-      { href: "/admin/social/manage", label: "Social Management", icon: Activity },
-      { href: "/admin/social/broadcast", label: "Create Broadcast", icon: Send },
-      { href: "/admin/social", label: "Social Connections", icon: Share2 },
+      { href: "/admin/leads", label: "Leads", icon: Inbox },
+      { href: "/admin/social/manage", label: "Social Posts", icon: Activity },
+      { href: "/admin/social/broadcast", label: "Create Post", icon: Send },
+      { href: "/admin/social", label: "Connected Channels", icon: Share2 },
     ],
   },
   {
-    label: "Administration",
+    label: "Team & Security",
     items: [
-      { href: "/admin/users", label: "User Directory", icon: Users },
-      { href: "/admin/users?tab=invitations", label: "User Invitations", icon: Mail },
-      { href: "/admin/users?tab=roles", label: "Roles & Access", icon: Shield },
+      { href: "/admin/users", label: "Team Members", icon: Users },
+      { href: "/admin/users?tab=invitations", label: "Invitations", icon: Mail },
+      { href: "/admin/users?tab=roles", label: "Roles & Permissions", icon: Shield },
       { href: "/admin/audit-log", label: "Audit Log", icon: ShieldCheck },
       { href: "/admin/settings", label: "Platform Settings", icon: Settings },
     ],
@@ -84,24 +86,26 @@ const NAV_GROUPS = [
 ];
 
 function getBreadcrumbLabel(pathname: string | null): { section: string; page: string } {
-  if (!pathname) return { section: "Overview", page: "Executive Overview" };
+  if (!pathname) return { section: "Overview", page: "Dashboard" };
   if (pathname.startsWith("/admin/social/broadcast"))
-    return { section: "Growth & Social", page: "Create Social Broadcast" };
+    return { section: "Growth & Social", page: "Create Post" };
   if (pathname.startsWith("/admin/social/manage"))
-    return { section: "Growth & Social", page: "Social Management" };
+    return { section: "Growth & Social", page: "Social Posts" };
   if (pathname.startsWith("/admin/social"))
-    return { section: "Growth & Social", page: "Social Connections" };
+    return { section: "Growth & Social", page: "Connected Channels" };
   if (pathname.startsWith("/admin/leads"))
-    return { section: "Growth & Social", page: "Leads Pipeline" };
+    return { section: "Growth & Social", page: "Leads" };
   if (pathname.startsWith("/admin/users"))
-    return { section: "Administration", page: "Users & IAM" };
+    return { section: "Team & Security", page: "Team Members" };
   if (pathname.startsWith("/admin/audit-log"))
-    return { section: "Administration", page: "Audit Log" };
+    return { section: "Team & Security", page: "Audit Log" };
   if (pathname.startsWith("/admin/settings"))
-    return { section: "Administration", page: "Platform Settings" };
+    return { section: "Team & Security", page: "Platform Settings" };
   if (pathname.startsWith("/admin/media"))
     return { section: "Content & CMS", page: "Media Library" };
-  return { section: "Overview", page: "Executive Control Hub" };
+  if (pathname.startsWith("/admin/content"))
+    return { section: "Content & CMS", page: "Content Manager" };
+  return { section: "Overview", page: "Dashboard" };
 }
 
 function AdminShellInner({
@@ -116,6 +120,8 @@ function AdminShellInner({
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [newMenuOpen, setNewMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
@@ -126,12 +132,23 @@ function AdminShellInner({
   }, []);
 
   useEffect(() => {
+    const onClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+
+  useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setCmdOpen((v) => !v);
       } else if (e.key === "Escape") {
         setCmdOpen(false);
+        setUserMenuOpen(false);
       }
     };
     window.addEventListener("keydown", onKeyDown);
@@ -393,21 +410,103 @@ function AdminShellInner({
               </button>
             )}
 
-            <Link
-              href="/account/settings"
-              className="hidden sm:flex items-center gap-2 pl-2 pr-3 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] transition-colors"
-            >
-              <UserAvatar
-                name={user.name}
-                avatarUrl={user.avatarUrl}
-                size={64}
-                className="w-6 h-6"
-                textClassName="text-[10px]"
-              />
-              <span className="text-xs font-medium text-[var(--text-primary)] max-w-[120px] truncate">
-                {user.name}
-              </span>
-            </Link>
+            <div className="relative" ref={userMenuRef}>
+              <button
+                type="button"
+                onClick={() => setUserMenuOpen((v) => !v)}
+                aria-expanded={userMenuOpen}
+                aria-haspopup="menu"
+                className="flex items-center gap-2 pl-2 pr-2.5 py-1 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] transition-colors"
+              >
+                <UserAvatar
+                  name={user.name}
+                  avatarUrl={user.avatarUrl}
+                  size={64}
+                  className="w-6 h-6"
+                  textClassName="text-[10px]"
+                />
+                <span className="hidden sm:inline text-xs font-medium text-[var(--text-primary)] max-w-[130px] truncate">
+                  {user.name}
+                </span>
+                <ChevronDown
+                  size={13}
+                  className={`text-[var(--text-tertiary)] transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {userMenuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 mt-2 w-60 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-2xl p-2 z-50 text-xs"
+                >
+                  <div className="px-3 py-2.5 border-b border-[var(--border-subtle)] mb-1">
+                    <div className="font-semibold text-[var(--text-primary)] truncate">
+                      {user.name}
+                    </div>
+                    <div className="text-[11px] font-mono text-[var(--text-tertiary)] truncate">
+                      {user.email}
+                    </div>
+                    <span className="inline-block mt-1.5 px-2 py-0.5 rounded bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] font-mono text-[10px] font-semibold uppercase">
+                      {user.role}
+                    </span>
+                  </div>
+
+                  <Link
+                    href="/account/settings"
+                    onClick={() => setUserMenuOpen(false)}
+                    role="menuitem"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors"
+                  >
+                    <Settings size={14} className="text-[var(--text-tertiary)]" />
+                    <span>Account Settings</span>
+                  </Link>
+                  <Link
+                    href="/account/settings?tab=security"
+                    onClick={() => setUserMenuOpen(false)}
+                    role="menuitem"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors"
+                  >
+                    <KeyRound size={14} className="text-[var(--text-tertiary)]" />
+                    <span>Security &amp; Password</span>
+                  </Link>
+                  <Link
+                    href="/account/settings?tab=sessions"
+                    onClick={() => setUserMenuOpen(false)}
+                    role="menuitem"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors"
+                  >
+                    <MonitorSmartphone size={14} className="text-[var(--text-tertiary)]" />
+                    <span>Active Sessions</span>
+                  </Link>
+
+                  <div className="my-1 border-t border-[var(--border-subtle)]" />
+
+                  <Link
+                    href="/"
+                    onClick={() => setUserMenuOpen(false)}
+                    role="menuitem"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors"
+                  >
+                    <Home size={14} className="text-[var(--text-tertiary)]" />
+                    <span>Back to Home</span>
+                  </Link>
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={async () => {
+                      setUserMenuOpen(false);
+                      await signOut();
+                      router.push("/auth/signin");
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors mt-1 font-medium"
+                  >
+                    <LogOut size={14} />
+                    <span>Sign Out Securely</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
@@ -419,7 +518,7 @@ function AdminShellInner({
         {/* Enterprise Admin Footer */}
         <footer className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]/60 px-6 py-4 text-xs text-[var(--text-tertiary)] flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="font-mono">
-            DevCore Solutions · Control Hub
+            DevCore Solutions · Admin
           </div>
           <div className="flex items-center gap-4">
             <Link href="/admin/audit-log" className="hover:text-[var(--text-primary)]">

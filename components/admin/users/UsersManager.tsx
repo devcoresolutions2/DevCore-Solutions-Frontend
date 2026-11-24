@@ -199,13 +199,13 @@ function UsersManagerInner() {
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
           <div className="font-mono text-xs text-[var(--text-tertiary)] uppercase mb-1">
-            Admin / Administration / Users & IAM
+            Admin / Team & Security / Team Members
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">
-            Users & Identity Access Management
+            Team Management
           </h1>
           <p className="text-sm text-[var(--text-secondary)]">
-            Manage registered accounts, RBAC roles, SMTP invitations, and active sessions.
+            Manage team accounts, role permissions, email invitations, and active sessions.
           </p>
         </div>
 
@@ -215,7 +215,7 @@ function UsersManagerInner() {
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-primary)]"
           >
             <Shield className="w-3.5 h-3.5" />
-            Audit RBAC Policy
+            Security Audit Log
           </Link>
           <a
             href={getAdminUsersExportUrl()}
@@ -261,7 +261,7 @@ function UsersManagerInner() {
           }`}
         >
           <Users className="w-3.5 h-3.5" />
-          User Directory
+          Team Members
           {data && (
             <span className="ml-1 px-1.5 py-0.5 rounded-md bg-black/15 text-[10px] font-mono">
               {data.stats.totalUsers}
@@ -277,7 +277,7 @@ function UsersManagerInner() {
           }`}
         >
           <Mail className="w-3.5 h-3.5" />
-          User Invitations
+          Invitations
           {data && (
             <span className="ml-1 px-1.5 py-0.5 rounded-md bg-black/15 text-[10px] font-mono">
               {data.stats.pendingInvitationsCount}
@@ -293,7 +293,7 @@ function UsersManagerInner() {
           }`}
         >
           <Shield className="w-3.5 h-3.5" />
-          Roles &amp; Access
+          Roles &amp; Permissions
         </Link>
       </div>
 
@@ -301,9 +301,9 @@ function UsersManagerInner() {
         <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
           <div className="p-4 border-b border-[var(--border-subtle)] flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-bold text-[var(--text-primary)]">Pending SMTP Invitations</h2>
+              <h2 className="text-sm font-bold text-[var(--text-primary)]">Pending Invitations</h2>
               <p className="text-xs text-[var(--text-secondary)]">
-                Single-use onboarding tokens awaiting signup acceptance.
+                Onboarding tokens sent via email, awaiting signup acceptance.
               </p>
             </div>
             <button
