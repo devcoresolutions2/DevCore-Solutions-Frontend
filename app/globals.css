@@ -2874,6 +2874,9 @@
   .text-\[11px\] {
     font-size: 11px;
   }
+  .text-\[13\.5px\] {
+    font-size: 13.5px;
+  }
   .text-\[13px\] {
     font-size: 13px;
   }
@@ -3742,6 +3745,9 @@
     .hover\:border-\[var\(--border-strong\)\]:hover {
       border-color: var(--border-strong);
     }
+    .hover\:border-\[var\(--border-subtle\)\]:hover {
+      border-color: var(--border-subtle);
+    }
     .hover\:border-\[var\(--brand-primary\)\]:hover {
       border-color: var(--brand-primary);
     }
@@ -3815,6 +3821,9 @@
       .hover\:bg-\[color-mix\(in_oklch\,var\(--secondary\)\,var\(--foreground\)_5\%\)\]:hover {
         background-color: color-mix(in oklch,var(--secondary),var(--foreground) 5%);
       }
+    }
+    .hover\:bg-\[var\(--bg-canvas\)\]:hover {
+      background-color: var(--bg-canvas);
     }
     .hover\:bg-\[var\(--bg-canvas\)\]\/50:hover {
       background-color: var(--bg-canvas);
