@@ -54,7 +54,7 @@ const USE_MOCK = !BASE_URL;
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${BASE_URL}${path}`;
-  const signal = init?.signal || (AbortSignal.timeout ? AbortSignal.timeout(4000) : undefined);
+  const signal = init?.signal || (AbortSignal.timeout ? AbortSignal.timeout(30000) : undefined);
   const res = await fetch(url, {
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     credentials: "include",

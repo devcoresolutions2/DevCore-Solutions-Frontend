@@ -155,12 +155,13 @@ function SignInContent() {
             <span className="font-semibold block">Authentication Failed</span>
             <span>{errorMessage}</span>
             {unverifiedEmail && (
-              <div className="mt-1">
+              <div className="mt-2 pt-2 border-t border-rose-500/20">
                 <Link
-                  href={`/auth/verification-pending?email=${encodeURIComponent(unverifiedEmail)}`}
-                  className="underline font-bold hover:opacity-80"
+                  href={`/auth/verify-email?email=${encodeURIComponent(unverifiedEmail)}`}
+                  className="inline-flex items-center space-x-1.5 font-bold underline hover:opacity-80"
                 >
-                  Click here to verify your account
+                  <span>Click here to enter your verification code</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             )}
