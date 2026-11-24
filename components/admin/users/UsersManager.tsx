@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Users,
   UserPlus,
@@ -31,7 +32,12 @@ import {
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import ConfirmDialog from "@/components/admin/shared/ConfirmDialog";
 
-export default function UsersManager() {
+function UsersManagerInner() {
+  const searchParams = useSearchParams();
+  const rawTab = searchParams.get("tab") || "directory";
+  const activeTab =
+    rawTab === "invitations" || rawTab === "roles" ? rawTab : "directory";
+
   const [data, setData] = useState<AdminUsersListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [banner, setBanner] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -243,6 +249,185 @@ export default function UsersManager() {
           </button>
         </div>
       )}
+
+      {/* Sub-navigation Tabs synced with Sidebar */}
+      <div className="flex flex-wrap items-center gap-2 border-b border-[var(--border-subtle)] pb-3">
+        <Link
+          href="/admin/users"
+          className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors ${
+            activeTab === "directory"
+              ? "bg-[var(--brand-primary)] text-white"
+              : "bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+          }`}
+        >
+          <Users className="w-3.5 h-3.5" />
+          User Directory
+          {data && (
+            <span className="ml-1 px-1.5 py-0.5 rounded-md bg-black/15 text-[10px] font-mono">
+              {data.stats.totalUsers}
+            </span>
+          )}
+        </Link>
+        <Link
+          href="/admin/users?tab=invitations"
+          className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors ${
+            activeTab === "invitations"
+              ? "bg-[var(--brand-primary)] text-white"
+              : "bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+          }`}
+        >
+          <Mail className="w-3.5 h-3.5" />
+          User Invitations
+          {data && (
+            <span className="ml-1 px-1.5 py-0.5 rounded-md bg-black/15 text-[10px] font-mono">
+              {data.stats.pendingInvitationsCount}
+            </span>
+          )}
+        </Link>
+        <Link
+          href="/admin/users?tab=roles"
+          className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors ${
+            activeTab === "roles"
+              ? "bg-[var(--brand-primary)] text-white"
+              : "bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+          }`}
+        >
+          <Shield className="w-3.5 h-3.5" />
+          Roles &amp; Access
+        </Link>
+      </div>
+
+      {activeTab === "invitations" ? (
+        <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
+          <div className="p-4 border-b border-[var(--border-subtle)] flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-bold text-[var(--text-primary)]">Pending SMTP Invitations</h2>
+              <p className="text-xs text-[var(--text-secondary)]">
+                Single-use onboarding tokens awaiting signup acceptance.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setInviteOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white hover:opacity-90"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              Send Invitation
+            </button>
+          </div>
+          {!data || data.pendingInvitations.length === 0 ? (
+            <div className="p-10 text-center text-xs text-[var(--text-secondary)]">
+              No pending invitations. Use &ldquo;Send Invitation&rdquo; to onboard an admin or editor.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[var(--bg-elevated)] text-[var(--text-tertiary)] font-mono uppercase text-[11px]">
+                  <tr>
+                    <th className="px-4 py-3">Invitee</th>
+                    <th className="px-4 py-3">Assigned Role</th>
+                    <th className="px-4 py-3">Sent</th>
+                    <th className="px-4 py-3">Expires</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--border-subtle)]">
+                  {data.pendingInvitations.map((inv) => (
+                    <tr key={inv.id} className="hover:bg-[var(--bg-elevated)]/40">
+                      <td className="px-4 py-3">
+                        <div className="font-semibold text-[var(--text-primary)]">{inv.name}</div>
+                        <div className="text-[11px] text-[var(--text-tertiary)] font-mono">{inv.email}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="px-2 py-0.5 rounded-md font-mono text-[11px] bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
+                          {inv.role}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-[var(--text-secondary)]">
+                        {new Date(inv.createdAt).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 text-[var(--text-secondary)]">
+                        {new Date(inv.expiresAt).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      ) : activeTab === "roles" ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            {
+              role: "SUPER_ADMIN",
+              title: "Super Administrator",
+              desc: "Full platform authority across IAM, RBAC role changes, Platform Settings, Social OAuth, and Audit Logs.",
+              perms: [
+                "Manage Users, Invitations & Roles",
+                "Edit Platform Settings & Integrations",
+                "Publish & Manage Social Broadcasts",
+                "Full CMS & Media Library Access",
+              ],
+            },
+            {
+              role: "EDITOR",
+              title: "Content & Growth Editor",
+              desc: "Operational access to Content CMS, Media Library, Leads Pipeline, and Social Broadcasts.",
+              perms: [
+                "Create & Edit Blog, Jobs, Services, About CMS",
+                "Upload & Manage Media Library Assets",
+                "Manage Leads & Social Broadcasts",
+                "No IAM Role Mutation or Settings Write",
+              ],
+            },
+            {
+              role: "USER",
+              title: "Standard Account",
+              desc: "Authenticated public/portal user with zero access to /admin routes (enforced by 403 policy).",
+              perms: [
+                "Manage Own Account & Password",
+                "Blocked from /admin/* APIs (403 Forbidden)",
+                "Upgradeable via Super Admin IAM",
+              ],
+            },
+          ].map((card) => (
+            <div
+              key={card.role}
+              className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5 flex flex-col justify-between space-y-4"
+            >
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="px-2.5 py-1 rounded-lg font-mono text-[11px] font-semibold bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--brand-primary)]">
+                    {card.role}
+                  </span>
+                  <Shield className="w-4 h-4 text-[var(--text-tertiary)]" />
+                </div>
+                <h3 className="text-sm font-bold text-[var(--text-primary)]">{card.title}</h3>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{card.desc}</p>
+                <ul className="pt-2 space-y-1.5 text-xs text-[var(--text-primary)]">
+                  {card.perms.map((p) => (
+                    <li key={p} className="flex items-start gap-2">
+                      <span className="text-emerald-500 mt-0.5">•</span>
+                      <span>{p}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <Link
+                href="/admin/users"
+                onClick={() => {
+                  setRoleFilter(card.role);
+                  setPage(1);
+                }}
+                className="inline-flex items-center justify-center px-3 py-2 rounded-xl text-xs font-semibold border border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)]"
+              >
+                View {card.role} Accounts in Directory
+              </Link>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <>
 
       {/* Real Summary Stats */}
       {data && (
@@ -605,6 +790,8 @@ export default function UsersManager() {
           </div>
         )}
       </div>
+        </>
+      )}
 
       {/* Invite Modal */}
       {inviteOpen && (
@@ -763,5 +950,19 @@ export default function UsersManager() {
         }}
       />
     </div>
+  );
+}
+
+export default function UsersManager() {
+  return (
+    <Suspense
+      fallback={
+        <div className="py-12 text-center text-xs text-[var(--text-secondary)]">
+          Loading user management...
+        </div>
+      }
+    >
+      <UsersManagerInner />
+    </Suspense>
   );
 }

@@ -51,12 +51,16 @@ function AccountSettingsContent() {
   const searchParams = useSearchParams();
   const { user: authUser, loading: authLoading, setUser: setGlobalUser } = useAuth();
 
-  const initialTabParam = searchParams.get("tab") as SettingsTab | null;
+  const tabFromUrl = searchParams.get("tab") as SettingsTab | null;
   const [activeTab, setActiveTab] = useState<SettingsTab>(
-    initialTabParam && NAV_ITEMS.some((i) => i.key === initialTabParam)
-      ? initialTabParam
-      : "profile"
+    tabFromUrl && NAV_ITEMS.some((i) => i.key === tabFromUrl) ? tabFromUrl : "profile"
   );
+
+  useEffect(() => {
+    if (tabFromUrl && NAV_ITEMS.some((i) => i.key === tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
 
   // Backend data states
   const [overview, setOverview] = useState<AccountOverviewResponse | null>(null);
@@ -170,11 +174,7 @@ function AccountSettingsContent() {
     const url = new URL(window.location.href);
     url.searchParams.set("tab", key);
     window.history.replaceState({}, "", url.toString());
-
-    const el = document.getElementById(`section-${key}`);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   if (authLoading || (!authUser && !loadError)) {
@@ -368,46 +368,56 @@ function AccountSettingsContent() {
             </div>
           ) : (
             <>
-              <ProfileSection
-                profile={overview.user}
-                onProfileUpdated={handleProfileUpdated}
-              />
+              {activeTab === "profile" && (
+                <ProfileSection
+                  profile={overview.user}
+                  onProfileUpdated={handleProfileUpdated}
+                />
+              )}
 
-              <SecurityPasswordSection
-                hasPassword={overview.user.hasPassword}
-                emailVerified={overview.user.emailVerified}
-                activeSessionsCount={overview.activeSessionsCount}
-                onPasswordUpdated={() => {
-                  fetchAllData();
-                }}
-              />
+              {activeTab === "security" && (
+                <SecurityPasswordSection
+                  hasPassword={overview.user.hasPassword}
+                  emailVerified={overview.user.emailVerified}
+                  activeSessionsCount={overview.activeSessionsCount}
+                  onPasswordUpdated={() => {
+                    fetchAllData();
+                  }}
+                />
+              )}
 
-              <ConnectedProvidersSection
-                email={overview.user.email}
-                hasPassword={overview.user.hasPassword}
-                providers={overview.providers}
-                oauthConfigured={overview.oauthConfigured}
-                onProvidersChanged={() => {
-                  fetchAllData();
-                }}
-              />
+              {activeTab === "providers" && (
+                <ConnectedProvidersSection
+                  email={overview.user.email}
+                  hasPassword={overview.user.hasPassword}
+                  providers={overview.providers}
+                  oauthConfigured={overview.oauthConfigured}
+                  onProvidersChanged={() => {
+                    fetchAllData();
+                  }}
+                />
+              )}
 
-              <ActiveSessionsSection
-                sessions={sessions}
-                loading={loadingSessions}
-                onRefresh={() => {
-                  refreshSessions();
-                  refreshAudit(1);
-                }}
-              />
+              {activeTab === "sessions" && (
+                <ActiveSessionsSection
+                  sessions={sessions}
+                  loading={loadingSessions}
+                  onRefresh={() => {
+                    refreshSessions();
+                    refreshAudit(1);
+                  }}
+                />
+              )}
 
-              <AuditTracesSection
-                events={auditEvents}
-                pagination={auditPagination}
-                loading={loadingAudit}
-                onPageChange={(p) => refreshAudit(p)}
-                onRefresh={() => refreshAudit(auditPagination.page)}
-              />
+              {activeTab === "audit" && (
+                <AuditTracesSection
+                  events={auditEvents}
+                  pagination={auditPagination}
+                  loading={loadingAudit}
+                  onPageChange={(p) => refreshAudit(p)}
+                  onRefresh={() => refreshAudit(auditPagination.page)}
+                />
+              )}
             </>
           )}
         </div>

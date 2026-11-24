@@ -31,6 +31,8 @@ import {
   PanelLeftOpen,
   FileText,
   Search,
+  Mail,
+  Shield,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { UserAvatar } from "@/components/shared/UserAvatar";
@@ -72,7 +74,9 @@ const NAV_GROUPS = [
   {
     label: "Administration",
     items: [
-      { href: "/admin/users", label: "Users & IAM", icon: Users },
+      { href: "/admin/users", label: "User Directory", icon: Users },
+      { href: "/admin/users?tab=invitations", label: "User Invitations", icon: Mail },
+      { href: "/admin/users?tab=roles", label: "Roles & Access", icon: Shield },
       { href: "/admin/audit-log", label: "Audit Log", icon: ShieldCheck },
       { href: "/admin/settings", label: "Platform Settings", icon: Settings },
     ],
@@ -203,8 +207,8 @@ function AdminShellInner({
                     const itemTab = queryPart?.startsWith("tab=") ? queryPart.slice(4) : "";
                     const active = itemTab
                       ? pathname === baseHref && activeTab === itemTab
-                      : item.href === "/admin/dashboard"
-                        ? pathname === "/admin/dashboard" && !activeTab
+                      : item.href === "/admin/dashboard" || item.href === "/admin/users"
+                        ? pathname === baseHref && !activeTab
                         : pathname === baseHref;
                     return (
                       <Link
