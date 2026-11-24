@@ -43,6 +43,7 @@ import { BrandLogo } from "@/components/shared/BrandLogo";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import AdminShell from "@/components/admin/AdminShell";
 
 type AdminTab = "leads" | "about" | "blog" | "jobs" | "applications" | "services";
 
@@ -90,6 +91,13 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     loadData();
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      const t = sp.get("tab") as AdminTab | null;
+      if (t && ["leads", "about", "blog", "jobs", "applications", "services"].includes(t)) {
+        setActiveTab(t);
+      }
+    }
   }, []);
 
   const handleToggleJobStatus = async (job: JobItem) => {
@@ -139,74 +147,28 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-canvas)] text-[var(--text-primary)] p-4 sm:p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
-      {/* Top Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[var(--border-subtle)]">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <BrandLogo size="md" href="/admin/dashboard" />
-            <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[var(--bg-surface)] text-[var(--text-muted)] border border-[var(--border-subtle)] uppercase">
-              Mission Control
-            </span>
+    <AdminShell>
+      <div className="space-y-6 animate-fadeIn">
+        {/* Compact Workspace Heading */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">
+              Executive Control Center
+            </h1>
+            <p className="text-sm text-[var(--text-secondary)]">
+              Manage careers, candidate applications, blog articles, services, and about page content.
+            </p>
           </div>
-          <p className="text-xs text-[var(--text-secondary)]">
-            Manage careers, candidate applications, and service capabilities directly without accessing backend raw database terminals.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          {user && (
-            <Link
-              href="/account/settings"
-              title="Open Account Settings"
-              className="flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-lg bg-[var(--bg-surface)] hover:border-[var(--brand-primary)] border border-[var(--border-subtle)] text-xs font-mono transition-colors"
-            >
-              <UserAvatar
-                name={user.name}
-                avatarUrl={user.avatarUrl}
-                size={64}
-                className="w-6 h-6"
-                textClassName="text-[10px]"
-              />
-              <span className="text-[var(--text-secondary)]">{user.email}</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] font-bold">
-                {user.role}
-              </span>
-            </Link>
-          )}
-
           <button
             type="button"
             onClick={loadData}
             aria-label="Refresh data"
-            className="h-9 px-3 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-xs text-[var(--text-primary)] inline-flex items-center gap-1.5 transition-colors"
+            className="h-9 px-3.5 rounded-xl bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-xs font-medium text-[var(--text-primary)] inline-flex items-center gap-1.5 transition-colors shrink-0"
           >
             <RefreshCw size={13} className={cn(loading && "animate-spin")} />
-            <span>Refresh</span>
-          </button>
-
-          <Link
-            href="/"
-            className="h-9 px-3.5 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors inline-flex items-center gap-1.5 shadow-sm"
-          >
-            <Home size={13} />
-            <span>Public Site</span>
-          </Link>
-
-          <button
-            type="button"
-            onClick={async () => {
-              await apiSignOut();
-              window.location.href = "/auth/signin";
-            }}
-            aria-label="Sign out"
-            className="h-9 px-3 rounded-lg bg-[var(--bg-surface)] hover:bg-rose-500/10 hover:text-rose-600 border border-[var(--border-subtle)] text-xs text-[var(--text-primary)] inline-flex items-center gap-1.5 transition-colors"
-          >
-            <LogOut size={13} />
-            <span>Sign Out</span>
+            <span>Refresh Data</span>
           </button>
         </div>
-      </header>
 
       {/* Metric Counters */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -843,6 +805,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </AdminShell>
   );
 }
