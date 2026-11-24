@@ -213,7 +213,7 @@ function AdminShellInner({
             {NAV_GROUPS.map((group) => (
               <div key={group.label} className="space-y-1">
                 {!sidebarCollapsed && (
-                  <div className="px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-[var(--text-tertiary)]">
+                  <div className="px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
                     {group.label}
                   </div>
                 )}
@@ -320,40 +320,54 @@ function AdminShellInner({
         }`}
       >
         {/* Top Fixed/Sticky Navbar */}
-        <header className="sticky top-0 z-30 h-16 bg-[var(--bg-surface)]/85 backdrop-blur-xl border-b border-[var(--border-subtle)] px-4 sm:px-6 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
+        <header className="sticky top-0 z-30 h-16 bg-[var(--bg-surface)]/90 backdrop-blur-xl border-b border-[var(--border-subtle)] px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
             <button
               type="button"
               onClick={() => setMobileNavOpen(true)}
-              className="lg:hidden p-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]"
+              className="lg:hidden h-9 w-9 inline-flex items-center justify-center rounded-lg border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] transition-colors shrink-0"
               aria-label="Open navigation"
             >
               <Menu size={18} />
             </button>
-            <nav className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)] truncate">
-              <span className="font-medium text-[var(--text-primary)]">Admin</span>
-              <ChevronRight size={14} className="text-[var(--text-tertiary)] shrink-0" />
-              <span className="hidden sm:inline truncate">{breadcrumb.section}</span>
-              <ChevronRight size={14} className="hidden sm:inline text-[var(--text-tertiary)] shrink-0" />
-              <span className="font-semibold text-[var(--brand-primary)] truncate">
+            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[13px] text-[var(--text-secondary)] truncate">
+              <span className="hidden md:inline font-medium text-[var(--text-tertiary)]">Admin</span>
+              <ChevronRight size={13} className="hidden md:inline text-[var(--text-tertiary)] shrink-0" />
+              <span className="hidden sm:inline truncate text-[var(--text-secondary)]">{breadcrumb.section}</span>
+              <ChevronRight size={13} className="hidden sm:inline text-[var(--text-tertiary)] shrink-0" />
+              <span className="font-semibold text-[var(--text-primary)] truncate">
                 {breadcrumb.page}
               </span>
             </nav>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             <button
               type="button"
               onClick={() => {
                 setCmdQuery("");
                 setCmdOpen(true);
               }}
-              className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-[var(--text-secondary)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:text-[var(--text-primary)] transition-colors"
+              className="sm:hidden h-9 w-9 inline-flex items-center justify-center rounded-lg text-[var(--text-secondary)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors"
+              title="Search (Ctrl+K)"
+              aria-label="Open search"
+            >
+              <Search size={15} />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCmdQuery("");
+                setCmdOpen(true);
+              }}
+              className="hidden sm:inline-flex items-center justify-between w-44 md:w-56 h-9 px-3 rounded-lg text-xs text-[var(--text-secondary)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors"
               title="Command Palette (Ctrl+K)"
             >
-              <Search size={13} />
-              <span>Search...</span>
-              <kbd className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-tertiary)]">
+              <span className="flex items-center gap-2">
+                <Search size={13} className="text-[var(--text-tertiary)]" />
+                <span>Search...</span>
+              </span>
+              <kbd className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-[var(--text-tertiary)]">
                 Ctrl+K
               </kbd>
             </button>
@@ -362,10 +376,10 @@ function AdminShellInner({
               <button
                 type="button"
                 onClick={() => setNewMenuOpen((v) => !v)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:opacity-90 transition-all"
+                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:opacity-90 transition-all"
               >
                 <Plus size={14} />
-                <span>New</span>
+                <span className="hidden xs:inline sm:inline">New</span>
                 <ChevronDown size={13} />
               </button>
               {newMenuOpen && (
@@ -403,8 +417,9 @@ function AdminShellInner({
               <button
                 type="button"
                 onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-                className="p-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-                title="Toggle theme"
+                className="h-9 w-9 inline-flex items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors"
+                title={resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                aria-label={resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
               >
                 {resolvedTheme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
               </button>
@@ -416,7 +431,7 @@ function AdminShellInner({
                 onClick={() => setUserMenuOpen((v) => !v)}
                 aria-expanded={userMenuOpen}
                 aria-haspopup="menu"
-                className="flex items-center gap-2 pl-2 pr-2.5 py-1 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] transition-colors"
+                className="h-9 flex items-center gap-2 pl-1.5 pr-2.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] transition-colors"
               >
                 <UserAvatar
                   name={user.name}
@@ -515,10 +530,10 @@ function AdminShellInner({
           {children}
         </main>
 
-        {/* Enterprise Admin Footer */}
+        {/* Admin Footer */}
         <footer className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]/60 px-6 py-4 text-xs text-[var(--text-tertiary)] flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div className="font-mono">
-            DevCore Solutions · Admin
+          <div className="font-medium text-[var(--text-secondary)]">
+            DevCore Solutions
           </div>
           <div className="flex items-center gap-4">
             <Link href="/admin/audit-log" className="hover:text-[var(--text-primary)]">

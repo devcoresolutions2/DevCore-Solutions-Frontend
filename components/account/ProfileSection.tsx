@@ -208,14 +208,12 @@ export function ProfileSection({ profile, onProfileUpdated }: ProfileSectionProp
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[var(--border-subtle)]">
         <div>
-          <div className="flex items-center gap-2 font-mono text-xs text-[var(--text-muted)] uppercase tracking-wider">
-            <span>Section 01</span>
-            <span>•</span>
-            <span>Identity Credentials</span>
-          </div>
-          <h2 className="font-display font-bold text-xl sm:text-2xl text-[var(--text-primary)] mt-1">
+          <h2 className="font-display font-bold text-xl sm:text-2xl text-[var(--text-primary)]">
             Profile &amp; Identity
           </h2>
+          <p className="text-xs text-[var(--text-secondary)] mt-1">
+            Update your display name, username, and profile photo.
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

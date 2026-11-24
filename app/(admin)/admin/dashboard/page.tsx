@@ -23,6 +23,7 @@ import {
   BookOpen,
   LogOut,
   Share2,
+  Trash2,
 } from "lucide-react";
 import {
   JobItem,
@@ -36,7 +37,10 @@ import {
   updateApplicationStatus,
   apiGetSession,
   apiSignOut,
+  apiCreateAdminService,
+  apiDeleteAdminService,
 } from "@/lib/api";
+import ConfirmDialog from "@/components/admin/shared/ConfirmDialog";
 import { AboutCmsManager } from "@/components/admin/AboutCmsManager";
 import { BlogCmsManager } from "@/components/admin/BlogCmsManager";
 import { LeadsManager } from "@/components/admin/leads/LeadsManager";
@@ -46,7 +50,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import AdminShell from "@/components/admin/AdminShell";
 
-type AdminTab = "leads" | "about" | "blog" | "jobs" | "applications" | "services";
+type AdminTab = "overview" | "leads" | "about" | "blog" | "jobs" | "applications" | "services";
 
 export default function AdminDashboardPage() {
   return (
@@ -58,7 +62,7 @@ export default function AdminDashboardPage() {
 
 function AdminDashboardContent() {
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<AdminTab>("jobs");
+  const [activeTab, setActiveTab] = useState<AdminTab>("overview");
   const [jobs, setJobs] = useState<JobItem[]>([]);
   const [applications, setApplications] = useState<SubmittedApplicationItem[]>([]);
   const [services, setServices] = useState<ServiceItem[]>([]);
@@ -73,6 +77,16 @@ function AdminDashboardContent() {
   const [newType, setNewType] = useState("Full-time");
   const [newDescription, setNewDescription] = useState("");
   const [newSkills, setNewSkills] = useState("");
+
+  // New Service Modal & Delete state
+  const [showAddServiceModal, setShowAddServiceModal] = useState(false);
+  const [svcTitle, setSvcTitle] = useState("");
+  const [svcSummary, setSvcSummary] = useState("");
+  const [svcIcon, setSvcIcon] = useState("Layers");
+  const [svcDeliverables, setSvcDeliverables] = useState("");
+  const [svcSaving, setSvcSaving] = useState(false);
+  const [deleteSvcTarget, setDeleteSvcTarget] = useState<ServiceItem | null>(null);
+  const [deletingSvc, setDeletingSvc] = useState(false);
 
   // Application details modal state
   const [selectedApp, setSelectedApp] = useState<SubmittedApplicationItem | null>(null);
@@ -107,8 +121,55 @@ function AdminDashboardContent() {
     const t = searchParams.get("tab") as AdminTab | null;
     if (t && ["leads", "about", "blog", "jobs", "applications", "services"].includes(t)) {
       setActiveTab(t);
+    } else {
+      setActiveTab("overview");
     }
   }, [searchParams]);
+
+  const handleCreateService = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!svcTitle.trim() || !svcSummary.trim()) {
+      toast.error("Please enter a service title and summary.");
+      return;
+    }
+    setSvcSaving(true);
+    try {
+      await apiCreateAdminService({
+        title: svcTitle.trim(),
+        summary: svcSummary.trim(),
+        icon: svcIcon,
+        deliverables: svcDeliverables
+          .split(",")
+          .map((d) => d.trim())
+          .filter(Boolean),
+      });
+      setShowAddServiceModal(false);
+      setSvcTitle("");
+      setSvcSummary("");
+      setSvcDeliverables("");
+      await loadData();
+      toast.success("Service created and published.");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to create service.");
+    } finally {
+      setSvcSaving(false);
+    }
+  };
+
+  const confirmDeleteService = async () => {
+    if (!deleteSvcTarget) return;
+    setDeletingSvc(true);
+    try {
+      await apiDeleteAdminService(deleteSvcTarget.id);
+      setDeleteSvcTarget(null);
+      await loadData();
+      toast.success("Service deleted.");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to delete service.");
+    } finally {
+      setDeletingSvc(false);
+    }
+  };
 
   const handleToggleJobStatus = async (job: JobItem) => {
     const nextStatus = job.status === "OPEN" ? "CLOSED" : "OPEN";
@@ -159,81 +220,114 @@ function AdminDashboardContent() {
   return (
     <AdminShell>
       <div className="space-y-6 animate-fadeIn">
-        {/* Compact Workspace Heading */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">
-              Executive Control Center
-            </h1>
-            <p className="text-sm text-[var(--text-secondary)]">
-              Manage careers, candidate applications, blog articles, services, and about page content.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={loadData}
-            aria-label="Refresh data"
-            className="h-9 px-3.5 rounded-xl bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-xs font-medium text-[var(--text-primary)] inline-flex items-center gap-1.5 transition-colors shrink-0"
-          >
-            <RefreshCw size={13} className={cn(loading && "animate-spin")} />
-            <span>Refresh Data</span>
-          </button>
-        </div>
+        {/* Compact Workspace Heading (Overview only) */}
+        {activeTab === "overview" && (
+          <>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">
+                  Dashboard Overview
+                </h1>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  Quick summary of open roles, candidate applications, services, and content.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={loadData}
+                aria-label="Refresh data"
+                className="h-9 px-3.5 rounded-xl bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-xs font-medium text-[var(--text-primary)] inline-flex items-center gap-1.5 transition-colors shrink-0"
+              >
+                <RefreshCw size={13} className={cn(loading && "animate-spin")} />
+                <span>Refresh Data</span>
+              </button>
+            </div>
 
-      {/* Metric Counters */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-xl devcore-glass-card border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-sm">
-          <div className="flex items-center justify-between text-xs text-[var(--text-muted)] font-mono">
-            <span>ACTIVE ROLES</span>
-            <Briefcase size={16} className="text-[var(--brand-primary)]" />
-          </div>
-          <div className="font-display text-3xl font-extrabold text-[var(--text-primary)] mt-2">
-            {jobs.filter((j) => j.status === "OPEN").length}
-          </div>
-          <span className="text-[11px] text-[var(--text-secondary)] mt-1 block">
-            {jobs.length} total openings configured
-          </span>
-        </div>
+            {/* Metric Counters */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--border-strong)] hover:shadow-sm transition-all duration-200">
+                <div className="flex items-center justify-between text-xs font-medium text-[var(--text-tertiary)]">
+                  <span>Active Roles</span>
+                  <Briefcase size={16} className="text-[var(--brand-primary)]" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)] mt-2">
+                  {jobs.filter((j) => j.status === "OPEN").length}
+                </div>
+                <span className="text-xs text-[var(--text-secondary)] mt-1 block">
+                  {jobs.length} total openings configured
+                </span>
+              </div>
 
-        <div className="p-5 rounded-xl devcore-glass-card border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-sm">
-          <div className="flex items-center justify-between text-xs text-[var(--text-muted)] font-mono">
-            <span>APPLICATIONS INBOX</span>
-            <Users size={16} className="text-[var(--brand-primary)]" />
-          </div>
-          <div className="font-display text-3xl font-extrabold text-[var(--text-primary)] mt-2">
-            {applications.length}
-          </div>
-          <span className="text-[11px] text-[var(--text-secondary)] mt-1 block">
-            Candidate submissions in review queue
-          </span>
-        </div>
+              <div className="p-5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--border-strong)] hover:shadow-sm transition-all duration-200">
+                <div className="flex items-center justify-between text-xs font-medium text-[var(--text-tertiary)]">
+                  <span>Applications Inbox</span>
+                  <Users size={16} className="text-[var(--brand-primary)]" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)] mt-2">
+                  {applications.length}
+                </div>
+                <span className="text-xs text-[var(--text-secondary)] mt-1 block">
+                  Candidate submissions in review
+                </span>
+              </div>
 
-        <div className="p-5 rounded-xl devcore-glass-card border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-sm">
-          <div className="flex items-center justify-between text-xs text-[var(--text-muted)] font-mono">
-            <span>ENGINEERING DISCIPLINES</span>
-            <Layers size={16} className="text-[var(--brand-primary)]" />
-          </div>
-          <div className="font-display text-3xl font-extrabold text-[var(--text-primary)] mt-2">
-            {services.length}
-          </div>
-          <span className="text-[11px] text-[var(--text-secondary)] mt-1 block">
-            Published core capability pillars
-          </span>
-        </div>
+              <div className="p-5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--border-strong)] hover:shadow-sm transition-all duration-200">
+                <div className="flex items-center justify-between text-xs font-medium text-[var(--text-tertiary)]">
+                  <span>Services</span>
+                  <Layers size={16} className="text-[var(--brand-primary)]" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)] mt-2">
+                  {services.length}
+                </div>
+                <span className="text-xs text-[var(--text-secondary)] mt-1 block">
+                  Published service offerings
+                </span>
+              </div>
 
-        <div className="p-5 rounded-xl devcore-glass-card border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-sm">
-          <div className="flex items-center justify-between text-xs text-[var(--text-muted)] font-mono">
-            <span>ABOUT & PRINCIPLES</span>
-            <Compass size={16} className="text-[var(--brand-primary)]" />
-          </div>
-          <div className="font-display text-3xl font-extrabold text-[var(--text-primary)] mt-2">
-            CMS
-          </div>
-          <span className="text-[11px] text-[var(--text-secondary)] mt-1 block">
-            Founders, principles & manifesto
-          </span>
-        </div>
-      </div>
+              <div className="p-5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--border-strong)] hover:shadow-sm transition-all duration-200">
+                <div className="flex items-center justify-between text-xs font-medium text-[var(--text-tertiary)]">
+                  <span>About &amp; Principles</span>
+                  <Compass size={16} className="text-[var(--brand-primary)]" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)] mt-2">
+                  CMS
+                </div>
+                <span className="text-xs text-[var(--text-secondary)] mt-1 block">
+                  Founders, principles &amp; story
+                </span>
+              </div>
+            </div>
+
+            {/* Quick Section Links */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { label: "Blog Articles", desc: "Write and publish technical articles", href: "/admin/dashboard?tab=blog", icon: BookOpen },
+                { label: "Job Postings", desc: "Manage open roles and hiring status", href: "/admin/dashboard?tab=jobs", icon: Briefcase },
+                { label: "Applications", desc: "Review incoming candidate submissions", href: "/admin/dashboard?tab=applications", icon: Users },
+                { label: "Services", desc: "Add or update core service offerings", href: "/admin/dashboard?tab=services", icon: Layers },
+                { label: "Leads", desc: "Follow up on client project inquiries", href: "/admin/leads", icon: Mail },
+                { label: "Social Posts", desc: "Schedule and track social broadcasts", href: "/admin/social/manage", icon: Share2 },
+              ].map((card) => {
+                const Icon = card.icon;
+                return (
+                  <Link
+                    key={card.href}
+                    href={card.href}
+                    className="p-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--brand-primary)] hover:shadow-sm transition-all duration-200 flex items-start gap-3.5"
+                  >
+                    <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--brand-primary)] shrink-0">
+                      <Icon size={16} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-[var(--text-primary)]">{card.label}</div>
+                      <div className="text-xs text-[var(--text-secondary)] mt-0.5 leading-relaxed">{card.desc}</div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </>
+        )}
 
       {/* TAB: LEADS & INQUIRIES */}
       {activeTab === "leads" && (
@@ -454,48 +548,68 @@ function AdminDashboardContent() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-display font-bold text-lg text-[var(--text-primary)]">
-                5 Core Engineering Capabilities
+                {services.length} Services &amp; Capabilities
               </h2>
               <p className="text-xs text-[var(--text-secondary)]">
-                Configured architectural disciplines displayed on the public Services page.
+                Service offerings displayed on the public Services page.
               </p>
             </div>
 
-            <Link
-              href="/services"
-              className="h-9 px-3.5 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-xs font-semibold text-[var(--text-primary)] inline-flex items-center gap-1.5 transition-colors"
-            >
-              <span>View Services Page</span>
-              <ExternalLink size={12} />
-            </Link>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowAddServiceModal(true)}
+                className="h-9 px-3.5 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-semibold inline-flex items-center gap-1.5 hover:opacity-90 transition-opacity"
+              >
+                <Plus size={14} />
+                <span>Add Service</span>
+              </button>
+              <Link
+                href="/services"
+                className="h-9 px-3.5 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-xs font-semibold text-[var(--text-primary)] inline-flex items-center gap-1.5 transition-colors"
+              >
+                <span>View Services Page</span>
+                <ExternalLink size={12} />
+              </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {services.map((svc) => (
               <div
                 key={svc.id}
-                className="p-5 rounded-xl devcore-glass-card border border-[var(--border-subtle)] bg-[var(--bg-elevated)] space-y-3"
+                className="p-5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--border-strong)] hover:shadow-md transition-all duration-200 space-y-3"
               >
-                <div className="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
-                  <span className="font-mono text-[10px] font-bold text-[var(--brand-primary)] uppercase">
-                    {svc.serviceCode || svc.disciplineNumber || "CAPABILITY"}
+                <div className="flex items-center justify-between pb-2.5 border-b border-[var(--border-subtle)]">
+                  <span className="text-[11px] font-semibold text-[var(--brand-primary)] uppercase tracking-wide">
+                    {svc.serviceCode || svc.disciplineNumber || "Service"}
                   </span>
-                  <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[var(--bg-surface)] text-[var(--text-muted)] border border-[var(--border-subtle)]">
-                    {svc.category || "Engineering"}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)]">
+                      {svc.category || "Engineering"}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteSvcTarget(svc)}
+                      className="p-1 rounded-md text-rose-500 hover:bg-rose-500/10 transition-colors"
+                      title="Delete Service"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
                 </div>
 
-                <h3 className="font-display font-bold text-base text-[var(--text-primary)]">
+                <h3 className="text-base font-semibold text-[var(--text-primary)]">
                   {svc.title}
                 </h3>
 
-                <p className="text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
+                <p className="text-[13px] text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
                   {svc.description}
                 </p>
 
-                <div className="pt-2 text-[11px] font-mono text-[var(--text-muted)] flex items-center justify-between">
+                <div className="pt-2 text-xs text-[var(--text-tertiary)] flex items-center justify-between">
                   <span>{(svc.deliverables || svc.features || []).length} Deliverables</span>
-                  <span className="text-[var(--success)] font-semibold">Active</span>
+                  <span className="text-[var(--success)] font-medium">Active</span>
                 </div>
               </div>
             ))}
@@ -720,6 +834,123 @@ function AdminDashboardContent() {
           </div>
         </div>
       )}
+
+      {/* CREATE SERVICE MODAL */}
+      {showAddServiceModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn"
+          onClick={() => {
+            if (!svcSaving) setShowAddServiceModal(false);
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg rounded-2xl devcore-glass-card border border-[var(--border-strong)] bg-[var(--bg-elevated)] text-[var(--text-primary)] p-6 shadow-2xl space-y-5 animate-scaleUp"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
+              <h3 className="font-display font-bold text-base text-[var(--text-primary)]">
+                Add New Service
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowAddServiceModal(false)}
+                className="text-[var(--text-muted)] hover:text-[var(--text-primary)] text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateService} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="font-semibold block">Service Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. DevSecOps & Cloud Hardening"
+                  value={svcTitle}
+                  onChange={(e) => setSvcTitle(e.target.value)}
+                  className="w-full h-10 px-3 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-primary)]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold block">Icon</label>
+                <select
+                  value={svcIcon}
+                  onChange={(e) => setSvcIcon(e.target.value)}
+                  className="w-full h-10 px-2.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-primary)] cursor-pointer"
+                >
+                  <option value="Layers">Layers (Web / Architecture)</option>
+                  <option value="Cloud">Cloud (Infrastructure / APIs)</option>
+                  <option value="Cpu">CPU (AI / Automation)</option>
+                  <option value="Palette">Palette (UI/UX Design)</option>
+                  <option value="ShieldCheck">Shield (Consulting / Audits)</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold block">Summary</label>
+                <textarea
+                  rows={3}
+                  required
+                  placeholder="Describe what this service delivers for clients..."
+                  value={svcSummary}
+                  onChange={(e) => setSvcSummary(e.target.value)}
+                  className="w-full p-3 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-primary)] resize-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold block">Deliverables (Comma-separated)</label>
+                <input
+                  type="text"
+                  placeholder="Architecture Blueprint, CI/CD Pipeline, Load Testing"
+                  value={svcDeliverables}
+                  onChange={(e) => setSvcDeliverables(e.target.value)}
+                  className="w-full h-10 px-3 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-primary)]"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-[var(--border-subtle)] flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  disabled={svcSaving}
+                  onClick={() => setShowAddServiceModal(false)}
+                  className="h-9 px-4 rounded-lg border border-[var(--border-subtle)] text-xs font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={svcSaving}
+                  className="h-9 px-4 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors disabled:opacity-50"
+                >
+                  {svcSaving ? "Publishing..." : "Publish Service"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={Boolean(deleteSvcTarget)}
+        title="Delete Service"
+        description={
+          deleteSvcTarget
+            ? `Remove "${deleteSvcTarget.title}" from the Services catalog?`
+            : ""
+        }
+        confirmLabel="Delete Service"
+        destructive
+        loading={deletingSvc}
+        onConfirm={() => void confirmDeleteService()}
+        onCancel={() => {
+          if (!deletingSvc) setDeleteSvcTarget(null);
+        }}
+      />
       </div>
     </AdminShell>
   );

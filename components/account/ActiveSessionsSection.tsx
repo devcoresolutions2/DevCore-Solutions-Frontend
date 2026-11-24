@@ -85,14 +85,12 @@ export function ActiveSessionsSection({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[var(--border-subtle)]">
         <div>
-          <div className="flex items-center gap-2 font-mono text-xs text-[var(--text-muted)] uppercase tracking-wider">
-            <span>Section 04</span>
-            <span>•</span>
-            <span>Session Custody</span>
-          </div>
-          <h2 className="font-display font-bold text-xl sm:text-2xl text-[var(--text-primary)] mt-1">
+          <h2 className="font-display font-bold text-xl sm:text-2xl text-[var(--text-primary)]">
             Active Sessions
           </h2>
+          <p className="text-xs text-[var(--text-secondary)] mt-1">
+            Review and sign out of devices currently logged into your account.
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

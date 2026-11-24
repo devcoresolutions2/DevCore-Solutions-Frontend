@@ -141,14 +141,12 @@ export function SecurityPasswordSection({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[var(--border-subtle)]">
         <div>
-          <div className="flex items-center gap-2 font-mono text-xs text-[var(--text-muted)] uppercase tracking-wider">
-            <span>Section 02</span>
-            <span>•</span>
-            <span>Credential Custody</span>
-          </div>
-          <h2 className="font-display font-bold text-xl sm:text-2xl text-[var(--text-primary)] mt-1">
-            Security &amp; Passwords
+          <h2 className="font-display font-bold text-xl sm:text-2xl text-[var(--text-primary)]">
+            Security &amp; Password
           </h2>
+          <p className="text-xs text-[var(--text-secondary)] mt-1">
+            Manage your account password and security verification.
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

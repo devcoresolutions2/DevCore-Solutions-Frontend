@@ -2751,6 +2751,25 @@ export async function apiReplaceMediaLibraryAsset(
   });
 }
 
+export async function apiCreateAdminService(payload: {
+  title: string;
+  summary: string;
+  deliverables: string[];
+  icon?: string;
+  displayOrder?: number;
+}): Promise<{ service: any }> {
+  return await apiFetch("/api/admin/content/services", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiDeleteAdminService(id: string): Promise<{ deleted: boolean; id: string }> {
+  return await apiFetch(`/api/admin/content/services/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
 export type {
   ShowcaseItem,
   ProjectItem,

@@ -59,14 +59,12 @@ export function ConnectedProvidersSection({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[var(--border-subtle)]">
         <div>
-          <div className="flex items-center gap-2 font-mono text-xs text-[var(--text-muted)] uppercase tracking-wider">
-            <span>Section 03</span>
-            <span>•</span>
-            <span>Authentication Methods</span>
-          </div>
-          <h2 className="font-display font-bold text-xl sm:text-2xl text-[var(--text-primary)] mt-1">
-            Connected Login Providers
+          <h2 className="font-display font-bold text-xl sm:text-2xl text-[var(--text-primary)]">
+            Connected Accounts
           </h2>
+          <p className="text-xs text-[var(--text-secondary)] mt-1">
+            Link or manage your external sign-in providers.
+          </p>
         </div>
 
         <span className="font-mono text-xs text-[var(--text-muted)]">

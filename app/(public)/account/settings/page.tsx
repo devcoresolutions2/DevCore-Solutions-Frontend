@@ -265,7 +265,7 @@ function AccountSettingsContent() {
             aria-label="Account settings navigation"
             className="devcore-glass-card rounded-2xl p-3 flex flex-col gap-1"
           >
-            <span className="font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] px-3 py-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] px-3 py-2">
               Account Menu
             </span>
             {NAV_ITEMS.map(({ key, label, icon: Icon }) => {
@@ -311,34 +311,34 @@ function AccountSettingsContent() {
             })}
           </nav>
 
-          {/* Real Account Summary Widget */}
+          {/* Account Summary Widget */}
           {overview && (
             <div className="devcore-glass-card rounded-2xl p-4 space-y-3">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] block">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] block">
                 Account Summary
               </span>
               <div className="p-3 rounded-xl bg-[var(--bg-surface)]/80 border border-[var(--border-subtle)] space-y-2 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-[var(--text-muted)]">Email Status</span>
-                  <span className="font-mono font-semibold text-[var(--text-primary)]">
+                  <span className="font-semibold text-[var(--text-primary)]">
                     {overview.user.emailVerified ? "Verified" : "Unverified"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[var(--text-muted)]">Password</span>
-                  <span className="font-mono font-semibold text-[var(--text-primary)]">
+                  <span className="font-semibold text-[var(--text-primary)]">
                     {overview.user.hasPassword ? "Set" : "OAuth Only"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[var(--text-muted)]">OAuth Links</span>
-                  <span className="font-mono font-semibold text-[var(--text-primary)]">
+                  <span className="text-[var(--text-muted)]">Connected Logins</span>
+                  <span className="font-semibold text-[var(--text-primary)]">
                     {overview.providers.length}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[var(--text-muted)]">Audit Events</span>
-                  <span className="font-mono font-semibold text-[var(--text-primary)]">
+                  <span className="text-[var(--text-muted)]">Recent Activity</span>
+                  <span className="font-semibold text-[var(--text-primary)]">
                     {overview.recentEventsCount}
                   </span>
                 </div>
