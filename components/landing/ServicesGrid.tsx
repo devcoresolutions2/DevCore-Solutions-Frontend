@@ -9,6 +9,17 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: 
   Layers, Boxes, Bot, Layout, Terminal, Code2, CloudCog,
 };
 
+function resolveServiceIcon(icon?: string, code?: string, title?: string) {
+  if (icon && ICON_MAP[icon]) return ICON_MAP[icon];
+  const q = `${icon || ""} ${code || ""} ${title || ""}`.toLowerCase();
+  if (q.includes("layer") || q.includes("web") || q.includes("saas")) return Layers;
+  if (q.includes("cloud") || q.includes("cld") || q.includes("box") || q.includes("infra")) return Boxes;
+  if (q.includes("bot") || q.includes("ai") || q.includes("agent") || q.includes("aut")) return Bot;
+  if (q.includes("layout") || q.includes("design") || q.includes("ui") || q.includes("dsn")) return Layout;
+  if (q.includes("terminal") || q.includes("dev") || q.includes("ops") || q.includes("api")) return Terminal;
+  return Code2;
+}
+
 interface ServicesGridProps {
   services: ServiceItem[];
 }
@@ -42,7 +53,7 @@ export function ServicesGrid({ services }: ServicesGridProps) {
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
         {services.map((service, idx) => {
-          const Icon = ICON_MAP[service.icon] ?? Code2;
+          const Icon = resolveServiceIcon(service.icon, service.serviceCode, service.title);
           const isLast = idx === services.length - 1;
 
           return (
@@ -51,8 +62,8 @@ export function ServicesGrid({ services }: ServicesGridProps) {
               className={cn("p-8 flex flex-col justify-between", isLast && "lg:col-span-2")}
             >
               <div>
-                <div className="w-12 h-12 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] dark:bg-white/[0.08] dark:border-white/20 dark:text-white flex items-center justify-center text-[var(--brand-primary)] service-icon-box shadow-sm mb-6">
-                  <Icon size={24} aria-hidden={true} />
+                <div className="w-12 h-12 rounded-xl bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/20 text-[var(--brand-primary)] dark:bg-sky-400/15 dark:border-sky-400/30 dark:text-sky-300 dark:shadow-[0_0_20px_rgba(56,189,248,0.22)] flex items-center justify-center shadow-sm mb-6 transition-all duration-300">
+                  <Icon size={24} className="stroke-[2.2] shrink-0" aria-hidden={true} />
                 </div>
                 <h3 className="font-display font-bold text-xl text-[var(--text-primary)] dark:text-white">
                   {service.title}
