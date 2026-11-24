@@ -179,81 +179,82 @@ function AdminShellInner({
     <div className="min-h-screen flex bg-[var(--bg-canvas)] text-[var(--text-primary)]">
       {/* Desktop Fixed Left Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 bg-[var(--bg-surface)]/95 backdrop-blur-xl border-r border-[var(--border-subtle)] flex flex-col justify-between transition-all duration-200 lg:translate-x-0 ${
-          sidebarCollapsed ? "lg:w-[74px]" : "lg:w-[260px]"
+        className={`fixed inset-y-0 left-0 z-50 bg-[var(--bg-surface)] border-r border-[var(--border-subtle)] flex flex-col transition-all duration-200 lg:translate-x-0 ${
+          sidebarCollapsed ? "lg:w-[76px]" : "lg:w-[260px]"
         } w-[260px] ${mobileNavOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <div className="flex flex-col flex-1 overflow-y-auto">
-          {/* Sidebar Brand Header + Collapse Toggle */}
-          <div className="h-16 px-4 border-b border-[var(--border-subtle)] flex items-center justify-between gap-2 shrink-0">
-            {!sidebarCollapsed && (
-              <div className="flex items-center min-w-0">
-                <BrandLogo size="md" href="/admin/dashboard" />
-              </div>
-            )}
-            <button
-              type="button"
-              onClick={() => setSidebarCollapsed((c) => !c)}
-              className={`hidden lg:inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-canvas)] hover:border-[var(--border-subtle)] hover:text-[var(--text-primary)] transition-colors shrink-0 ${
-                sidebarCollapsed ? "mx-auto" : "ml-auto"
-              }`}
-              title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-              aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              {sidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-            </button>
-            <button
-              type="button"
-              onClick={() => setMobileNavOpen(false)}
-              className="lg:hidden h-8 w-8 inline-flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-canvas)]"
-              aria-label="Close navigation"
-            >
-              <X size={18} />
-            </button>
-          </div>
+        {/* Pinned Sidebar Brand Header (never scrolls) */}
+        <div className="h-16 px-4 border-b border-[var(--border-subtle)] flex items-center justify-between gap-2 shrink-0 bg-[var(--bg-surface)]">
+          {!sidebarCollapsed && (
+            <div className="flex items-center min-w-0">
+              <BrandLogo size="md" href="/admin/dashboard" />
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => setSidebarCollapsed((c) => !c)}
+            className={`hidden lg:inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-canvas)]/60 text-[var(--text-secondary)] hover:bg-[var(--bg-canvas)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors shrink-0 ${
+              sidebarCollapsed ? "mx-auto" : "ml-auto"
+            }`}
+            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {sidebarCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(false)}
+            className="lg:hidden h-8 w-8 inline-flex items-center justify-center rounded-lg border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-canvas)]"
+            aria-label="Close navigation"
+          >
+            <X size={17} />
+          </button>
+        </div>
 
-          {/* Navigation Groups */}
-          <div className="px-3 py-4 space-y-5 flex-1">
-            {NAV_GROUPS.map((group) => (
-              <div key={group.label} className="space-y-1">
-                {!sidebarCollapsed && (
-                  <div className="px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-                    {group.label}
-                  </div>
-                )}
-                <nav className="space-y-1">
-                  {group.items.map((item) => {
-                    const Icon = item.icon;
-                    const [baseHref, queryPart] = item.href.split("?");
-                    const itemTab = queryPart?.startsWith("tab=") ? queryPart.slice(4) : "";
-                    const active = itemTab
-                      ? pathname === baseHref && activeTab === itemTab
-                      : item.href === "/admin/dashboard" || item.href === "/admin/users"
-                        ? pathname === baseHref && !activeTab
-                        : pathname === baseHref;
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        title={item.label}
-                        onClick={() => setMobileNavOpen(false)}
-                        className={`flex items-center ${
-                          sidebarCollapsed ? "justify-center px-2" : "gap-3 px-3"
-                        } py-2.5 rounded-xl text-[13.5px] transition-all duration-150 ${
-                          active
-                            ? "font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-sm"
-                            : "font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-canvas)] hover:text-[var(--text-primary)]"
-                        }`}
-                      >
-                        <Icon size={17} className="shrink-0" />
-                        {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
-                      </Link>
-                    );
-                  })}
-                </nav>
-              </div>
-            ))}
-          </div>
+        {/* Independently Scrollable Navigation Groups */}
+        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+          {NAV_GROUPS.map((group, idx) => (
+            <div
+              key={group.label}
+              className={`space-y-1 ${idx > 0 ? "pt-3 border-t border-[var(--border-subtle)]/60" : ""}`}
+            >
+              {!sidebarCollapsed && (
+                <div className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+                  {group.label}
+                </div>
+              )}
+              <nav className="space-y-0.5">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const [baseHref, queryPart] = item.href.split("?");
+                  const itemTab = queryPart?.startsWith("tab=") ? queryPart.slice(4) : "";
+                  const active = itemTab
+                    ? pathname === baseHref && activeTab === itemTab
+                    : item.href === "/admin/dashboard" || item.href === "/admin/users"
+                      ? pathname === baseHref && !activeTab
+                      : pathname === baseHref;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      title={item.label}
+                      onClick={() => setMobileNavOpen(false)}
+                      className={`flex items-center ${
+                        sidebarCollapsed ? "justify-center px-2" : "gap-3 px-3"
+                      } py-2.5 rounded-xl text-[13.5px] transition-all duration-150 ${
+                        active
+                          ? "font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-sm"
+                          : "font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-canvas)] hover:text-[var(--text-primary)]"
+                      }`}
+                    >
+                      <Icon size={17} className="shrink-0" />
+                      {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+          ))}
         </div>
 
         {/* Sidebar Bottom Account & Public Link */}
@@ -320,7 +321,7 @@ function AdminShellInner({
       {/* Main Column (Top Navbar + Content + Footer) */}
       <div
         className={`flex-1 flex flex-col min-h-screen min-w-0 transition-all duration-200 ${
-          sidebarCollapsed ? "lg:pl-[74px]" : "lg:pl-[260px]"
+          sidebarCollapsed ? "lg:pl-[76px]" : "lg:pl-[260px]"
         }`}
       >
         {/* Top Fixed/Sticky Navbar */}
