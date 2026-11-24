@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
   LayoutDashboard,
@@ -30,6 +30,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   FileText,
+  Search,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { UserAvatar } from "@/components/shared/UserAvatar";
@@ -99,21 +100,38 @@ function getBreadcrumbLabel(pathname: string | null): { section: string; page: s
   return { section: "Overview", page: "Executive Control Hub" };
 }
 
-export default function AdminShell({
+function AdminShellInner({
   children,
   requiredRoles = ["SUPER_ADMIN", "EDITOR"],
 }: AdminShellProps) {
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeTab = searchParams.get("tab") || "";
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [newMenuOpen, setNewMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const [cmdQuery, setCmdQuery] = useState("");
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCmdOpen((v) => !v);
+      } else if (e.key === "Escape") {
+        setCmdOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
   useEffect(() => {
@@ -181,11 +199,13 @@ export default function AdminShell({
                 <nav className="space-y-0.5">
                   {group.items.map((item) => {
                     const Icon = item.icon;
-                    const baseHref = item.href.split("?")[0];
-                    const active =
-                      item.href === "/admin/dashboard"
-                        ? pathname === "/admin/dashboard"
-                        : pathname === baseHref && !item.href.includes("?tab=");
+                    const [baseHref, queryPart] = item.href.split("?");
+                    const itemTab = queryPart?.startsWith("tab=") ? queryPart.slice(4) : "";
+                    const active = itemTab
+                      ? pathname === baseHref && activeTab === itemTab
+                      : item.href === "/admin/dashboard"
+                        ? pathname === "/admin/dashboard" && !activeTab
+                        : pathname === baseHref;
                     return (
                       <Link
                         key={item.href}
@@ -301,6 +321,21 @@ export default function AdminShell({
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setCmdQuery("");
+                setCmdOpen(true);
+              }}
+              className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-[var(--text-secondary)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:text-[var(--text-primary)] transition-colors"
+              title="Command Palette (Ctrl+K)"
+            >
+              <Search size={13} />
+              <span>Search...</span>
+              <kbd className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-tertiary)]">
+                Ctrl+K
+              </kbd>
+            </button>
             {/* Quick + New Action Dropdown */}
             <div className="relative">
               <button
@@ -398,6 +433,95 @@ export default function AdminShell({
           </div>
         </footer>
       </div>
+
+      {/* Ctrl+K Command Palette */}
+      {cmdOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/45 backdrop-blur-xs flex items-start justify-center pt-20 px-4"
+          onClick={() => setCmdOpen(false)}
+        >
+          <div
+            className="w-full max-w-lg rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2.5 px-4 py-3 border-b border-[var(--border-subtle)]">
+              <Search size={16} className="text-[var(--text-tertiary)] shrink-0" />
+              <input
+                type="text"
+                autoFocus
+                value={cmdQuery}
+                onChange={(e) => setCmdQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const allItems = NAV_GROUPS.flatMap((g) =>
+                      g.items.map((i) => ({ ...i, group: g.label }))
+                    ).filter((i) =>
+                      `${i.label} ${i.group}`.toLowerCase().includes(cmdQuery.trim().toLowerCase())
+                    );
+                    if (allItems[0]) {
+                      setCmdOpen(false);
+                      router.push(allItems[0].href);
+                    }
+                  }
+                }}
+                placeholder="Jump to admin page or section..."
+                className="flex-1 bg-transparent text-sm outline-none text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
+              />
+              <button
+                type="button"
+                onClick={() => setCmdOpen(false)}
+                className="text-[10px] font-mono px-1.5 py-0.5 rounded border border-[var(--border-subtle)] text-[var(--text-tertiary)]"
+              >
+                ESC
+              </button>
+            </div>
+            <div className="max-h-72 overflow-y-auto p-2 space-y-1">
+              {NAV_GROUPS.flatMap((g) =>
+                g.items.map((i) => ({ ...i, group: g.label }))
+              )
+                .filter((i) =>
+                  `${i.label} ${i.group}`.toLowerCase().includes(cmdQuery.trim().toLowerCase())
+                )
+                .map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.href}
+                      type="button"
+                      onClick={() => {
+                        setCmdOpen(false);
+                        router.push(item.href);
+                      }}
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs hover:bg-[var(--bg-elevated)] transition-colors"
+                    >
+                      <span className="flex items-center gap-2.5 font-medium text-[var(--text-primary)]">
+                        <Icon size={15} className="text-[var(--brand-primary)]" />
+                        {item.label}
+                      </span>
+                      <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
+                        {item.group}
+                      </span>
+                    </button>
+                  );
+                })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+export default function AdminShell(props: AdminShellProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[var(--bg-canvas)]">
+          <div className="w-8 h-8 border-2 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <AdminShellInner {...props} />
+    </Suspense>
   );
 }

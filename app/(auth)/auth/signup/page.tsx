@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   User,
   Mail,
@@ -19,14 +19,23 @@ import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
 import { PasswordStrengthMeter } from "@/components/auth/PasswordStrengthMeter";
 import { apiSignUp } from "@/lib/api";
 
-export default function SignUpPage() {
+function SignUpFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get("invite")?.trim() || "";
+  const invitedEmail = searchParams.get("email")?.trim() || "";
 
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(invitedEmail);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+
+  useEffect(() => {
+    if (invitedEmail && !email) {
+      setEmail(invitedEmail);
+    }
+  }, [invitedEmail, email]);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -79,14 +88,23 @@ export default function SignUpPage() {
         email: email.trim().toLowerCase(),
         password,
         termsAccepted: agreedToTerms,
+        ...(inviteToken ? { inviteToken } : {}),
       });
 
       if (res.success) {
-        router.push(
-          `/auth/verification-pending?email=${encodeURIComponent(
-            email.trim().toLowerCase()
-          )}`
-        );
+        if (res.inviteAccepted || inviteToken) {
+          router.push(
+            `/auth/signin?email=${encodeURIComponent(
+              email.trim().toLowerCase()
+            )}&invited=1`
+          );
+        } else {
+          router.push(
+            `/auth/verification-pending?email=${encodeURIComponent(
+              email.trim().toLowerCase()
+            )}`
+          );
+        }
       }
     } catch (err: any) {
       const msg = err.message || "Failed to create account. Please try again.";
@@ -359,5 +377,19 @@ export default function SignUpPage() {
         </div>
       </div>
     </AuthLayoutShell>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#f8f9fb] text-[#50616c] font-mono text-xs">
+          Loading signup...
+        </div>
+      }
+    >
+      <SignUpFormContent />
+    </Suspense>
   );
 }

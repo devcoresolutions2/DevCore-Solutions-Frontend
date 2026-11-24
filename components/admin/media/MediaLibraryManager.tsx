@@ -14,16 +14,19 @@ import {
   Eye,
   X,
   Save,
+  RefreshCw,
 } from "lucide-react";
 import {
   apiDeleteMediaLibraryAsset,
   apiListMediaLibrary,
+  apiReplaceMediaLibraryAsset,
   apiSignSocialMediaUpload,
   apiUpdateMediaLibraryAsset,
   apiVerifySocialMediaAsset,
   getMediaManifestExportUrl,
   type SocialMediaAssetItem,
 } from "@/lib/api";
+import { ConfirmDialog } from "@/components/admin/shared/ConfirmDialog";
 
 type MediaRow = SocialMediaAssetItem & {
   tags: string[];
@@ -62,7 +65,11 @@ export default function MediaLibraryManager() {
   const [savingMeta, setSavingMeta] = useState(false);
 
   const [uploading, setUploading] = useState(false);
+  const [replacing, setReplacing] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<MediaRow | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const replaceInputRef = useRef<HTMLInputElement | null>(null);
 
   const loadMedia = useCallback(async () => {
     try {
@@ -135,15 +142,63 @@ export default function MediaLibraryManager() {
     });
   };
 
-  const handleDelete = async (asset: MediaRow) => {
+  const handleDelete = (asset: MediaRow) => {
     if (asset.postId) return;
+    setDeleteTarget(asset);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget || deleteTarget.postId) return;
+    setDeleting(true);
     try {
-      await apiDeleteMediaLibraryAsset(asset.id);
-      if (selected?.id === asset.id) setSelected(null);
+      await apiDeleteMediaLibraryAsset(deleteTarget.id);
+      if (selected?.id === deleteTarget.id) setSelected(null);
       await loadMedia();
-      setBanner({ type: "success", text: `Deleted ${asset.fileName} from Cloudinary & DB.` });
+      setBanner({ type: "success", text: `Deleted ${deleteTarget.fileName} from Cloudinary & DB.` });
+      setDeleteTarget(null);
     } catch (err: any) {
       setBanner({ type: "error", text: err?.message || "Delete failed." });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleReplaceFile = async (file: File | undefined) => {
+    if (!file || !selected) return;
+    setReplacing(true);
+    setBanner(null);
+    try {
+      const resourceType: "image" | "video" = file.type.startsWith("video/") ? "video" : "image";
+      const sig = await apiSignSocialMediaUpload(resourceType);
+
+      const form = new FormData();
+      form.append("file", file);
+      form.append("api_key", sig.apiKey);
+      form.append("timestamp", String(sig.timestamp));
+      form.append("signature", sig.signature);
+      form.append("folder", sig.folder);
+      form.append("public_id", sig.publicId);
+
+      const uploadRes = await fetch(
+        `https://api.cloudinary.com/v1_1/${sig.cloudName}/${resourceType}/upload`,
+        { method: "POST", body: form }
+      );
+      if (!uploadRes.ok) {
+        throw new Error(`Cloudinary upload failed (${uploadRes.status})`);
+      }
+      const uploadData = await uploadRes.json();
+      const res = await apiReplaceMediaLibraryAsset(selected.id, {
+        publicId: uploadData.public_id || sig.publicId,
+        resourceType,
+        fileName: file.name,
+      });
+      setSelected(res.asset);
+      await loadMedia();
+      setBanner({ type: "success", text: `Replaced asset with ${file.name}.` });
+    } catch (err: any) {
+      setBanner({ type: "error", text: err?.message || "Replace asset failed." });
+    } finally {
+      setReplacing(false);
     }
   };
 
@@ -538,19 +593,58 @@ export default function MediaLibraryManager() {
                   className="w-full px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
                 />
               </div>
-              <button
-                type="button"
-                disabled={savingMeta}
-                onClick={() => void handleSaveMeta()}
-                className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--brand-primary)] text-white font-semibold"
-              >
-                <Save className="w-3.5 h-3.5" />
-                {savingMeta ? "Saving..." : "Save Metadata & Alt Text"}
-              </button>
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  disabled={savingMeta}
+                  onClick={() => void handleSaveMeta()}
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--brand-primary)] text-white font-semibold"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  {savingMeta ? "Saving..." : "Save Metadata"}
+                </button>
+                <button
+                  type="button"
+                  disabled={replacing}
+                  onClick={() => replaceInputRef.current?.click()}
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] font-semibold hover:bg-[var(--bg-card)] disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${replacing ? "animate-spin" : ""}`} />
+                  {replacing ? "Replacing..." : "Replace"}
+                </button>
+                <input
+                  ref={replaceInputRef}
+                  type="file"
+                  accept="image/*,video/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    void handleReplaceFile(file);
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete Media Asset"
+        description={
+          deleteTarget
+            ? `Permanently delete "${deleteTarget.fileName}" from Cloudinary and the database? This cannot be undone.`
+            : ""
+        }
+        confirmLabel="Delete Asset"
+        destructive
+        loading={deleting}
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => {
+          if (!deleting) setDeleteTarget(null);
+        }}
+      />
     </div>
   );
 }

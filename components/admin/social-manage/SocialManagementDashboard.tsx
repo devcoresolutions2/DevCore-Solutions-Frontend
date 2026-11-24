@@ -5,28 +5,34 @@ import Link from "next/link";
 import {
   Activity,
   AlertTriangle,
+  Calendar,
   CheckCircle2,
   Clock,
   Download,
   ExternalLink,
+  Eye,
   Plus,
   RefreshCw,
   RotateCw,
   Search,
   Trash2,
+  X,
   XCircle,
 } from "lucide-react";
 import {
   apiCancelScheduledBroadcast,
   apiDeleteManagedBroadcast,
+  apiGetManagedBroadcastDetail,
   apiGetSocialManageAnalytics,
   apiListManagedBroadcasts,
   apiRetryAllFailedBroadcasts,
   apiRetryBroadcast,
+  apiUpdateManagedBroadcast,
   getSocialManageExportUrl,
   type SocialBroadcastPostItem,
   type SocialManageAnalyticsResponse,
 } from "@/lib/api";
+import { ConfirmDialog } from "@/components/admin/shared/ConfirmDialog";
 
 export default function SocialManagementDashboard() {
   const [analyticsData, setAnalyticsData] = useState<SocialManageAnalyticsResponse | null>(null);
@@ -41,6 +47,26 @@ export default function SocialManagementDashboard() {
   const [dateRange, setDateRange] = useState("30d");
   const [page, setPage] = useState(1);
   const [openErrorId, setOpenErrorId] = useState<string | null>(null);
+
+  const [confirmAction, setConfirmAction] = useState<{
+    type: "cancel" | "delete";
+    id: string;
+    label: string;
+  } | null>(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailData, setDetailData] = useState<{
+    broadcast: SocialBroadcastPostItem;
+    auditLogs: Array<{ id: string; action: string; actorId: string; meta: any; createdAt: string }>;
+  } | null>(null);
+
+  const [editSchedule, setEditSchedule] = useState<{
+    id: string;
+    scheduledFor: string;
+    timezone: string;
+  } | null>(null);
+  const [savingSchedule, setSavingSchedule] = useState(false);
 
   const loadAll = useCallback(async () => {
     try {
@@ -95,23 +121,82 @@ export default function SocialManagementDashboard() {
     }
   };
 
-  const handleCancel = async (id: string) => {
+  const handleCancel = (b: SocialBroadcastPostItem) => {
+    setConfirmAction({
+      type: "cancel",
+      id: b.id,
+      label: b.title || b.baseContent.slice(0, 48),
+    });
+  };
+
+  const handleDelete = (b: SocialBroadcastPostItem) => {
+    setConfirmAction({
+      type: "delete",
+      id: b.id,
+      label: b.title || b.baseContent.slice(0, 48),
+    });
+  };
+
+  const confirmExecute = async () => {
+    if (!confirmAction) return;
+    setConfirmLoading(true);
     try {
-      await apiCancelScheduledBroadcast(id);
+      if (confirmAction.type === "cancel") {
+        await apiCancelScheduledBroadcast(confirmAction.id);
+        setBanner({ type: "success", text: "Scheduled broadcast cancelled." });
+      } else {
+        await apiDeleteManagedBroadcast(confirmAction.id);
+        setBanner({ type: "success", text: "Broadcast removed." });
+      }
       await loadAll();
-      setBanner({ type: "success", text: "Scheduled broadcast cancelled." });
+      setConfirmAction(null);
     } catch (err: any) {
-      setBanner({ type: "error", text: err?.message || "Cancel failed." });
+      setBanner({ type: "error", text: err?.message || "Action failed." });
+    } finally {
+      setConfirmLoading(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const openDetail = async (id: string) => {
+    setDetailLoading(true);
     try {
-      await apiDeleteManagedBroadcast(id);
-      await loadAll();
-      setBanner({ type: "success", text: "Broadcast removed." });
+      const res = await apiGetManagedBroadcastDetail(id);
+      setDetailData(res);
     } catch (err: any) {
-      setBanner({ type: "error", text: err?.message || "Delete failed." });
+      setBanner({ type: "error", text: err?.message || "Failed to load broadcast details." });
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const openEditScheduleModal = (b: SocialBroadcastPostItem) => {
+    const dt = b.scheduledFor ? new Date(b.scheduledFor) : new Date(Date.now() + 3600_000);
+    const localIso = new Date(dt.getTime() - dt.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 16);
+    setEditSchedule({
+      id: b.id,
+      scheduledFor: localIso,
+      timezone: b.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+    });
+  };
+
+  const handleSaveSchedule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editSchedule) return;
+    setSavingSchedule(true);
+    try {
+      await apiUpdateManagedBroadcast(editSchedule.id, {
+        scheduledFor: new Date(editSchedule.scheduledFor).toISOString(),
+        timezone: editSchedule.timezone,
+      });
+      setEditSchedule(null);
+      await loadAll();
+      setBanner({ type: "success", text: "Broadcast schedule updated." });
+    } catch (err: any) {
+      setBanner({ type: "error", text: err?.message || "Failed to update schedule." });
+    } finally {
+      setSavingSchedule(false);
     }
   };
 
@@ -496,10 +581,28 @@ export default function SocialManagementDashboard() {
                           <RotateCw className="w-3.5 h-3.5" />
                         </button>
                       )}
+                      <button
+                        type="button"
+                        onClick={() => void openDetail(b.id)}
+                        className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]"
+                        title="View Details"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                      {(b.status === "SCHEDULED" || b.status === "DRAFT") && (
+                        <button
+                          type="button"
+                          onClick={() => openEditScheduleModal(b)}
+                          className="p-1.5 rounded-lg text-[var(--brand-primary)] hover:bg-[var(--bg-elevated)]"
+                          title="Edit Schedule"
+                        >
+                          <Calendar className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                       {b.status === "SCHEDULED" && (
                         <button
                           type="button"
-                          onClick={() => void handleCancel(b.id)}
+                          onClick={() => handleCancel(b)}
                           className="p-1.5 rounded-lg text-amber-500 hover:bg-[var(--bg-elevated)]"
                           title="Cancel Schedule"
                         >
@@ -509,7 +612,7 @@ export default function SocialManagementDashboard() {
                       {(b.status === "DRAFT" || b.status === "CANCELLED") && (
                         <button
                           type="button"
-                          onClick={() => void handleDelete(b.id)}
+                          onClick={() => handleDelete(b)}
                           className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/10"
                           title="Delete"
                         >
@@ -630,6 +733,230 @@ export default function SocialManagementDashboard() {
           </div>
         </div>
       )}
+
+      {/* Broadcast Detail Drawer */}
+      {(detailLoading || detailData) && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end"
+          onClick={() => {
+            if (!detailLoading) setDetailData(null);
+          }}
+        >
+          <div
+            className="w-full max-w-lg bg-[var(--bg-surface)] h-full border-l border-[var(--border-subtle)] p-6 overflow-y-auto space-y-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
+              <div>
+                <h3 className="text-base font-bold text-[var(--text-primary)]">
+                  {detailData?.broadcast.title || "Broadcast Details"}
+                </h3>
+                {detailData && (
+                  <p className="text-[11px] font-mono text-[var(--text-tertiary)]">
+                    {detailData.broadcast.id} • {detailData.broadcast.status}
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setDetailData(null)}
+                className="p-1.5 rounded-lg hover:bg-[var(--bg-elevated)]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {detailLoading && !detailData ? (
+              <div className="py-12 text-center text-xs text-[var(--text-secondary)]">
+                Loading broadcast details...
+              </div>
+            ) : detailData ? (
+              <>
+                <div>
+                  <div className="text-[11px] font-mono uppercase text-[var(--text-tertiary)] mb-1">
+                    Base Content
+                  </div>
+                  <div className="p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-xs whitespace-pre-wrap">
+                    {detailData.broadcast.baseContent}
+                  </div>
+                </div>
+
+                {detailData.broadcast.mediaAssets?.length > 0 && (
+                  <div>
+                    <div className="text-[11px] font-mono uppercase text-[var(--text-tertiary)] mb-1.5">
+                      Attached Media ({detailData.broadcast.mediaAssets.length})
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {detailData.broadcast.mediaAssets.map((m) => (
+                        <a
+                          key={m.id}
+                          href={m.secureUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-xl overflow-hidden border border-[var(--border-subtle)] bg-[var(--bg-elevated)] block"
+                        >
+                          {m.resourceType === "video" ? (
+                            <video src={m.secureUrl} className="w-full h-28 object-cover" />
+                          ) : (
+                            <img src={m.secureUrl} alt={m.fileName} className="w-full h-28 object-cover" />
+                          )}
+                          <div className="px-2 py-1 text-[10px] truncate text-[var(--text-secondary)]">
+                            {m.fileName}
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <div className="text-[11px] font-mono uppercase text-[var(--text-tertiary)] mb-1.5">
+                    Delivery Logs ({detailData.broadcast.deliveryLogs?.length || 0})
+                  </div>
+                  <div className="space-y-2">
+                    {(detailData.broadcast.deliveryLogs || []).map((log) => (
+                      <div
+                        key={log.id}
+                        className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-xs space-y-1"
+                      >
+                        <div className="flex items-center justify-between font-medium">
+                          <span>{log.platform}</span>
+                          <span className="font-mono text-[11px]">{log.status}</span>
+                        </div>
+                        {log.externalUrl && (
+                          <a
+                            href={log.externalUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] text-[var(--brand-primary)] hover:underline"
+                          >
+                            <ExternalLink className="w-3 h-3" /> Open Published Post
+                          </a>
+                        )}
+                        {log.error?.message && (
+                          <div className="text-[11px] text-rose-500 font-mono">
+                            {log.error.message}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[11px] font-mono uppercase text-[var(--text-tertiary)] mb-1.5">
+                    Audit Trail ({detailData.auditLogs?.length || 0})
+                  </div>
+                  <div className="space-y-1.5">
+                    {(detailData.auditLogs || []).length === 0 ? (
+                      <div className="text-xs text-[var(--text-tertiary)]">No audit entries recorded.</div>
+                    ) : (
+                      detailData.auditLogs.map((a) => (
+                        <div
+                          key={a.id}
+                          className="p-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[11px] flex items-center justify-between"
+                        >
+                          <span className="font-mono font-semibold">{a.action}</span>
+                          <span className="text-[var(--text-tertiary)]">
+                            {new Date(a.createdAt).toLocaleString()}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : null}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Schedule Modal */}
+      {editSchedule && (
+        <div
+          className="fixed inset-0 z-50 bg-black/45 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => {
+            if (!savingSchedule) setEditSchedule(null);
+          }}
+        >
+          <form
+            onSubmit={(e) => void handleSaveSchedule(e)}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-5 shadow-2xl space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-[var(--text-primary)]">Edit Broadcast Schedule</h3>
+              <button
+                type="button"
+                onClick={() => setEditSchedule(null)}
+                className="p-1 rounded-lg hover:bg-[var(--bg-elevated)]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block text-[var(--text-secondary)] mb-1">Scheduled Date & Time</label>
+                <input
+                  type="datetime-local"
+                  required
+                  value={editSchedule.scheduledFor}
+                  onChange={(e) =>
+                    setEditSchedule({ ...editSchedule, scheduledFor: e.target.value })
+                  }
+                  className="w-full px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
+                />
+              </div>
+              <div>
+                <label className="block text-[var(--text-secondary)] mb-1">Timezone</label>
+                <input
+                  type="text"
+                  required
+                  value={editSchedule.timezone}
+                  onChange={(e) => setEditSchedule({ ...editSchedule, timezone: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] font-mono"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                disabled={savingSchedule}
+                onClick={() => setEditSchedule(null)}
+                className="px-3.5 py-2 rounded-xl text-xs font-medium border border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)]"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={savingSchedule}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white disabled:opacity-50"
+              >
+                {savingSchedule ? "Saving..." : "Save Schedule"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={Boolean(confirmAction)}
+        title={confirmAction?.type === "cancel" ? "Cancel Scheduled Broadcast" : "Delete Broadcast"}
+        description={
+          confirmAction
+            ? confirmAction.type === "cancel"
+              ? `Cancel scheduled delivery for "${confirmAction.label}"? It will be moved to CANCELLED status.`
+              : `Permanently delete "${confirmAction.label}"? This cannot be undone.`
+            : ""
+        }
+        confirmLabel={confirmAction?.type === "cancel" ? "Cancel Schedule" : "Delete Broadcast"}
+        destructive
+        loading={confirmLoading}
+        onConfirm={() => void confirmExecute()}
+        onCancel={() => {
+          if (!confirmLoading) setConfirmAction(null);
+        }}
+      />
     </div>
   );
 }

@@ -63,6 +63,17 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!res.ok) {
+    if (typeof window !== "undefined" && window.location.pathname.startsWith("/admin")) {
+      const p = window.location.pathname;
+      if (res.status === 401 && !p.startsWith("/admin/session-expired")) {
+        window.location.assign(
+          `/admin/session-expired?next=${encodeURIComponent(p + window.location.search)}`,
+        );
+      } else if (res.status === 403 && !p.startsWith("/admin/403")) {
+        window.location.assign("/admin/403");
+      }
+    }
+
     let errorMsg = `HTTP ${res.status}: ${res.statusText}`;
     try {
       const errJson = await res.json();
@@ -1278,9 +1289,10 @@ export async function apiSignUp(payload: {
   email: string;
   password: string;
   termsAccepted: boolean;
-}): Promise<{ success: boolean; message: string; email: string }> {
+  inviteToken?: string;
+}): Promise<{ success: boolean; message: string; email: string; inviteAccepted?: boolean }> {
   if (!USE_MOCK) {
-    return await apiFetch<{ success: boolean; message: string; email: string }>("/api/auth/signup", {
+    return await apiFetch<{ success: boolean; message: string; email: string; inviteAccepted?: boolean }>("/api/auth/signup", {
       method: "POST",
       body: JSON.stringify(payload),
     });
@@ -2699,6 +2711,44 @@ export async function apiDeleteAdminTestimonial(id: string): Promise<{ deleted: 
 
 export function getContentCatalogExportUrl(): string {
   return `${BASE_URL}/api/admin/content/export`;
+}
+
+export async function apiGetManagedBroadcastDetail(id: string): Promise<{
+  broadcast: SocialBroadcastPostItem;
+  auditLogs: Array<{ id: string; action: string; actorId: string; meta: any; createdAt: string }>;
+}> {
+  return await apiFetch(`/api/admin/social/manage/broadcasts/${encodeURIComponent(id)}`);
+}
+
+export async function apiUpdateManagedBroadcast(
+  id: string,
+  payload: { scheduledFor?: string; timezone?: string; baseContent?: string },
+): Promise<{ broadcast: SocialBroadcastPostItem }> {
+  return await apiFetch(`/api/admin/social/manage/broadcasts/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiBulkAdminUsers(payload: {
+  userIds: string[];
+  action: "REVOKE_SESSIONS" | "DEACTIVATE" | "CHANGE_ROLE";
+  role?: string;
+}): Promise<{ succeeded: number; skipped: Array<{ id: string; reason: string }> }> {
+  return await apiFetch("/api/admin/users/bulk", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiReplaceMediaLibraryAsset(
+  id: string,
+  payload: { publicId: string; resourceType: "image" | "video"; fileName?: string },
+): Promise<{ asset: any }> {
+  return await apiFetch(`/api/admin/media/${encodeURIComponent(id)}/replace`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
 export type {

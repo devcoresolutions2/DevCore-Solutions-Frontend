@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Cpu } from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
@@ -73,6 +76,44 @@ const SOCIALS = [
 ];
 
 export function Footer() {
+  const [publicEmail, setPublicEmail] = useState("solutions@devcoresolutions.com");
+  const [socials, setSocials] = useState(SOCIALS);
+
+  useEffect(() => {
+    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    fetch(`${base}/api/public/settings`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data) return;
+        if (typeof data.publicEmail === "string" && data.publicEmail.trim()) {
+          setPublicEmail(data.publicEmail.trim());
+        }
+        if (Array.isArray(data.socialLinks) && data.socialLinks.length > 0) {
+          const mapped = data.socialLinks
+            .filter((l: any) => l && l.url && l.isEnabled !== false)
+            .map((l: any) => {
+              const key = `${l.platform || ""} ${l.label || ""} ${l.url || ""}`.toLowerCase();
+              const icon = key.includes("linkedin")
+                ? LinkedInIcon
+                : key.includes("github")
+                  ? GitHubIcon
+                  : key.includes("facebook")
+                    ? FacebookIcon
+                    : key.includes("youtube")
+                      ? YouTubeIcon
+                      : TwitterIcon;
+              return {
+                icon,
+                label: l.label || l.platform || "Social",
+                href: l.url,
+              };
+            });
+          if (mapped.length > 0) setSocials(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <footer
       id="footer"
@@ -95,12 +136,12 @@ export function Footer() {
 
             <div className="font-mono text-xs text-[var(--text-muted)] space-y-1">
               <div>Dhaka & Chattogram, Bangladesh</div>
-              <div>solutions@devcoresolutions.com</div>
+              <div>{publicEmail}</div>
             </div>
 
             {/* Social icons */}
             <div className="flex items-center gap-2.5 pt-1">
-              {SOCIALS.map(({ icon: Icon, label, href }) => (
+              {socials.map(({ icon: Icon, label, href }) => (
                 <a
                   key={label}
                   href={href}

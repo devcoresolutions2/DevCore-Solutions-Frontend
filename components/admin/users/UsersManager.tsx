@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import {
+  apiBulkAdminUsers,
   apiChangeUserRole,
   apiGetAdminUserDetail,
   apiInviteAdminUser,
@@ -28,6 +29,7 @@ import {
   type AdminUsersListResponse,
 } from "@/lib/api";
 import { UserAvatar } from "@/components/shared/UserAvatar";
+import ConfirmDialog from "@/components/admin/shared/ConfirmDialog";
 
 export default function UsersManager() {
   const [data, setData] = useState<AdminUsersListResponse | null>(null);
@@ -50,6 +52,17 @@ export default function UsersManager() {
 
   // Detail Drawer
   const [selectedUser, setSelectedUser] = useState<Awaited<ReturnType<typeof apiGetAdminUserDetail>> | null>(null);
+
+  // Bulk Selection & Confirm Dialog
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [confirmState, setConfirmState] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    confirmLabel: string;
+    onConfirm: () => Promise<void>;
+  } | null>(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -332,6 +345,75 @@ export default function UsersManager() {
       </div>
 
       {/* Users Table */}
+      {selectedIds.length > 0 && (
+        <div className="rounded-2xl border border-[var(--brand-primary)]/30 bg-[var(--brand-primary)]/5 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <span className="font-semibold text-[var(--text-primary)]">
+            {selectedIds.length} user(s) selected
+          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                setConfirmState({
+                  open: true,
+                  title: "Revoke Sessions for Selected Users",
+                  description: `Immediately invalidate active sessions for ${selectedIds.length} selected user(s).`,
+                  confirmLabel: "Revoke Sessions",
+                  onConfirm: async () => {
+                    const r = await apiBulkAdminUsers({
+                      userIds: selectedIds,
+                      action: "REVOKE_SESSIONS",
+                    });
+                    setSelectedIds([]);
+                    await loadUsers();
+                    setBanner({
+                      type: "success",
+                      text: `Revoked sessions for ${r.succeeded} user(s).`,
+                    });
+                  },
+                })
+              }
+              className="px-3 py-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] font-medium"
+            >
+              Revoke Sessions
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                setConfirmState({
+                  open: true,
+                  title: "Deactivate Selected Users",
+                  description: `Deactivate ${selectedIds.length} user(s) and revoke all active sessions. Protected accounts will be skipped.`,
+                  confirmLabel: "Deactivate Selected",
+                  onConfirm: async () => {
+                    const r = await apiBulkAdminUsers({
+                      userIds: selectedIds,
+                      action: "DEACTIVATE",
+                    });
+                    setSelectedIds([]);
+                    await loadUsers();
+                    setBanner({
+                      type: "success",
+                      text: `Deactivated ${r.succeeded} user(s)${r.skipped.length ? ` (${r.skipped.length} skipped)` : ""}.`,
+                    });
+                  },
+                })
+              }
+              className="px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-500 font-semibold"
+            >
+              Deactivate Selected
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedIds([])}
+              className="px-2 py-1 text-[var(--text-secondary)] underline"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
         {!data || data.items.length === 0 ? (
           <div className="p-10 text-center text-xs text-[var(--text-secondary)]">
@@ -342,6 +424,15 @@ export default function UsersManager() {
             <table className="w-full text-left text-xs">
               <thead className="bg-[var(--bg-elevated)] text-[var(--text-tertiary)] uppercase text-[10px] tracking-wider">
                 <tr>
+                  <th className="px-3 py-3 w-9">
+                    <input
+                      type="checkbox"
+                      checked={data.items.length > 0 && selectedIds.length === data.items.length}
+                      onChange={(e) =>
+                        setSelectedIds(e.target.checked ? data.items.map((x) => x.id) : [])
+                      }
+                    />
+                  </th>
                   <th className="px-4 py-3">User</th>
                   <th className="px-4 py-3">Role</th>
                   <th className="px-4 py-3">Verification / Status</th>
@@ -353,6 +444,17 @@ export default function UsersManager() {
               <tbody className="divide-y divide-[var(--border-subtle)]">
                 {data.items.map((u) => (
                   <tr key={u.id} className="hover:bg-[var(--bg-elevated)]/40">
+                    <td className="px-3 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(u.id)}
+                        onChange={() =>
+                          setSelectedIds((prev) =>
+                            prev.includes(u.id) ? prev.filter((x) => x !== u.id) : [...prev, u.id],
+                          )
+                        }
+                      />
+                    </td>
                     <td className="px-4 py-3">
                       <button
                         type="button"
@@ -638,6 +740,28 @@ export default function UsersManager() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={Boolean(confirmState?.open)}
+        title={confirmState?.title || ""}
+        description={confirmState?.description || ""}
+        confirmLabel={confirmState?.confirmLabel || "Confirm"}
+        loading={confirmBusy}
+        onCancel={() => setConfirmState(null)}
+        onConfirm={async () => {
+          if (!confirmState) return;
+          setConfirmBusy(true);
+          try {
+            await confirmState.onConfirm();
+            setConfirmState(null);
+          } catch (err: any) {
+            setBanner({ type: "error", text: err?.message || "Action failed." });
+            setConfirmState(null);
+          } finally {
+            setConfirmBusy(false);
+          }
+        }}
+      />
     </div>
   );
 }
