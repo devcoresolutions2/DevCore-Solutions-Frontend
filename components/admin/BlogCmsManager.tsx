@@ -937,25 +937,25 @@ export function BlogCmsManager() {
 
       {/* ─── ARTICLE CREATE / EDIT MODAL ──────────────────────────────────────── */}
       {isArticleModalOpen && editingArticle && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-          <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-2xl p-6 sm:p-8">
-            <div className="flex items-center justify-between pb-4 border-b border-[var(--border-subtle)] mb-6">
-              <h3 className="text-lg font-bold font-mono text-[var(--text-primary)]">
-                {editingArticle.id ? "Edit Engineering Article" : "Create Engineering Article"}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl max-h-[85vh] flex flex-col bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)] shrink-0">
+              <h3 className="font-display text-base font-semibold text-[var(--text-primary)]">
+                {editingArticle.id ? "Edit Article" : "New Blog Article"}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsArticleModalOpen(false)}
-                className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
+                className="p-1.5 rounded-lg text-[var(--text-tertiary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveArticle} className="space-y-4">
+            <form onSubmit={handleSaveArticle} className="flex-1 overflow-y-auto p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-mono text-[var(--text-secondary)] mb-1">
+                  <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
                     Title *
                   </label>
                   <input
@@ -966,7 +966,7 @@ export function BlogCmsManager() {
                       setEditingArticle({ ...editingArticle, title: e.target.value })
                     }
                     placeholder="e.g. Offline-First SQLite WAL Replication"
-                    className="w-full px-3 py-2 rounded-lg text-xs font-mono bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-[var(--text-primary)]"
+                    className="w-full px-3 py-2 rounded-xl text-sm bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)]"
                   />
                 </div>
 

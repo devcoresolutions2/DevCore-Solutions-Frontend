@@ -575,44 +575,77 @@ function AdminDashboardContent() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {services.map((svc) => (
-              <div
-                key={svc.id}
-                className="p-5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--border-strong)] hover:shadow-md transition-all duration-200 space-y-3"
-              >
-                <div className="flex items-center justify-between pb-2.5 border-b border-[var(--border-subtle)]">
-                  <span className="text-[11px] font-semibold text-[var(--brand-primary)] uppercase tracking-wide">
-                    {svc.serviceCode || svc.disciplineNumber || "Service"}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)]">
-                      {svc.category || "Engineering"}
+            {services.map((svc) => {
+              const deliverables = svc.deliverables || svc.features || [];
+              return (
+                <div
+                  key={svc.id}
+                  className="p-5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--border-strong)] hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-9 h-9 rounded-xl bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] flex items-center justify-center shrink-0">
+                          <Layers size={17} />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-[11px] font-semibold text-[var(--brand-primary)] uppercase tracking-wide">
+                            {svc.serviceCode || svc.disciplineNumber || "Service"}
+                          </div>
+                          <div className="text-[11px] text-[var(--text-tertiary)] truncate">
+                            {svc.category || "Engineering"}
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setDeleteSvcTarget(svc)}
+                        className="p-1.5 rounded-lg text-[var(--text-tertiary)] hover:text-rose-500 hover:bg-rose-500/10 transition-colors shrink-0"
+                        title="Delete Service"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+
+                    <div>
+                      <h3 className="text-[15px] font-semibold text-[var(--text-primary)] leading-snug">
+                        {svc.title}
+                      </h3>
+                      <p className="text-[13px] text-[var(--text-secondary)] line-clamp-2 leading-relaxed mt-1.5">
+                        {svc.description}
+                      </p>
+                    </div>
+
+                    {deliverables.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {deliverables.slice(0, 3).map((d, i) => (
+                          <span
+                            key={i}
+                            className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-[var(--bg-canvas)] text-[var(--text-secondary)] border border-[var(--border-subtle)] truncate max-w-[160px]"
+                          >
+                            {d}
+                          </span>
+                        ))}
+                        {deliverables.length > 3 && (
+                          <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-[var(--bg-canvas)] text-[var(--text-tertiary)] border border-[var(--border-subtle)]">
+                            +{deliverables.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-3 border-t border-[var(--border-subtle)] text-xs text-[var(--text-tertiary)] flex items-center justify-between">
+                    <span>{deliverables.length} deliverables</span>
+                    <span className="inline-flex items-center gap-1.5 text-[var(--success)] font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--success)]" />
+                      Active
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => setDeleteSvcTarget(svc)}
-                      className="p-1 rounded-md text-rose-500 hover:bg-rose-500/10 transition-colors"
-                      title="Delete Service"
-                    >
-                      <Trash2 size={13} />
-                    </button>
                   </div>
                 </div>
-
-                <h3 className="text-base font-semibold text-[var(--text-primary)]">
-                  {svc.title}
-                </h3>
-
-                <p className="text-[13px] text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
-                  {svc.description}
-                </p>
-
-                <div className="pt-2 text-xs text-[var(--text-tertiary)] flex items-center justify-between">
-                  <span>{(svc.deliverables || svc.features || []).length} Deliverables</span>
-                  <span className="text-[var(--success)] font-medium">Active</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}
@@ -627,10 +660,10 @@ function AdminDashboardContent() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg rounded-2xl devcore-glass-card border border-[var(--border-strong)] bg-[var(--bg-elevated)] text-[var(--text-primary)] p-6 shadow-2xl space-y-5 animate-scaleUp"
+            className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-primary)] p-6 shadow-2xl space-y-5 animate-scaleUp"
           >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
-              <h3 className="font-display font-bold text-base text-[var(--text-primary)]">
+              <h3 className="font-display font-semibold text-base text-[var(--text-primary)]">
                 Create New Job Position
               </h3>
               <button
@@ -739,15 +772,15 @@ function AdminDashboardContent() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg rounded-2xl devcore-glass-card border border-[var(--border-strong)] bg-[var(--bg-elevated)] text-[var(--text-primary)] p-6 shadow-2xl space-y-4 animate-scaleUp"
+            className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-primary)] p-6 shadow-2xl space-y-4 animate-scaleUp"
           >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
               <div>
-                <h3 className="font-display font-bold text-base text-[var(--text-primary)]">
+                <h3 className="font-display font-semibold text-base text-[var(--text-primary)]">
                   {selectedApp.name}
                 </h3>
-                <span className="font-mono text-xs text-[var(--brand-primary)]">
-                  Applied for: {selectedApp.jobTitle}
+                <span className="text-xs font-medium text-[var(--brand-primary)]">
+                  Applied for {selectedApp.jobTitle}
                 </span>
               </div>
               <button
@@ -847,10 +880,10 @@ function AdminDashboardContent() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg rounded-2xl devcore-glass-card border border-[var(--border-strong)] bg-[var(--bg-elevated)] text-[var(--text-primary)] p-6 shadow-2xl space-y-5 animate-scaleUp"
+            className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-primary)] p-6 shadow-2xl space-y-5 animate-scaleUp"
           >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
-              <h3 className="font-display font-bold text-base text-[var(--text-primary)]">
+              <h3 className="font-display font-semibold text-base text-[var(--text-primary)]">
                 Add New Service
               </h3>
               <button

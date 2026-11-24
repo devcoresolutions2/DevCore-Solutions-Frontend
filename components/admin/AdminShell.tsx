@@ -85,8 +85,16 @@ const NAV_GROUPS = [
   },
 ];
 
-function getBreadcrumbLabel(pathname: string | null): { section: string; page: string } {
+function getBreadcrumbLabel(pathname: string | null, tab?: string): { section: string; page: string } {
   if (!pathname) return { section: "Overview", page: "Dashboard" };
+  if (pathname === "/admin/dashboard" && tab) {
+    if (tab === "blog") return { section: "Content & CMS", page: "Blog Articles" };
+    if (tab === "jobs") return { section: "Content & CMS", page: "Job Postings" };
+    if (tab === "applications") return { section: "Content & CMS", page: "Applications" };
+    if (tab === "services") return { section: "Content & CMS", page: "Services" };
+    if (tab === "about") return { section: "Content & CMS", page: "About Page" };
+    if (tab === "leads") return { section: "Growth & Social", page: "Leads" };
+  }
   if (pathname.startsWith("/admin/social/broadcast"))
     return { section: "Growth & Social", page: "Create Post" };
   if (pathname.startsWith("/admin/social/manage"))
@@ -95,8 +103,11 @@ function getBreadcrumbLabel(pathname: string | null): { section: string; page: s
     return { section: "Growth & Social", page: "Connected Channels" };
   if (pathname.startsWith("/admin/leads"))
     return { section: "Growth & Social", page: "Leads" };
-  if (pathname.startsWith("/admin/users"))
+  if (pathname.startsWith("/admin/users")) {
+    if (tab === "invitations") return { section: "Team & Security", page: "Invitations" };
+    if (tab === "roles") return { section: "Team & Security", page: "Roles & Permissions" };
     return { section: "Team & Security", page: "Team Members" };
+  }
   if (pathname.startsWith("/admin/audit-log"))
     return { section: "Team & Security", page: "Audit Log" };
   if (pathname.startsWith("/admin/settings"))
@@ -173,7 +184,7 @@ function AdminShellInner({
     );
   }
 
-  const breadcrumb = getBreadcrumbLabel(pathname);
+  const breadcrumb = getBreadcrumbLabel(pathname, activeTab);
 
   return (
     <div className="min-h-screen flex bg-[var(--bg-canvas)] text-[var(--text-primary)]">

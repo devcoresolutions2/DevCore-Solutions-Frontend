@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { getArticleBySlug, getBlogArticles } from "@/lib/api";
 import { ArticleReader } from "./ArticleReader";
 import { NewsletterSection } from "@/components/blog/NewsletterSection";
-import { TechnicalSupportHub } from "@/components/blog/TechnicalSupportHub";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -66,8 +65,6 @@ export default async function BlogPostPage({ params }: PageProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <NewsletterSection />
       </div>
-
-      <TechnicalSupportHub />
     </main>
   );
 }
