@@ -1905,6 +1905,207 @@ export function getAdminLeadsExportUrl(params?: {
   return `${BASE_URL}/api/admin/leads/export?${sp.toString()}`;
 }
 
+// ─── ADMIN SOCIAL INTEGRATIONS & WEBHOOKS ───────────────────────────────────
+
+export type SocialChannelStatus =
+  | "CONNECTED"
+  | "DISCONNECTED"
+  | "EXPIRING_SOON"
+  | "EXPIRED"
+  | "REAUTH_REQUIRED"
+  | "ERROR"
+  | "DISABLED"
+  | "NOT_CONFIGURED"
+  | "UNAVAILABLE";
+
+export interface SocialChannelItem {
+  key: "linkedin" | "x" | "meta" | "youtube" | "reddit" | "glassdoor";
+  platform: string;
+  displayName: string;
+  subtitle: string;
+  apiLabel: string;
+  apiSupported: boolean;
+  unavailableReason: string | null;
+  configured: boolean;
+  requiredEnvKeys: string[];
+  defaultScopes: string[];
+  status: SocialChannelStatus;
+  isActive: boolean;
+  accountName: string | null;
+  accountId: string | null;
+  accountHandle: string | null;
+  avatarUrl: string | null;
+  scopes: string[];
+  keyVersion: number | null;
+  tokenExpiresAt: string | null;
+  connectedAt: string | null;
+  lastSyncAt: string | null;
+  lastHealthCheckAt: string | null;
+  lastLatencyMs: number | null;
+  lastError: string | null;
+}
+
+export interface SocialOverviewMetrics {
+  totalChannels: number;
+  connectedChannels: number;
+  expiringSoonChannels: number;
+  errorChannels: number;
+  notConfiguredChannels: number;
+  activeWebhooks: number;
+  totalWebhooks: number;
+  totalDeliveries24h: number;
+  failedDeliveries24h: number;
+  encryptionConfigured: boolean;
+  encryptionKeyVersion: number;
+}
+
+export interface WebhookEndpointItem {
+  id: string;
+  name: string;
+  url: string;
+  events: string[];
+  secretPrefix: string;
+  keyVersion: number;
+  isActive: boolean;
+  lastDeliveryAt: string | null;
+  lastStatusCode: number | null;
+  lastError: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count?: { deliveries: number };
+}
+
+export interface WebhookDeliveryItem {
+  id: string;
+  endpointId: string;
+  eventType: string;
+  payload: Record<string, unknown>;
+  responseStatus: number | null;
+  responseBody: string | null;
+  latencyMs: number | null;
+  attemptCount: number;
+  status: string;
+  errorMessage: string | null;
+  deliveredAt: string;
+  endpoint?: { id: string; name: string; url: string };
+}
+
+export interface SocialOverviewResponse {
+  channels: SocialChannelItem[];
+  metrics: SocialOverviewMetrics;
+  webhooks: WebhookEndpointItem[];
+  recentDeliveries: WebhookDeliveryItem[];
+  supportedEvents: string[];
+}
+
+export interface SocialTestEndpointResult {
+  key: string;
+  displayName: string;
+  status: string;
+  ok: boolean;
+  latencyMs: number | null;
+  message: string;
+}
+
+export interface SocialAuditLogItem {
+  id: string;
+  action: string;
+  entity: string;
+  entityId: string;
+  meta: Record<string, unknown> | null;
+  ip: string | null;
+  createdAt: string;
+  actor: { id: string; name: string; email: string };
+}
+
+export async function apiGetSocialOverview(): Promise<SocialOverviewResponse> {
+  return await apiFetch("/api/admin/social/overview");
+}
+
+export async function apiStartSocialOAuth(key: string): Promise<{ authorizeUrl: string }> {
+  return await apiFetch(`/api/admin/social/providers/${encodeURIComponent(key)}/connect`, {
+    method: "POST",
+  });
+}
+
+export async function apiSyncSocialProvider(key: string): Promise<{ channel: SocialChannelItem }> {
+  return await apiFetch(`/api/admin/social/providers/${encodeURIComponent(key)}/sync`, {
+    method: "POST",
+  });
+}
+
+export async function apiToggleSocialProvider(key: string): Promise<{ channel: SocialChannelItem }> {
+  return await apiFetch(`/api/admin/social/providers/${encodeURIComponent(key)}/toggle`, {
+    method: "POST",
+  });
+}
+
+export async function apiDisconnectSocialProvider(key: string): Promise<{ channel: SocialChannelItem }> {
+  return await apiFetch(`/api/admin/social/providers/${encodeURIComponent(key)}/disconnect`, {
+    method: "POST",
+  });
+}
+
+export async function apiTestAllSocialEndpoints(): Promise<{
+  results: SocialTestEndpointResult[];
+  checkedAt: string;
+}> {
+  return await apiFetch("/api/admin/social/test-all", { method: "POST" });
+}
+
+export async function apiGetSocialAuditLogs(): Promise<{ logs: SocialAuditLogItem[] }> {
+  return await apiFetch("/api/admin/social/audit-logs");
+}
+
+export async function apiCreateWebhook(payload: {
+  name: string;
+  url: string;
+  events: string[];
+}): Promise<{ webhook: WebhookEndpointItem; plaintextSecret: string }> {
+  return await apiFetch("/api/admin/social/webhooks", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiUpdateWebhook(
+  id: string,
+  payload: { name?: string; url?: string; events?: string[]; isActive?: boolean },
+): Promise<{ webhook: WebhookEndpointItem }> {
+  return await apiFetch(`/api/admin/social/webhooks/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiRotateWebhookSecret(
+  id: string,
+): Promise<{ webhook: WebhookEndpointItem; plaintextSecret: string }> {
+  return await apiFetch(`/api/admin/social/webhooks/${encodeURIComponent(id)}/rotate-secret`, {
+    method: "POST",
+  });
+}
+
+export async function apiTestWebhook(id: string): Promise<{ delivery: WebhookDeliveryItem }> {
+  return await apiFetch(`/api/admin/social/webhooks/${encodeURIComponent(id)}/test`, {
+    method: "POST",
+  });
+}
+
+export async function apiDeleteWebhook(id: string): Promise<{ deleted: boolean; id: string }> {
+  return await apiFetch(`/api/admin/social/webhooks/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+export async function apiRetryWebhookDelivery(
+  deliveryId: string,
+): Promise<{ delivery: WebhookDeliveryItem }> {
+  return await apiFetch(`/api/admin/social/deliveries/${encodeURIComponent(deliveryId)}/retry`, {
+    method: "POST",
+  });
+}
+
 export type {
   ShowcaseItem,
   ProjectItem,

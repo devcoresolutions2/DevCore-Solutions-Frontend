@@ -21,6 +21,7 @@ import {
   Compass,
   BookOpen,
   LogOut,
+  Share2,
 } from "lucide-react";
 import {
   JobItem,
@@ -347,6 +348,14 @@ export default function AdminDashboardPage() {
           <Mail size={14} />
           <span>Leads & Inquiries</span>
         </button>
+
+        <Link
+          href="/admin/social"
+          className="px-4 py-2 rounded-lg font-semibold transition-all inline-flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
+        >
+          <Share2 size={14} />
+          <span>Social Channels</span>
+        </Link>
       </div>
 
       {/* TAB: LEADS & INQUIRIES */}

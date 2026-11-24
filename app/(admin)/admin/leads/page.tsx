@@ -7,6 +7,7 @@ import {
   Terminal,
   Inbox,
   LayoutDashboard,
+  Share2,
   Settings,
   Home,
   LogOut,
@@ -87,6 +88,13 @@ export default function AdminLeadsPage() {
             >
               <Inbox size={15} />
               <span>Leads Pipeline</span>
+            </Link>
+            <Link
+              href="/admin/social"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] whitespace-nowrap"
+            >
+              <Share2 size={15} />
+              <span>Social Channels</span>
             </Link>
             <Link
               href="/account/settings"
