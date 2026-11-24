@@ -217,17 +217,7 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
                       </span>
                     </div>
 
-                    <Link
-                      href="/account/settings"
-                      onClick={() => setUserMenuOpen(false)}
-                      role="menuitem"
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--bg-surface)] transition-colors"
-                    >
-                      <Settings size={14} />
-                      <span>Account Settings</span>
-                    </Link>
-
-                    {(user.role === "SUPER_ADMIN" || user.role === "EDITOR") && (
+                    {user.role === "SUPER_ADMIN" || user.role === "EDITOR" ? (
                       <Link
                         href="/admin/dashboard"
                         onClick={() => setUserMenuOpen(false)}
@@ -236,6 +226,16 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
                       >
                         <Shield size={14} />
                         <span>Admin Dashboard</span>
+                      </Link>
+                    ) : (
+                      <Link
+                        href="/account/settings"
+                        onClick={() => setUserMenuOpen(false)}
+                        role="menuitem"
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--bg-surface)] transition-colors"
+                      >
+                        <Settings size={14} />
+                        <span>Account Settings</span>
                       </Link>
                     )}
 
@@ -352,7 +352,7 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
             <div className="mt-3 pt-3 border-t border-[var(--border-subtle)] flex flex-col gap-2">
               {user ? (
                 <>
-                  {(user.role === "SUPER_ADMIN" || user.role === "EDITOR") && (
+                  {user.role === "SUPER_ADMIN" || user.role === "EDITOR" ? (
                     <Link
                       href="/admin/dashboard"
                       className="flex items-center justify-center gap-2 h-11 rounded-[10px] bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-sm font-semibold hover:bg-[var(--brand-hover)] transition-colors"
@@ -360,14 +360,15 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
                       <Shield size={15} />
                       Admin Dashboard
                     </Link>
+                  ) : (
+                    <Link
+                      href="/account/settings"
+                      className="flex items-center justify-center gap-2 h-11 rounded-[10px] border border-[var(--border-subtle)] text-sm font-medium text-[var(--text-primary)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors"
+                    >
+                      <Settings size={15} />
+                      Account Settings
+                    </Link>
                   )}
-                  <Link
-                    href="/account/settings"
-                    className="flex items-center justify-center gap-2 h-11 rounded-[10px] border border-[var(--border-subtle)] text-sm font-medium text-[var(--text-primary)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors"
-                  >
-                    <Settings size={15} />
-                    Account Settings
-                  </Link>
                   <button
                     type="button"
                     onClick={async () => {
