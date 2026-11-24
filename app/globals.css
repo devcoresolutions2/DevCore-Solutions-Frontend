@@ -1021,6 +1021,9 @@
   .w-\[360px\] {
     width: 360px;
   }
+  .w-\[372px\] {
+    width: 372px;
+  }
   .w-auto {
     width: auto;
   }
@@ -1960,6 +1963,12 @@
   }
   .bg-\[var\(--bg-canvas\)\] {
     background-color: var(--bg-canvas);
+  }
+  .bg-\[var\(--bg-canvas\)\]\/50 {
+    background-color: var(--bg-canvas);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--bg-canvas) 50%, transparent);
+    }
   }
   .bg-\[var\(--bg-canvas\)\]\/60 {
     background-color: var(--bg-canvas);
@@ -3851,14 +3860,6 @@
     }
     .hover\:bg-\[var\(--border-subtle\)\]:hover {
       background-color: var(--border-subtle);
-    }
-    .hover\:bg-\[var\(--border-subtle\)\]\/30:hover {
-      background-color: var(--border-subtle);
-    }
-    @supports (color: color-mix(in lab, red, red)) {
-      .hover\:bg-\[var\(--border-subtle\)\]\/30:hover {
-        background-color: color-mix(in oklab, var(--border-subtle) 30%, transparent);
-      }
     }
     .hover\:bg-\[var\(--brand-hover\)\]:hover {
       background-color: var(--brand-hover);
