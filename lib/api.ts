@@ -1440,22 +1440,79 @@ export async function apiResendVerification(
   return { success: true, message: "A fresh verification link and security code have been sent." };
 }
 
-export async function apiForgotPassword(email: string): Promise<{ success: boolean; message: string }> {
+export interface ForgotPasswordResponse {
+  success: boolean;
+  message: string;
+  maskedEmail?: string;
+  expiresInSeconds?: number;
+  cooldownSeconds?: number;
+  resendsLeft?: number;
+}
+
+export interface VerifyResetOtpResponse {
+  success: boolean;
+  message: string;
+  resetToken?: string;
+  attemptsLeft?: number;
+}
+
+export interface ResendResetOtpResponse {
+  success: boolean;
+  message: string;
+  cooldownSeconds?: number;
+  resendsLeft?: number;
+}
+
+export async function apiForgotPassword(email: string): Promise<ForgotPasswordResponse> {
   if (!USE_MOCK) {
-    return await apiFetch<{ success: boolean; message: string }>("/api/auth/forgot-password", {
+    return await apiFetch<ForgotPasswordResponse>("/api/auth/forgot-password", {
       method: "POST",
       body: JSON.stringify({ email }),
     });
   }
   return {
     success: true,
-    message: "If an account matches this email, a password recovery dispatch has been transmitted.",
+    message: "If an account matches this email, a verification code has been dispatched.",
+    maskedEmail: email.replace(/(^.{2})(.*)(@.*$)/, "$1****$3"),
+    expiresInSeconds: 600,
+    cooldownSeconds: 60,
+    resendsLeft: 3,
+  };
+}
+
+export async function apiVerifyResetOtp(email: string, otp: string): Promise<VerifyResetOtpResponse> {
+  if (!USE_MOCK) {
+    return await apiFetch<VerifyResetOtpResponse>("/api/auth/verify-reset-otp", {
+      method: "POST",
+      body: JSON.stringify({ email, otp }),
+    });
+  }
+  return {
+    success: true,
+    message: "OTP verified successfully.",
+    resetToken: "mock-reset-token-" + Date.now(),
+  };
+}
+
+export async function apiResendResetOtp(email: string): Promise<ResendResetOtpResponse> {
+  if (!USE_MOCK) {
+    return await apiFetch<ResendResetOtpResponse>("/api/auth/resend-reset-otp", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  }
+  return {
+    success: true,
+    message: "A fresh verification code has been dispatched to your email.",
+    cooldownSeconds: 60,
+    resendsLeft: 2,
   };
 }
 
 export async function apiResetPassword(payload: {
   token: string;
   password: string;
+  confirmPassword?: string;
 }): Promise<{ success: boolean; message: string }> {
   if (!USE_MOCK) {
     return await apiFetch<{ success: boolean; message: string }>("/api/auth/reset-password", {
