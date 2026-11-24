@@ -38,6 +38,7 @@ import {
 import { AboutCmsManager } from "@/components/admin/AboutCmsManager";
 import { BlogCmsManager } from "@/components/admin/BlogCmsManager";
 import { BrandLogo } from "@/components/shared/BrandLogo";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -153,13 +154,23 @@ export default function AdminDashboardPage() {
 
         <div className="flex flex-wrap items-center gap-3">
           {user && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs font-mono">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <Link
+              href="/account/settings"
+              title="Open Account Settings"
+              className="flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-lg bg-[var(--bg-surface)] hover:border-[var(--brand-primary)] border border-[var(--border-subtle)] text-xs font-mono transition-colors"
+            >
+              <UserAvatar
+                name={user.name}
+                avatarUrl={user.avatarUrl}
+                size={64}
+                className="w-6 h-6"
+                textClassName="text-[10px]"
+              />
               <span className="text-[var(--text-secondary)]">{user.email}</span>
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] font-bold">
                 {user.role}
               </span>
-            </div>
+            </Link>
           )}
 
           <button

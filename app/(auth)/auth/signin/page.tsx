@@ -16,11 +16,13 @@ import {
 } from "lucide-react";
 import { AuthLayoutShell } from "@/components/auth/AuthLayoutShell";
 import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { apiSignIn } from "@/lib/api";
 
 function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { setUser } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -88,8 +90,10 @@ function SignInContent() {
       });
 
       if (res.success) {
-        // Redirect
-        router.push(res.redirectUrl || "/");
+        setUser(res.user);
+        const redirectTarget = searchParams.get("redirect");
+        const safeRedirect = redirectTarget && redirectTarget.startsWith("/") ? redirectTarget : null;
+        router.push(safeRedirect || res.redirectUrl || "/");
         router.refresh();
       }
     } catch (err: any) {

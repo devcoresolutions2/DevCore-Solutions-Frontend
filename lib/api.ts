@@ -1262,10 +1262,12 @@ export async function getBlogStats(): Promise<{
 export type AuthUser = {
   id: string;
   name: string;
+  username?: string | null;
   email: string;
   role: "USER" | "CLIENT" | "EDITOR" | "SUPER_ADMIN";
   emailVerified: boolean;
-  avatarUrl?: string;
+  avatarUrl?: string | null;
+  hasPassword?: boolean;
 };
 
 // Mock in-memory session for offline preview / fallback
@@ -1546,6 +1548,169 @@ export async function apiResetPassword(payload: {
     success: true,
     message: "Password updated successfully. You may now sign in with your new credentials.",
   };
+}
+
+// ─── ACCOUNT SETTINGS & SECURITY API ─────────────────────────────────────────
+
+export interface AccountProfile extends AuthUser {
+  avatarPublicId?: string | null;
+  avatarVersion?: number | null;
+  isActive: boolean;
+  hasPassword: boolean;
+  lastSignInAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ConnectedProviderItem {
+  id: string;
+  provider: string;
+  connectedAt: string;
+}
+
+export interface AccountOverviewResponse {
+  user: AccountProfile;
+  providers: ConnectedProviderItem[];
+  activeSessionsCount: number;
+  recentEventsCount: number;
+  oauthConfigured: {
+    google: boolean;
+    github: boolean;
+  };
+}
+
+export interface AvatarSignatureResponse {
+  signature: string;
+  timestamp: number;
+  apiKey: string;
+  cloudName: string;
+  folder: string;
+  publicId: string;
+  eager: string;
+  allowedFormats: string;
+  maxFileSizeBytes: number;
+}
+
+export interface AccountSessionItem {
+  id: string;
+  isCurrent: boolean;
+  browser: string;
+  os: string;
+  deviceType: "desktop" | "mobile" | "cli";
+  ip: string | null;
+  approxLocation: string | null;
+  rememberMe: boolean;
+  lastActiveAt: string;
+  createdAt: string;
+  expiresAt: string;
+}
+
+export interface AccountAuditEventItem {
+  id: string;
+  type: string;
+  status: string;
+  ip: string | null;
+  client: { browser: string; os: string; deviceType: string };
+  metadata?: Record<string, any> | null;
+  createdAt: string;
+}
+
+export async function apiGetAccountOverview(): Promise<AccountOverviewResponse> {
+  return await apiFetch<AccountOverviewResponse>("/api/account/overview");
+}
+
+export async function apiUpdateProfile(payload: {
+  name: string;
+  username?: string | null;
+}): Promise<{ success: boolean; message: string; user: AccountProfile }> {
+  return await apiFetch("/api/account/profile", {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiGetAvatarUploadSignature(): Promise<AvatarSignatureResponse> {
+  return await apiFetch<AvatarSignatureResponse>("/api/account/avatar/signature", {
+    method: "POST",
+  });
+}
+
+export async function apiConfirmAvatarUpload(publicId: string): Promise<{
+  success: boolean;
+  message: string;
+  avatarUrl: string;
+  avatarPublicId: string;
+  avatarVersion: number | null;
+}> {
+  return await apiFetch("/api/account/avatar/confirm", {
+    method: "POST",
+    body: JSON.stringify({ publicId }),
+  });
+}
+
+export async function apiDeleteAvatar(): Promise<{ success: boolean; message: string }> {
+  return await apiFetch("/api/account/avatar", {
+    method: "DELETE",
+  });
+}
+
+export async function apiChangePassword(payload: {
+  currentPassword?: string;
+  newPassword: string;
+  revokeOtherSessions?: boolean;
+}): Promise<{ success: boolean; message: string; revokedOthersCount: number }> {
+  return await apiFetch("/api/account/password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiDisconnectProvider(
+  provider: "google" | "github"
+): Promise<{ success: boolean; message: string }> {
+  return await apiFetch(`/api/account/providers/${provider}`, {
+    method: "DELETE",
+  });
+}
+
+export async function apiGetSessions(): Promise<{ sessions: AccountSessionItem[] }> {
+  return await apiFetch("/api/account/sessions");
+}
+
+export async function apiRevokeSession(
+  sessionId: string
+): Promise<{ success: boolean; message: string }> {
+  return await apiFetch(`/api/account/sessions/${encodeURIComponent(sessionId)}`, {
+    method: "DELETE",
+  });
+}
+
+export async function apiRevokeOtherSessions(): Promise<{
+  success: boolean;
+  revokedCount: number;
+  message: string;
+}> {
+  return await apiFetch("/api/account/sessions/revoke-others", {
+    method: "POST",
+  });
+}
+
+export async function apiGetAuditEvents(
+  page = 1,
+  limit = 15
+): Promise<{
+  events: AccountAuditEventItem[];
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+}> {
+  return await apiFetch(`/api/account/audit-events?page=${page}&limit=${limit}`);
+}
+
+export function getAuditExportUrl(): string {
+  return `${BASE_URL}/api/account/audit-events/export`;
+}
+
+export function getOAuthLinkUrl(provider: "google" | "github"): string {
+  return `${BASE_URL}/api/auth/${provider}?mode=link`;
 }
 
 export type {
