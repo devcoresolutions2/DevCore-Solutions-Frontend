@@ -269,9 +269,9 @@ export function AboutCmsManager() {
 
   if (loading || !content) {
     return (
-      <div className="p-12 text-center text-xs font-mono text-[var(--text-muted)] flex items-center justify-center gap-2">
-        <RefreshCw size={14} className="animate-spin" />
-        <span>Loading About Page Management CMS...</span>
+      <div className="p-12 text-center text-sm text-[var(--text-secondary)] flex items-center justify-center gap-2">
+        <RefreshCw size={15} className="animate-spin" />
+        <span>Loading About Page content...</span>
       </div>
     );
   }
@@ -279,7 +279,7 @@ export function AboutCmsManager() {
   return (
     <div className="space-y-6">
       {/* Sub Navigation Bar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-[var(--border-subtle)] pb-3 font-mono text-xs">
+      <div className="flex flex-wrap items-center gap-2 border-b border-[var(--border-subtle)] pb-3 text-[13px]">
         <button
           type="button"
           onClick={() => setSubSection("team")}
@@ -432,15 +432,15 @@ export function AboutCmsManager() {
                 <div
                   key={member.id}
                   className={cn(
-                    "p-4 rounded-xl border transition-all flex flex-col justify-between gap-4 bg-[var(--bg-surface)]/80",
+                    "p-5 rounded-2xl border transition-all duration-200 flex flex-col justify-between gap-4 bg-[var(--bg-surface)] hover:shadow-md",
                     member.isPublished
-                      ? "border-[var(--border-subtle)]"
-                      : "border-dashed border-[var(--border-strong)] opacity-60"
+                      ? "border-[var(--border-subtle)] hover:border-[var(--border-strong)]"
+                      : "border-dashed border-[var(--border-strong)] opacity-65"
                   )}
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-3.5">
                     {/* Avatar Preview */}
-                    <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] shrink-0 flex items-center justify-center">
+                    <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] shrink-0 flex items-center justify-center">
                       {member.avatarUrl ? (
                         <img
                           src={member.avatarUrl}
@@ -448,34 +448,34 @@ export function AboutCmsManager() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className="font-display font-extrabold text-sm text-[var(--brand-primary)]">
+                        <span className="text-sm font-semibold text-[var(--brand-primary)]">
                           {initials}
                         </span>
                       )}
                     </div>
 
                     <div className="flex flex-col min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm text-[var(--text-primary)] truncate">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-semibold text-[15px] text-[var(--text-primary)] truncate">
                           {member.name}
                         </span>
                         {member.badge && (
-                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--brand-primary)] border border-[var(--border-subtle)] uppercase">
+                          <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] text-[var(--brand-primary)] border border-[var(--border-subtle)]">
                             {member.badge}
                           </span>
                         )}
                       </div>
-                      <span className="text-xs text-[var(--text-secondary)] truncate">
+                      <span className="text-[13px] text-[var(--text-secondary)] truncate mt-0.5">
                         {member.role}
                       </span>
-                      <span className="text-[10px] font-mono text-[var(--text-muted)] mt-1">
-                        Order: #{member.displayOrder} &bull; {member.isPublished ? "Published" : "Draft"}
+                      <span className="text-xs text-[var(--text-tertiary)] mt-1">
+                        Order #{member.displayOrder} &bull; {member.isPublished ? "Published" : "Draft"}
                       </span>
                     </div>
                   </div>
 
                   {member.bio && (
-                    <p className="text-xs text-[var(--text-secondary)] line-clamp-2">
+                    <p className="text-[13px] text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
                       {member.bio}
                     </p>
                   )}
@@ -586,33 +586,33 @@ export function AboutCmsManager() {
               <div
                 key={p.id}
                 className={cn(
-                  "p-5 rounded-xl border transition-all flex flex-col justify-between gap-3 bg-[var(--bg-surface)]/80",
+                  "p-5 rounded-2xl border transition-all duration-200 flex flex-col justify-between gap-3.5 bg-[var(--bg-surface)] hover:shadow-md",
                   p.isPublished
-                    ? "border-[var(--border-subtle)]"
-                    : "border-dashed border-[var(--border-strong)] opacity-60"
+                    ? "border-[var(--border-subtle)] hover:border-[var(--border-strong)]"
+                    : "border-dashed border-[var(--border-strong)] opacity-65"
                 )}
               >
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-mono text-xs font-bold text-[var(--brand-primary)]">
+                  <div className="flex items-center justify-between mb-2.5">
+                    <span className="text-xs font-semibold text-[var(--brand-primary)]">
                       {p.number || `0${index + 1}`}
                     </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
-                      Icon: {p.icon}
+                    <span className="text-xs font-medium px-2.5 py-0.5 rounded-md bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)]">
+                      {p.icon}
                     </span>
                   </div>
-                  <h3 className="font-display font-bold text-base text-[var(--text-primary)]">
+                  <h3 className="text-base font-semibold text-[var(--text-primary)]">
                     {p.title}
                   </h3>
-                  <p className="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">
+                  <p className="text-[13px] text-[var(--text-secondary)] mt-1.5 leading-relaxed">
                     {p.description}
                   </p>
                 </div>
 
                 {(p.supportingLabel || p.supportingText) && (
-                  <div className="p-2.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]/70 flex items-center justify-between text-xs font-mono">
-                    <span className="text-[var(--text-muted)]">{p.supportingLabel}</span>
-                    <span className="text-[var(--text-primary)] font-semibold truncate max-w-[200px]">
+                  <div className="p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-between text-xs">
+                    <span className="text-[var(--text-tertiary)]">{p.supportingLabel}</span>
+                    <span className="text-[var(--text-primary)] font-medium truncate max-w-[200px]">
                       {p.supportingText}
                     </span>
                   </div>

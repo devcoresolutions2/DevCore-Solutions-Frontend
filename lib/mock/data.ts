@@ -170,7 +170,7 @@ export const MOCK_SHOWCASE: ShowcaseItem[] = [
     tagline: "Multi-Vendor Restaurant Ordering & Table Reservation SaaS Platform",
     category: "SaaS",
     badge: "FLAGSHIP",
-    launchedAt: "2024-08-01",
+    launchedAt: "2026-10-15",
     version: "3.1",
     description:
       "Enterprise-grade, full-stack multi-vendor restaurant ordering and table reservation SaaS platform engineered from the ground up by DevCore Solutions. Eliminates 20–35% third-party aggregator commissions by equipping cloud kitchens, franchise venues, and restaurant groups with direct-to-consumer digital storefronts, table reservation engines, and real-time kitchen dispatch workflows.",

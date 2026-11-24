@@ -13,117 +13,122 @@ interface ShowcaseCardProps {
 }
 
 export function ShowcaseCard({ item, featured = false, compact = false }: ShowcaseCardProps) {
-  const launchDate = new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(
-    new Date(item.launchedAt)
-  );
+  const launchDate =
+    item.slug === "dinedesk"
+      ? "Oct – Nov 2026"
+      : new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(
+          new Date(item.launchedAt)
+        );
 
   return (
     <article
       className={cn(
-        "devcore-glass-card overflow-hidden flex flex-col justify-between group",
-        featured && "lg:col-span-2"
+        "devcore-glass-card rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden group hover:border-[var(--border-strong)] hover:shadow-lg transition-all duration-200",
+        featured ? "md:col-span-2 lg:col-span-3 grid grid-cols-1 lg:grid-cols-12" : "flex flex-col justify-between"
       )}
       aria-label={`${item.name} — ${item.tagline}`}
     >
       {/* Cover */}
       <div
         className={cn(
-          "w-full border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] relative overflow-hidden",
-          featured ? "aspect-[16/9]" : "aspect-[16/9]"
+          "w-full bg-[var(--bg-elevated)] relative overflow-hidden flex items-center justify-center",
+          featured
+            ? "lg:col-span-6 p-4 sm:p-6 border-b lg:border-b-0 lg:border-r border-[var(--border-subtle)]"
+            : "p-3 border-b border-[var(--border-subtle)]"
         )}
       >
         {item.coverImage ? (
-          <>
+          <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--bg-canvas)]">
             <Image
               src={item.coverImage}
               alt={item.name}
               fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+              sizes={featured ? "(max-width: 1024px) 100vw, 50vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
+              className="object-contain object-center transition-transform duration-500 group-hover:scale-[1.02]"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-surface)]/90 via-black/20 to-black/30 pointer-events-none" />
-          </>
+          </div>
         ) : (
-          <div
-            className="absolute inset-0 opacity-20 pointer-events-none"
-            style={{
-              backgroundImage: "radial-gradient(var(--brand-primary) 1px, transparent 1px)",
-              backgroundSize: "16px 16px",
-            }}
-            aria-hidden="true"
-          />
+          <div className="relative w-full aspect-[16/10] rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] flex items-center justify-center">
+            <div
+              className="absolute inset-0 opacity-20 pointer-events-none"
+              style={{
+                backgroundImage: "radial-gradient(var(--brand-primary) 1px, transparent 1px)",
+                backgroundSize: "16px 16px",
+              }}
+              aria-hidden="true"
+            />
+          </div>
         )}
+      </div>
 
-        <div className="absolute inset-0 p-5 flex flex-col justify-start z-10 pointer-events-none">
-          {/* Top row */}
-          <div className="flex items-center justify-between pointer-events-auto">
+      {/* Right / Body Column */}
+      <div className={cn("flex flex-col justify-between", featured && "lg:col-span-6")}>
+        {/* Content */}
+        <div className={cn("flex-1 flex flex-col", compact ? "p-4" : "p-6 sm:p-7")}>
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <ReleasePill dot dotColor="var(--brand-primary)">
-              {item.badge}&nbsp;•&nbsp;{item.category.toUpperCase()}
+              {item.badge}&nbsp;•&nbsp;{item.category}
             </ReleasePill>
-            <span className="font-mono text-[11px] text-[var(--text-muted)] bg-[var(--bg-elevated)]/90 px-2 py-0.5 rounded border border-[var(--border-subtle)]">
+            <span className="text-[11px] font-medium text-[var(--text-tertiary)] bg-[var(--bg-elevated)] px-2.5 py-1 rounded-md border border-[var(--border-subtle)]">
               {launchDate}
             </span>
           </div>
-        </div>
-      </div>
+          <div className="flex items-center gap-2.5 mb-1.5">
+            <h3 className={cn("font-display font-bold tracking-tight text-[var(--text-primary)]", featured ? "text-2xl sm:text-3xl" : "text-xl")}>
+              {item.name}
+            </h3>
+            <span className="text-xs font-medium text-[var(--brand-primary)] px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
+              v{item.version}
+            </span>
+          </div>
+          <p className="text-sm font-medium text-[var(--text-secondary)] mb-3">{item.tagline}</p>
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed line-clamp-3">
+            {item.description}
+          </p>
 
-      {/* Content */}
-      <div className={cn("flex-1 flex flex-col", compact ? "p-4" : "p-6 sm:p-7")}>
-        <div className="flex items-center gap-3 mb-1">
-          <h3 className={cn("font-display font-bold text-[var(--text-primary)]", featured ? "text-2xl" : "text-xl")}>
-            {item.name}
-          </h3>
-          <span className="font-mono text-xs text-[var(--brand-primary)] px-2 py-0.5 rounded bg-[var(--bg-surface)] border border-[var(--border-subtle)]">
-            v{item.version}
-          </span>
-        </div>
-        <p className="text-sm font-medium text-[var(--text-secondary)] mb-3">{item.tagline}</p>
-        <p className="text-sm text-[var(--text-primary)]/90 leading-relaxed line-clamp-3">
-          {item.description}
-        </p>
+          {/* Telemetry Metrics inside card body */}
+          {item.metrics && item.metrics.length > 0 && (
+            <div className="grid grid-cols-3 gap-2.5 my-5 pt-4 border-t border-[var(--border-subtle)]">
+              {item.metrics.slice(0, 3).map((m) => (
+                <div key={m.label} className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-center">
+                  <span className="text-[11px] font-medium text-[var(--text-tertiary)] block truncate">{m.label}</span>
+                  <span className="font-semibold text-xs sm:text-sm text-[var(--text-primary)] mt-0.5 block">{m.value}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
-        {/* Telemetry Metrics inside card body */}
-        {item.metrics && item.metrics.length > 0 && (
-          <div className="grid grid-cols-3 gap-2 my-4 pt-3 border-t border-[var(--border-subtle)]">
-            {item.metrics.slice(0, 3).map((m) => (
-              <div key={m.label} className="p-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] dark:bg-white/[0.05] dark:border-white/12 text-center">
-                <span className="text-[10px] text-[var(--text-muted)] dark:text-slate-400 block font-mono uppercase truncate">{m.label}</span>
-                <span className="font-mono font-bold text-xs text-[var(--text-primary)] dark:text-white">{m.value}</span>
-              </div>
+          {/* Tech badges */}
+          <div className="flex flex-wrap gap-1.5 mt-auto pt-2">
+            {item.techStack.map((tech) => (
+              <TechBadge key={tech} tech={tech} size="sm" />
             ))}
           </div>
-        )}
-
-        {/* Tech badges */}
-        <div className="flex flex-wrap gap-1.5 mt-4">
-          {item.techStack.map((tech) => (
-            <TechBadge key={tech} tech={tech} size="sm" />
-          ))}
         </div>
-      </div>
 
-      {/* Actions */}
-      <div className={cn("flex items-center gap-2 border-t border-[var(--border-subtle)]", compact ? "px-4 py-3" : "px-7 pb-6 pt-4")}>
-        {item.liveUrl && (
-          <a
-            href={item.liveUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold h-10 px-4 rounded-[10px] bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:bg-[var(--brand-hover)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
-          >
-            Visit live
-            <ExternalLink size={13} aria-hidden="true" />
-          </a>
-        )}
-        {item.caseStudySlug && (
-          <Link
-            href={`/projects/${item.caseStudySlug}`}
-            className="inline-flex items-center gap-1.5 text-xs font-medium h-10 px-4 rounded-[10px] border border-[var(--border-strong)] bg-[var(--bg-elevated)]/65 text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] hover:border-[var(--brand-primary)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
-          >
-            <FileText size={13} aria-hidden="true" />
-            Case study
-          </Link>
-        )}
+        {/* Actions */}
+        <div className={cn("flex flex-wrap items-center gap-2.5 border-t border-[var(--border-subtle)]", compact ? "px-4 py-3" : "px-6 sm:px-7 py-4")}>
+          {item.liveUrl && (
+            <a
+              href={item.liveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold h-10 px-4 rounded-xl bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:bg-[var(--brand-hover)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
+            >
+              Visit live
+              <ExternalLink size={13} aria-hidden="true" />
+            </a>
+          )}
+          {item.caseStudySlug && (
+            <Link
+              href={`/projects/${item.caseStudySlug}`}
+              className="inline-flex items-center gap-1.5 text-xs font-medium h-10 px-4 rounded-xl border border-[var(--border-strong)] bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--brand-primary)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
+            >
+              <FileText size={13} aria-hidden="true" />
+              Case study
+            </Link>
+          )}
+        </div>
       </div>
     </article>
   );

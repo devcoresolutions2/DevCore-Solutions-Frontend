@@ -54,7 +54,7 @@ const USE_MOCK = !BASE_URL;
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${BASE_URL}${path}`;
-  const signal = init?.signal || (AbortSignal.timeout ? AbortSignal.timeout(4000) : undefined);
+  const signal = init?.signal || (AbortSignal.timeout ? AbortSignal.timeout(30000) : undefined);
   const res = await fetch(url, {
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     credentials: "include",
@@ -63,6 +63,17 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!res.ok) {
+    if (typeof window !== "undefined" && window.location.pathname.startsWith("/admin")) {
+      const p = window.location.pathname;
+      if (res.status === 401 && !p.startsWith("/admin/session-expired")) {
+        window.location.assign(
+          `/admin/session-expired?next=${encodeURIComponent(p + window.location.search)}`,
+        );
+      } else if (res.status === 403 && !p.startsWith("/admin/403")) {
+        window.location.assign("/admin/403");
+      }
+    }
+
     let errorMsg = `HTTP ${res.status}: ${res.statusText}`;
     try {
       const errJson = await res.json();
@@ -177,7 +188,17 @@ export async function getServices(): Promise<ServiceItem[]> {
         description: item.summary || item.description || "",
         features: item.deliverables || item.features || [],
         deliverables: item.deliverables || item.features || [],
-        icon: item.icon || "Code2",
+        icon:
+          item.icon ||
+          (item.serviceCode === "ENG-WEB" || item.title?.toLowerCase().includes("web")
+            ? "Layers"
+            : item.serviceCode === "ENG-CLD" || item.title?.toLowerCase().includes("cloud")
+            ? "Boxes"
+            : item.serviceCode === "ENG-AUT" || item.title?.toLowerCase().includes("ai")
+            ? "Bot"
+            : item.serviceCode === "ENG-DSN" || item.title?.toLowerCase().includes("design")
+            ? "Layout"
+            : "Terminal"),
         serviceCode: item.serviceCode || item.slug || `ENG-0${idx + 1}`,
         disciplineNumber: item.disciplineNumber || String(idx + 1).padStart(2, "0"),
         category: item.category || "Engineering Discipline",
@@ -1252,10 +1273,12 @@ export async function getBlogStats(): Promise<{
 export type AuthUser = {
   id: string;
   name: string;
+  username?: string | null;
   email: string;
   role: "USER" | "CLIENT" | "EDITOR" | "SUPER_ADMIN";
   emailVerified: boolean;
-  avatarUrl?: string;
+  avatarUrl?: string | null;
+  hasPassword?: boolean;
 };
 
 // Mock in-memory session for offline preview / fallback
@@ -1266,9 +1289,10 @@ export async function apiSignUp(payload: {
   email: string;
   password: string;
   termsAccepted: boolean;
-}): Promise<{ success: boolean; message: string; email: string }> {
+  inviteToken?: string;
+}): Promise<{ success: boolean; message: string; email: string; inviteAccepted?: boolean }> {
   if (!USE_MOCK) {
-    return await apiFetch<{ success: boolean; message: string; email: string }>("/api/auth/signup", {
+    return await apiFetch<{ success: boolean; message: string; email: string; inviteAccepted?: boolean }>("/api/auth/signup", {
       method: "POST",
       body: JSON.stringify(payload),
     });
@@ -1350,13 +1374,61 @@ export async function apiSignOut(): Promise<{ success: boolean }> {
   return { success: true };
 }
 
+export interface VerificationStatusResponse {
+  hasActiveOtp: boolean;
+  expiresInSeconds: number;
+  cooldownSeconds: number;
+  attemptsLeft: number;
+  resendsLeft: number;
+  isLocked: boolean;
+  emailVerified: boolean;
+}
+
+export async function apiGetVerificationStatus(email: string): Promise<VerificationStatusResponse> {
+  if (!USE_MOCK) {
+    return await apiFetch<VerificationStatusResponse>(
+      `/api/auth/verification-status?email=${encodeURIComponent(email)}`,
+      { method: "GET" }
+    );
+  }
+  return {
+    hasActiveOtp: true,
+    expiresInSeconds: 600,
+    cooldownSeconds: 0,
+    attemptsLeft: 5,
+    resendsLeft: 3,
+    isLocked: false,
+    emailVerified: false,
+  };
+}
+
+export async function apiChangePendingEmail(
+  currentEmail: string,
+  newEmail: string
+): Promise<{ success: boolean; message: string; newEmail?: string }> {
+  if (!USE_MOCK) {
+    return await apiFetch<{ success: boolean; message: string; newEmail?: string }>(
+      "/api/auth/change-pending-email",
+      {
+        method: "POST",
+        body: JSON.stringify({ currentEmail, newEmail }),
+      }
+    );
+  }
+  return {
+    success: true,
+    message: `Verification code dispatched to ${newEmail}`,
+    newEmail,
+  };
+}
+
 export async function apiVerifyEmail(payload: {
   token?: string;
   otp?: string;
   email?: string;
-}): Promise<{ success: boolean; message: string }> {
+}): Promise<{ success: boolean; message: string; attemptsLeft?: number }> {
   if (!USE_MOCK) {
-    return await apiFetch<{ success: boolean; message: string }>("/api/auth/verify-email", {
+    return await apiFetch<{ success: boolean; message: string; attemptsLeft?: number }>("/api/auth/verify-email", {
       method: "POST",
       body: JSON.stringify(payload),
     });
@@ -1367,32 +1439,116 @@ export async function apiVerifyEmail(payload: {
   return { success: true, message: "Email verified successfully! You may now sign in." };
 }
 
-export async function apiResendVerification(email: string): Promise<{ success: boolean; message: string }> {
+export async function apiResendVerification(
+  email: string
+): Promise<{ success: boolean; message: string; cooldownSeconds?: number; resendsLeft?: number }> {
   if (!USE_MOCK) {
-    return await apiFetch<{ success: boolean; message: string }>("/api/auth/resend-verification", {
-      method: "POST",
-      body: JSON.stringify({ email }),
-    });
+    return await apiFetch<{ success: boolean; message: string; cooldownSeconds?: number; resendsLeft?: number }>(
+      "/api/auth/resend-verification",
+      {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      }
+    );
   }
   return { success: true, message: "A fresh verification link and security code have been sent." };
 }
 
-export async function apiForgotPassword(email: string): Promise<{ success: boolean; message: string }> {
+export interface ForgotPasswordResponse {
+  success: boolean;
+  message: string;
+  maskedEmail?: string;
+  expiresInSeconds?: number;
+  cooldownSeconds?: number;
+  resendsLeft?: number;
+}
+
+export interface VerifyResetOtpResponse {
+  success: boolean;
+  message: string;
+  resetToken?: string;
+  attemptsLeft?: number;
+}
+
+export interface ResendResetOtpResponse {
+  success: boolean;
+  message: string;
+  cooldownSeconds?: number;
+  resendsLeft?: number;
+}
+
+export async function apiForgotPassword(email: string): Promise<ForgotPasswordResponse> {
   if (!USE_MOCK) {
-    return await apiFetch<{ success: boolean; message: string }>("/api/auth/forgot-password", {
+    return await apiFetch<ForgotPasswordResponse>("/api/auth/forgot-password", {
       method: "POST",
       body: JSON.stringify({ email }),
     });
   }
   return {
     success: true,
-    message: "If an account matches this email, a password recovery dispatch has been transmitted.",
+    message: "If an account matches this email, a verification code has been dispatched.",
+    maskedEmail: email.replace(/(^.{2})(.*)(@.*$)/, "$1****$3"),
+    expiresInSeconds: 600,
+    cooldownSeconds: 60,
+    resendsLeft: 3,
+  };
+}
+
+export async function apiVerifyResetOtp(email: string, otp: string): Promise<VerifyResetOtpResponse> {
+  if (!USE_MOCK) {
+    return await apiFetch<VerifyResetOtpResponse>("/api/auth/verify-reset-otp", {
+      method: "POST",
+      body: JSON.stringify({ email, otp }),
+    });
+  }
+  return {
+    success: true,
+    message: "OTP verified successfully.",
+    resetToken: "mock-reset-token-" + Date.now(),
+  };
+}
+
+export async function apiResendResetOtp(email: string): Promise<ResendResetOtpResponse> {
+  if (!USE_MOCK) {
+    return await apiFetch<ResendResetOtpResponse>("/api/auth/resend-reset-otp", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  }
+  return {
+    success: true,
+    message: "A fresh verification code has been dispatched to your email.",
+    cooldownSeconds: 60,
+    resendsLeft: 2,
+  };
+}
+
+export async function apiValidateResetToken(token: string): Promise<{
+  valid: boolean;
+  message?: string;
+  expiresInSeconds?: number;
+}> {
+  if (!USE_MOCK) {
+    return await apiFetch<{
+      valid: boolean;
+      message?: string;
+      expiresInSeconds?: number;
+    }>("/api/auth/validate-reset-token", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    });
+  }
+  return {
+    valid: Boolean(token),
+    expiresInSeconds: 900,
+    message: "Token is active and valid.",
   };
 }
 
 export async function apiResetPassword(payload: {
   token: string;
   password: string;
+  confirmPassword?: string;
 }): Promise<{ success: boolean; message: string }> {
   if (!USE_MOCK) {
     return await apiFetch<{ success: boolean; message: string }>("/api/auth/reset-password", {
@@ -1404,6 +1560,1214 @@ export async function apiResetPassword(payload: {
     success: true,
     message: "Password updated successfully. You may now sign in with your new credentials.",
   };
+}
+
+// ─── ACCOUNT SETTINGS & SECURITY API ─────────────────────────────────────────
+
+export interface AccountProfile extends AuthUser {
+  avatarPublicId?: string | null;
+  avatarVersion?: number | null;
+  isActive: boolean;
+  hasPassword: boolean;
+  lastSignInAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ConnectedProviderItem {
+  id: string;
+  provider: string;
+  connectedAt: string;
+}
+
+export interface AccountOverviewResponse {
+  user: AccountProfile;
+  providers: ConnectedProviderItem[];
+  activeSessionsCount: number;
+  recentEventsCount: number;
+  oauthConfigured: {
+    google: boolean;
+    github: boolean;
+  };
+}
+
+export interface AvatarSignatureResponse {
+  signature: string;
+  timestamp: number;
+  apiKey: string;
+  cloudName: string;
+  folder: string;
+  publicId: string;
+  eager: string;
+  allowedFormats: string;
+  maxFileSizeBytes: number;
+}
+
+export interface AccountSessionItem {
+  id: string;
+  isCurrent: boolean;
+  browser: string;
+  os: string;
+  deviceType: "desktop" | "mobile" | "cli";
+  ip: string | null;
+  approxLocation: string | null;
+  rememberMe: boolean;
+  lastActiveAt: string;
+  createdAt: string;
+  expiresAt: string;
+}
+
+export interface AccountAuditEventItem {
+  id: string;
+  type: string;
+  status: string;
+  ip: string | null;
+  client: { browser: string; os: string; deviceType: string };
+  metadata?: Record<string, any> | null;
+  createdAt: string;
+}
+
+export async function apiGetAccountOverview(): Promise<AccountOverviewResponse> {
+  return await apiFetch<AccountOverviewResponse>("/api/account/overview");
+}
+
+export async function apiUpdateProfile(payload: {
+  name: string;
+  username?: string | null;
+}): Promise<{ success: boolean; message: string; user: AccountProfile }> {
+  return await apiFetch("/api/account/profile", {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiGetAvatarUploadSignature(): Promise<AvatarSignatureResponse> {
+  return await apiFetch<AvatarSignatureResponse>("/api/account/avatar/signature", {
+    method: "POST",
+  });
+}
+
+export async function apiConfirmAvatarUpload(publicId: string): Promise<{
+  success: boolean;
+  message: string;
+  avatarUrl: string;
+  avatarPublicId: string;
+  avatarVersion: number | null;
+}> {
+  return await apiFetch("/api/account/avatar/confirm", {
+    method: "POST",
+    body: JSON.stringify({ publicId }),
+  });
+}
+
+export async function apiDeleteAvatar(): Promise<{ success: boolean; message: string }> {
+  return await apiFetch("/api/account/avatar", {
+    method: "DELETE",
+  });
+}
+
+export async function apiChangePassword(payload: {
+  currentPassword?: string;
+  newPassword: string;
+  revokeOtherSessions?: boolean;
+}): Promise<{ success: boolean; message: string; revokedOthersCount: number }> {
+  return await apiFetch("/api/account/password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiDisconnectProvider(
+  provider: "google" | "github"
+): Promise<{ success: boolean; message: string }> {
+  return await apiFetch(`/api/account/providers/${provider}`, {
+    method: "DELETE",
+  });
+}
+
+export async function apiGetSessions(): Promise<{ sessions: AccountSessionItem[] }> {
+  return await apiFetch("/api/account/sessions");
+}
+
+export async function apiRevokeSession(
+  sessionId: string
+): Promise<{ success: boolean; message: string }> {
+  return await apiFetch(`/api/account/sessions/${encodeURIComponent(sessionId)}`, {
+    method: "DELETE",
+  });
+}
+
+export async function apiRevokeOtherSessions(): Promise<{
+  success: boolean;
+  revokedCount: number;
+  message: string;
+}> {
+  return await apiFetch("/api/account/sessions/revoke-others", {
+    method: "POST",
+  });
+}
+
+export async function apiGetAuditEvents(
+  page = 1,
+  limit = 15
+): Promise<{
+  events: AccountAuditEventItem[];
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+}> {
+  return await apiFetch(`/api/account/audit-events?page=${page}&limit=${limit}`);
+}
+
+export function getAuditExportUrl(): string {
+  return `${BASE_URL}/api/account/audit-events/export`;
+}
+
+export function getOAuthLinkUrl(provider: "google" | "github"): string {
+  return `${BASE_URL}/api/auth/${provider}?mode=link`;
+}
+
+// ─── ADMIN LEAD MANAGEMENT API ──────────────────────────────────────────────
+
+export type LeadStatus = "NEW" | "CONTACTED" | "PROPOSAL_SENT" | "WON" | "ARCHIVED";
+export type LeadSource = "ESTIMATOR" | "QUICK_CALLBACK" | "BOOKING" | "CONTACT_FORM";
+export type LeadPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+
+export interface LeadAssignee {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  avatarUrl?: string | null;
+}
+
+export interface LeadNoteItem {
+  id: string;
+  leadId: string;
+  authorId: string;
+  body: string;
+  createdAt: string;
+  author: LeadAssignee;
+}
+
+export interface LeadActivityItem {
+  id: string;
+  leadId: string;
+  eventType: string;
+  fromStatus: LeadStatus | null;
+  toStatus: LeadStatus;
+  details: string | null;
+  actorId: string | null;
+  createdAt: string;
+  actor?: { id: string; name: string; email: string; role: string } | null;
+}
+
+export interface LeadRecord {
+  id: string;
+  source: LeadSource;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  company: string | null;
+  jobTitle: string | null;
+  website: string | null;
+  subject: string | null;
+  services: string[];
+  budget: string | null;
+  budgetMin: number | null;
+  currency: string;
+  timeline: string | null;
+  brief: string | null;
+  pageUrl: string | null;
+  referrer: string | null;
+  utm: Record<string, any> | null;
+  status: LeadStatus;
+  priority: LeadPriority;
+  assignedToId: string | null;
+  assignedTo?: LeadAssignee | null;
+  lastContactedAt: string | null;
+  nextFollowUpAt: string | null;
+  archivedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count?: { notes: number };
+  notes?: LeadNoteItem[];
+  history?: LeadActivityItem[];
+}
+
+export interface AdminLeadsStatsResponse {
+  dateRange: string;
+  slaHours: number;
+  totalInbound: number;
+  awaitingSla: {
+    newCount: number;
+    breachingCount: number;
+    slaHours: number;
+  };
+  activeNegotiationCount: number;
+  pipelineValue: {
+    estimatedTotal: number;
+    leadsWithBudget: number;
+    wonEstimatedTotal: number;
+    wonWithBudget: number;
+  };
+  statusSummary: Record<LeadStatus, { count: number; budgetSum: number }>;
+}
+
+export async function apiGetAdminLeadStats(params?: {
+  dateRange?: string;
+  startDate?: string;
+  endDate?: string;
+  slaHours?: number;
+}): Promise<AdminLeadsStatsResponse> {
+  const sp = new URLSearchParams();
+  if (params?.dateRange) sp.set("dateRange", params.dateRange);
+  if (params?.startDate) sp.set("startDate", params.startDate);
+  if (params?.endDate) sp.set("endDate", params.endDate);
+  if (params?.slaHours) sp.set("slaHours", String(params.slaHours));
+  const qs = sp.toString();
+  return await apiFetch<AdminLeadsStatsResponse>(`/api/admin/leads/stats${qs ? `?${qs}` : ""}`);
+}
+
+export async function apiGetAdminLeads(params?: {
+  page?: number;
+  pageSize?: number;
+  q?: string;
+  source?: string;
+  status?: string;
+  priority?: string;
+  assignedToId?: string;
+  dateRange?: string;
+  startDate?: string;
+  endDate?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}): Promise<{
+  items: LeadRecord[];
+  pagination: { page: number; pageSize: number; total: number; totalPages: number };
+  assignees: LeadAssignee[];
+}> {
+  const sp = new URLSearchParams();
+  if (params?.page) sp.set("page", String(params.page));
+  if (params?.pageSize) sp.set("pageSize", String(params.pageSize));
+  if (params?.q) sp.set("q", params.q);
+  if (params?.source && params.source !== "ALL") sp.set("source", params.source);
+  if (params?.status && params.status !== "ALL") sp.set("status", params.status);
+  if (params?.priority && params.priority !== "ALL") sp.set("priority", params.priority);
+  if (params?.assignedToId && params.assignedToId !== "ALL") sp.set("assignedToId", params.assignedToId);
+  if (params?.dateRange) sp.set("dateRange", params.dateRange);
+  if (params?.startDate) sp.set("startDate", params.startDate);
+  if (params?.endDate) sp.set("endDate", params.endDate);
+  if (params?.sortBy) sp.set("sortBy", params.sortBy);
+  if (params?.sortOrder) sp.set("sortOrder", params.sortOrder);
+  const qs = sp.toString();
+  return await apiFetch(`/api/admin/leads${qs ? `?${qs}` : ""}`);
+}
+
+export async function apiGetAdminLeadById(id: string): Promise<{ lead: LeadRecord }> {
+  return await apiFetch(`/api/admin/leads/${encodeURIComponent(id)}`);
+}
+
+export async function apiUpdateAdminLead(
+  id: string,
+  payload: {
+    status?: LeadStatus;
+    priority?: LeadPriority;
+    assignedToId?: string | null;
+    nextFollowUpAt?: string | null;
+  }
+): Promise<{ success: boolean; lead: LeadRecord }> {
+  return await apiFetch(`/api/admin/leads/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiBulkAdminLeads(payload: {
+  leadIds: string[];
+  action: "STATUS" | "ARCHIVE" | "RESTORE" | "ASSIGN";
+  status?: LeadStatus;
+  assignedToId?: string | null;
+}): Promise<{ success: boolean; updatedCount: number; message: string }> {
+  return await apiFetch("/api/admin/leads/bulk", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiAppendLeadNote(
+  leadId: string,
+  body: string
+): Promise<{ success: boolean; note: LeadNoteItem }> {
+  return await apiFetch(`/api/admin/leads/${encodeURIComponent(leadId)}/notes`, {
+    method: "POST",
+    body: JSON.stringify({ body }),
+  });
+}
+
+export function getAdminLeadsExportUrl(params?: {
+  format?: "csv" | "json";
+  status?: string;
+  source?: string;
+  ids?: string[];
+}): string {
+  const sp = new URLSearchParams();
+  sp.set("format", params?.format || "csv");
+  if (params?.status && params.status !== "ALL") sp.set("status", params.status);
+  if (params?.source && params.source !== "ALL") sp.set("source", params.source);
+  if (params?.ids && params.ids.length > 0) sp.set("ids", params.ids.join(","));
+  return `${BASE_URL}/api/admin/leads/export?${sp.toString()}`;
+}
+
+// ─── ADMIN SOCIAL INTEGRATIONS & WEBHOOKS ───────────────────────────────────
+
+export type SocialChannelStatus =
+  | "CONNECTED"
+  | "DISCONNECTED"
+  | "EXPIRING_SOON"
+  | "EXPIRED"
+  | "REAUTH_REQUIRED"
+  | "ERROR"
+  | "DISABLED"
+  | "NOT_CONFIGURED"
+  | "UNAVAILABLE";
+
+export interface SocialChannelItem {
+  key: "linkedin" | "x" | "meta" | "youtube" | "reddit" | "glassdoor";
+  platform: string;
+  displayName: string;
+  subtitle: string;
+  apiLabel: string;
+  apiSupported: boolean;
+  unavailableReason: string | null;
+  configured: boolean;
+  requiredEnvKeys: string[];
+  defaultScopes: string[];
+  status: SocialChannelStatus;
+  isActive: boolean;
+  accountName: string | null;
+  accountId: string | null;
+  accountHandle: string | null;
+  avatarUrl: string | null;
+  scopes: string[];
+  keyVersion: number | null;
+  tokenExpiresAt: string | null;
+  connectedAt: string | null;
+  lastSyncAt: string | null;
+  lastHealthCheckAt: string | null;
+  lastLatencyMs: number | null;
+  lastError: string | null;
+}
+
+export interface SocialOverviewMetrics {
+  totalChannels: number;
+  connectedChannels: number;
+  expiringSoonChannels: number;
+  errorChannels: number;
+  notConfiguredChannels: number;
+  activeWebhooks: number;
+  totalWebhooks: number;
+  totalDeliveries24h: number;
+  failedDeliveries24h: number;
+  encryptionConfigured: boolean;
+  encryptionKeyVersion: number;
+}
+
+export interface WebhookEndpointItem {
+  id: string;
+  name: string;
+  url: string;
+  events: string[];
+  secretPrefix: string;
+  keyVersion: number;
+  isActive: boolean;
+  lastDeliveryAt: string | null;
+  lastStatusCode: number | null;
+  lastError: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count?: { deliveries: number };
+}
+
+export interface WebhookDeliveryItem {
+  id: string;
+  endpointId: string;
+  eventType: string;
+  payload: Record<string, unknown>;
+  responseStatus: number | null;
+  responseBody: string | null;
+  latencyMs: number | null;
+  attemptCount: number;
+  status: string;
+  errorMessage: string | null;
+  deliveredAt: string;
+  endpoint?: { id: string; name: string; url: string };
+}
+
+export interface SocialOverviewResponse {
+  channels: SocialChannelItem[];
+  metrics: SocialOverviewMetrics;
+  webhooks: WebhookEndpointItem[];
+  recentDeliveries: WebhookDeliveryItem[];
+  supportedEvents: string[];
+}
+
+export interface SocialTestEndpointResult {
+  key: string;
+  displayName: string;
+  status: string;
+  ok: boolean;
+  latencyMs: number | null;
+  message: string;
+}
+
+export interface SocialAuditLogItem {
+  id: string;
+  action: string;
+  entity: string;
+  entityId: string;
+  meta: Record<string, unknown> | null;
+  ip: string | null;
+  createdAt: string;
+  actor: { id: string; name: string; email: string };
+}
+
+export async function apiGetSocialOverview(): Promise<SocialOverviewResponse> {
+  return await apiFetch("/api/admin/social/overview");
+}
+
+export async function apiStartSocialOAuth(key: string): Promise<{ authorizeUrl: string }> {
+  return await apiFetch(`/api/admin/social/providers/${encodeURIComponent(key)}/connect`, {
+    method: "POST",
+  });
+}
+
+export async function apiSyncSocialProvider(key: string): Promise<{ channel: SocialChannelItem }> {
+  return await apiFetch(`/api/admin/social/providers/${encodeURIComponent(key)}/sync`, {
+    method: "POST",
+  });
+}
+
+export async function apiToggleSocialProvider(key: string): Promise<{ channel: SocialChannelItem }> {
+  return await apiFetch(`/api/admin/social/providers/${encodeURIComponent(key)}/toggle`, {
+    method: "POST",
+  });
+}
+
+export async function apiDisconnectSocialProvider(key: string): Promise<{ channel: SocialChannelItem }> {
+  return await apiFetch(`/api/admin/social/providers/${encodeURIComponent(key)}/disconnect`, {
+    method: "POST",
+  });
+}
+
+export async function apiTestAllSocialEndpoints(): Promise<{
+  results: SocialTestEndpointResult[];
+  checkedAt: string;
+}> {
+  return await apiFetch("/api/admin/social/test-all", { method: "POST" });
+}
+
+export async function apiGetSocialAuditLogs(): Promise<{ logs: SocialAuditLogItem[] }> {
+  return await apiFetch("/api/admin/social/audit-logs");
+}
+
+export async function apiCreateWebhook(payload: {
+  name: string;
+  url: string;
+  events: string[];
+}): Promise<{ webhook: WebhookEndpointItem; plaintextSecret: string }> {
+  return await apiFetch("/api/admin/social/webhooks", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiUpdateWebhook(
+  id: string,
+  payload: { name?: string; url?: string; events?: string[]; isActive?: boolean },
+): Promise<{ webhook: WebhookEndpointItem }> {
+  return await apiFetch(`/api/admin/social/webhooks/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiRotateWebhookSecret(
+  id: string,
+): Promise<{ webhook: WebhookEndpointItem; plaintextSecret: string }> {
+  return await apiFetch(`/api/admin/social/webhooks/${encodeURIComponent(id)}/rotate-secret`, {
+    method: "POST",
+  });
+}
+
+export async function apiTestWebhook(id: string): Promise<{ delivery: WebhookDeliveryItem }> {
+  return await apiFetch(`/api/admin/social/webhooks/${encodeURIComponent(id)}/test`, {
+    method: "POST",
+  });
+}
+
+export async function apiDeleteWebhook(id: string): Promise<{ deleted: boolean; id: string }> {
+  return await apiFetch(`/api/admin/social/webhooks/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+export async function apiRetryWebhookDelivery(
+  deliveryId: string,
+): Promise<{ delivery: WebhookDeliveryItem }> {
+  return await apiFetch(`/api/admin/social/deliveries/${encodeURIComponent(deliveryId)}/retry`, {
+    method: "POST",
+  });
+}
+
+// ─── ADMIN SOCIAL BROADCAST COMPOSER & PUBLISHING ─────────────────────────────
+
+export type BroadcastPlatformKey =
+  | "LINKEDIN"
+  | "TWITTER_X"
+  | "META_FACEBOOK"
+  | "META_INSTAGRAM"
+  | "YOUTUBE"
+  | "REDDIT"
+  | "GLASSDOOR";
+
+export interface PlatformRuleSpec {
+  platform: BroadcastPlatformKey;
+  displayName: string;
+  maxChars: number;
+  urlShortenedLength: number | null;
+  maxImages: number;
+  maxVideos: number;
+  maxImageBytes: number;
+  maxVideoBytes: number;
+  maxGifBytes: number;
+  supportsMarkdown: boolean;
+  supportsPublish: boolean;
+  requiredWriteScopes: string[];
+}
+
+export interface BroadcastAccountItem {
+  key: string;
+  platform: BroadcastPlatformKey;
+  displayName: string;
+  accountName: string | null;
+  accountHandle: string | null;
+  avatarUrl: string | null;
+  scopes: string[];
+  tokenExpiresAt: string | null;
+  status: string;
+  canPublish: boolean;
+  publishBlockReason: string | null;
+  rules: PlatformRuleSpec;
+}
+
+export interface SocialMediaAssetItem {
+  id: string;
+  postId: string | null;
+  uploadedById: string;
+  publicId: string;
+  secureUrl: string;
+  resourceType: "image" | "video" | string;
+  format: string;
+  bytes: number;
+  width: number | null;
+  height: number | null;
+  durationSec: number | null;
+  fileName: string;
+  altText: string | null;
+  sortOrder: number;
+  createdAt: string;
+}
+
+export interface SocialDeliveryLogItem {
+  id: string;
+  postId: string;
+  platform: BroadcastPlatformKey;
+  status: string;
+  externalPostId: string | null;
+  externalUrl: string | null;
+  latencyMs: number | null;
+  attemptCount: number;
+  error: { message?: string } | null;
+  createdAt: string;
+}
+
+export interface SocialBroadcastPostItem {
+  id: string;
+  title: string | null;
+  baseContent: string;
+  platformContent: Record<string, string> | null;
+  variables: Record<string, string> | null;
+  mediaUrls: string[];
+  mediaAssets: SocialMediaAssetItem[];
+  targetPlatforms: BroadcastPlatformKey[];
+  status: "DRAFT" | "SCHEDULED" | "PROCESSING" | "PUBLISHED" | "PARTIAL_FAILED" | "FAILED" | "CANCELLED";
+  scheduledFor: string | null;
+  timezone: string | null;
+  publishedAt: string | null;
+  cancelledAt: string | null;
+  deliveryLogs: SocialDeliveryLogItem[];
+  createdAt: string;
+  author?: { id: string; name: string; email: string };
+}
+
+export interface BroadcastContextResponse {
+  accounts: BroadcastAccountItem[];
+  aiStatus: { configured: boolean; provider: string; model: string };
+  defaultVariables: Record<string, string>;
+  allowedVariables: string[];
+  recentBroadcasts: SocialBroadcastPostItem[];
+}
+
+export async function apiGetBroadcastContext(): Promise<BroadcastContextResponse> {
+  return await apiFetch("/api/admin/social/broadcasts/context");
+}
+
+export async function apiSignSocialMediaUpload(
+  resourceType: "image" | "video" = "image",
+): Promise<{
+  signature: string;
+  timestamp: number;
+  apiKey: string;
+  cloudName: string;
+  folder: string;
+  publicId: string;
+  resourceType: "image" | "video";
+  allowedFormats: string;
+  maxFileSizeBytes: number;
+}> {
+  return await apiFetch("/api/admin/social/broadcasts/media/sign", {
+    method: "POST",
+    body: JSON.stringify({ resourceType }),
+  });
+}
+
+export async function apiVerifySocialMediaAsset(payload: {
+  publicId: string;
+  resourceType: "image" | "video";
+  fileName: string;
+  altText?: string;
+}): Promise<{ asset: SocialMediaAssetItem }> {
+  return await apiFetch("/api/admin/social/broadcasts/media/verify", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiUpdateSocialMediaAsset(
+  assetId: string,
+  payload: { altText?: string; sortOrder?: number },
+): Promise<{ asset: SocialMediaAssetItem }> {
+  return await apiFetch(`/api/admin/social/broadcasts/media/${encodeURIComponent(assetId)}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiDeleteSocialMediaAsset(assetId: string): Promise<{ deleted: boolean }> {
+  return await apiFetch(`/api/admin/social/broadcasts/media/${encodeURIComponent(assetId)}`, {
+    method: "DELETE",
+  });
+}
+
+export async function apiAdaptSocialCopyWithAi(payload: {
+  content: string;
+  action:
+    | "shorten_x"
+    | "technical_linkedin"
+    | "format_reddit"
+    | "generate_hashtags"
+    | "improve_clarity"
+    | "rewrite_platform";
+  targetPlatform: BroadcastPlatformKey;
+}): Promise<{
+  suggestion: string;
+  targetPlatform: BroadcastPlatformKey;
+  charCount: number;
+  maxChars: number;
+}> {
+  return await apiFetch("/api/admin/social/broadcasts/ai/adapt", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiCreateBroadcast(payload: {
+  title?: string;
+  baseContent: string;
+  platformContent?: Record<string, string>;
+  variables?: Record<string, string>;
+  targetPlatforms: BroadcastPlatformKey[];
+  mediaAssetIds: string[];
+  mode: "IMMEDIATE" | "SCHEDULE" | "DRAFT";
+  scheduledFor?: string;
+  timezone?: string;
+}): Promise<{ broadcast: SocialBroadcastPostItem }> {
+  return await apiFetch("/api/admin/social/broadcasts", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiCancelScheduledBroadcast(
+  id: string,
+): Promise<{ broadcast: SocialBroadcastPostItem }> {
+  return await apiFetch(`/api/admin/social/broadcasts/${encodeURIComponent(id)}/cancel`, {
+    method: "POST",
+  });
+}
+
+export async function apiRetryBroadcast(
+  id: string,
+): Promise<{ broadcast: SocialBroadcastPostItem }> {
+  return await apiFetch(`/api/admin/social/broadcasts/${encodeURIComponent(id)}/retry`, {
+    method: "POST",
+  });
+}
+
+// ─── ADMIN SOCIAL MANAGEMENT ──────────────────────────────────────────────────
+
+export interface SocialManageAnalyticsResponse {
+  analytics: {
+    totalDispatches: number;
+    successfulDeliveries: number;
+    eligibleDeliveries: number;
+    successRate: number | null;
+    pendingScheduledCount: number;
+    failedCount: number;
+    statusCounts: Record<string, number>;
+    nextScheduled: { id: string; scheduledFor: string; timezone: string | null } | null;
+  };
+  failedAlert: {
+    affectedDeliveriesCount: number;
+    affectedBroadcastIds: string[];
+    affectedPlatforms: string[];
+    latestFailureAt: string | null;
+    errors: string[];
+  };
+  platformHealth: Array<{
+    key: string;
+    platform: BroadcastPlatformKey;
+    displayName: string;
+    status: string;
+    accountName: string | null;
+    lastHealthCheckAt: string | null;
+    lastLatencyMs: number | null;
+    lastError: string | null;
+    canPublish: boolean;
+  }>;
+  diagnostics: {
+    workerActive: boolean;
+    pollIntervalSeconds: number;
+    lastHeartbeatAt: string | null;
+    lastTickDurationMs: number | null;
+    pendingCount: number;
+    processingCount: number;
+    failedDeliveriesCount: number;
+    nextScheduled: { id: string; scheduledFor: string; timezone: string | null } | null;
+  };
+}
+
+export async function apiGetSocialManageAnalytics(dateRange = "30d"): Promise<SocialManageAnalyticsResponse> {
+  return await apiFetch(`/api/admin/social/manage/analytics?dateRange=${encodeURIComponent(dateRange)}`);
+}
+
+export async function apiListManagedBroadcasts(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  platform?: string;
+  dateRange?: string;
+}): Promise<{
+  items: SocialBroadcastPostItem[];
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+}> {
+  const sp = new URLSearchParams();
+  if (params.page) sp.set("page", String(params.page));
+  if (params.limit) sp.set("limit", String(params.limit));
+  if (params.search) sp.set("search", params.search);
+  if (params.status && params.status !== "ALL") sp.set("status", params.status);
+  if (params.platform && params.platform !== "ALL") sp.set("platform", params.platform);
+  if (params.dateRange) sp.set("dateRange", params.dateRange);
+  return await apiFetch(`/api/admin/social/manage/broadcasts?${sp.toString()}`);
+}
+
+export async function apiDeleteManagedBroadcast(id: string): Promise<{ deleted: boolean }> {
+  return await apiFetch(`/api/admin/social/manage/broadcasts/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+export async function apiRetryAllFailedBroadcasts(): Promise<{ retriedCount: number }> {
+  return await apiFetch("/api/admin/social/manage/retry-failed", { method: "POST" });
+}
+
+export function getSocialManageExportUrl(status = "ALL"): string {
+  return `${BASE_URL}/api/admin/social/manage/export?status=${encodeURIComponent(status)}`;
+}
+
+// ─── ADMIN USERS & IAM ────────────────────────────────────────────────────────
+
+export interface AdminUserRecord {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl: string | null;
+  role: "USER" | "CLIENT" | "EDITOR" | "SUPER_ADMIN";
+  permissions: string[];
+  isActive: boolean;
+  emailVerified: boolean;
+  authProvider: string;
+  lastLoginAt: string | null;
+  createdAt: string;
+  activeSessionCount: number;
+}
+
+export interface AdminUsersListResponse {
+  items: AdminUserRecord[];
+  pendingInvitations: Array<{
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    expiresAt: string;
+    createdAt: string;
+  }>;
+  stats: {
+    totalUsers: number;
+    activeToday: number;
+    pendingVerification: number;
+    pendingInvitationsCount: number;
+  };
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+}
+
+export async function apiListAdminUsers(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  role?: string;
+  status?: string;
+}): Promise<AdminUsersListResponse> {
+  const sp = new URLSearchParams();
+  if (params.page) sp.set("page", String(params.page));
+  if (params.limit) sp.set("limit", String(params.limit));
+  if (params.search) sp.set("search", params.search);
+  if (params.role && params.role !== "ALL") sp.set("role", params.role);
+  if (params.status && params.status !== "ALL") sp.set("status", params.status);
+  return await apiFetch(`/api/admin/users?${sp.toString()}`);
+}
+
+export async function apiGetAdminUserDetail(id: string): Promise<{
+  user: AdminUserRecord & {
+    sessions: Array<{ id: string; ip: string | null; userAgent: string | null; expiresAt: string; createdAt: string }>;
+    authEvents: Array<{ id: string; type: string; status: string; ip: string | null; createdAt: string }>;
+  };
+  auditLogs: Array<{ id: string; action: string; entity: string; entityId: string; meta: any; createdAt: string }>;
+}> {
+  return await apiFetch(`/api/admin/users/${encodeURIComponent(id)}`);
+}
+
+export async function apiInviteAdminUser(payload: {
+  name: string;
+  email: string;
+  role: string;
+  message?: string;
+}): Promise<{ invitation: any; emailDelivered: boolean }> {
+  return await apiFetch("/api/admin/users/invite", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiChangeUserRole(id: string, role: string): Promise<{ user: any }> {
+  return await apiFetch(`/api/admin/users/${encodeURIComponent(id)}/role`, {
+    method: "PATCH",
+    body: JSON.stringify({ role }),
+  });
+}
+
+export async function apiToggleUserActive(
+  id: string,
+  isActive: boolean,
+  reason?: string,
+): Promise<{ user: any }> {
+  return await apiFetch(`/api/admin/users/${encodeURIComponent(id)}/status`, {
+    method: "POST",
+    body: JSON.stringify({ isActive, reason }),
+  });
+}
+
+export async function apiRevokeUserSessions(id: string): Promise<{ revokedCount: number }> {
+  return await apiFetch(`/api/admin/users/${encodeURIComponent(id)}/revoke-sessions`, {
+    method: "POST",
+  });
+}
+
+export async function apiResendUserVerification(id: string): Promise<{ sent: boolean }> {
+  return await apiFetch(`/api/admin/users/${encodeURIComponent(id)}/resend-verification`, {
+    method: "POST",
+  });
+}
+
+export function getAdminUsersExportUrl(): string {
+  return `${BASE_URL}/api/admin/users/export`;
+}
+
+// ─── ADMIN AUDIT LOG ──────────────────────────────────────────────────────────
+
+export interface AuditLogRecord {
+  id: string;
+  actorId: string;
+  actor: { id: string; name: string; email: string; role: string };
+  action: string;
+  entity: string;
+  entityId: string;
+  meta: Record<string, any> | null;
+  ip: string | null;
+  createdAt: string;
+}
+
+export async function apiGetAuditStats(window = "7d"): Promise<{
+  stats: {
+    mutations24h: number;
+    privilegedChanges: number;
+    accessDenialsAndFailures: number;
+    integrityStatus: string;
+    integrityNote: string;
+  };
+}> {
+  return await apiFetch(`/api/admin/audit/stats?window=${encodeURIComponent(window)}`);
+}
+
+export async function apiGetAuditFilters(): Promise<{
+  actions: string[];
+  entities: string[];
+  actors: Array<{ id: string; name: string; email: string }>;
+}> {
+  return await apiFetch("/api/admin/audit/filters");
+}
+
+export async function apiListAuditLogs(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  actorId?: string;
+  action?: string;
+  entity?: string;
+  window?: string;
+  since?: string;
+}): Promise<{
+  items: AuditLogRecord[];
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+}> {
+  const sp = new URLSearchParams();
+  if (params.page) sp.set("page", String(params.page));
+  if (params.limit) sp.set("limit", String(params.limit));
+  if (params.search) sp.set("search", params.search);
+  if (params.actorId) sp.set("actorId", params.actorId);
+  if (params.action) sp.set("action", params.action);
+  if (params.entity) sp.set("entity", params.entity);
+  if (params.window) sp.set("window", params.window);
+  if (params.since) sp.set("since", params.since);
+  return await apiFetch(`/api/admin/audit?${sp.toString()}`);
+}
+
+export function getAdminAuditExportUrl(): string {
+  return `${BASE_URL}/api/admin/audit/export`;
+}
+
+// ─── ADMIN SETTINGS ───────────────────────────────────────────────────────────
+
+export async function apiGetAdminSettings(): Promise<{ settings: any }> {
+  return await apiFetch("/api/admin/settings");
+}
+
+export async function apiUpdateAdminSettings(payload: Record<string, any>): Promise<{ settings: any }> {
+  return await apiFetch("/api/admin/settings", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiRunSettingsHealthCheck(): Promise<{
+  checkedAt: string;
+  integrations: Array<{
+    key: string;
+    name: string;
+    category: string;
+    status: string;
+    latencyMs: number | null;
+    detail: string;
+  }>;
+}> {
+  return await apiFetch("/api/admin/settings/health-check", { method: "POST" });
+}
+
+// ─── ADMIN MEDIA LIBRARY ──────────────────────────────────────────────────────
+
+export async function apiListMediaLibrary(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  type?: string;
+  usage?: string;
+  sort?: string;
+}): Promise<{
+  items: Array<SocialMediaAssetItem & { tags: string[]; post?: { id: string; title: string | null; status: string } | null }>;
+  stats: { totalAssets: number; totalBytes: number; usedAssets: number; unusedAssets: number };
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+}> {
+  const sp = new URLSearchParams();
+  if (params.page) sp.set("page", String(params.page));
+  if (params.limit) sp.set("limit", String(params.limit));
+  if (params.search) sp.set("search", params.search);
+  if (params.type) sp.set("type", params.type);
+  if (params.usage) sp.set("usage", params.usage);
+  if (params.sort) sp.set("sort", params.sort);
+  return await apiFetch(`/api/admin/media?${sp.toString()}`);
+}
+
+export async function apiUpdateMediaLibraryAsset(
+  id: string,
+  payload: { altText?: string; tags?: string[] },
+): Promise<{ asset: any }> {
+  return await apiFetch(`/api/admin/media/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiDeleteMediaLibraryAsset(id: string): Promise<{ deleted: boolean }> {
+  return await apiFetch(`/api/admin/media/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+export function getMediaManifestExportUrl(): string {
+  return `${BASE_URL}/api/admin/media/export`;
+}
+
+// ─── ADMIN CONTENT OPERATIONS ─────────────────────────────────────────────────
+
+export interface AdminTestimonialItem {
+  id: string;
+  authorName: string;
+  company: string | null;
+  role: string | null;
+  quote: string;
+  rating: number | null;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  featured: boolean;
+  createdAt: string;
+}
+
+export async function apiGetContentOverview(): Promise<{
+  stats: {
+    publishedArticles: number;
+    draftArticles: number;
+    approvedTestimonials: number;
+    pendingTestimonials: number;
+    openJobs: number;
+    pendingApplications: number;
+  };
+  recentTestimonials: AdminTestimonialItem[];
+  recentJobs: Array<{ id: string; title: string; department: string; location: string; status: string; _count: { applications: number } }>;
+  recentApplications: Array<{ id: string; name: string; email: string; status: string; createdAt: string; job: { id: string; title: string } }>;
+}> {
+  return await apiFetch("/api/admin/content/overview");
+}
+
+export async function apiListAdminTestimonials(): Promise<{ items: AdminTestimonialItem[] }> {
+  return await apiFetch("/api/admin/content/testimonials");
+}
+
+export async function apiCreateAdminTestimonial(payload: {
+  authorName: string;
+  company?: string;
+  role?: string;
+  quote: string;
+  rating?: number;
+  status?: "PENDING" | "APPROVED" | "REJECTED";
+}): Promise<{ testimonial: AdminTestimonialItem }> {
+  return await apiFetch("/api/admin/content/testimonials", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiUpdateAdminTestimonial(
+  id: string,
+  payload: Partial<{ status: "PENDING" | "APPROVED" | "REJECTED"; featured: boolean; quote: string }>,
+): Promise<{ testimonial: AdminTestimonialItem }> {
+  return await apiFetch(`/api/admin/content/testimonials/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiDeleteAdminTestimonial(id: string): Promise<{ deleted: boolean }> {
+  return await apiFetch(`/api/admin/content/testimonials/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+export function getContentCatalogExportUrl(): string {
+  return `${BASE_URL}/api/admin/content/export`;
+}
+
+export async function apiGetManagedBroadcastDetail(id: string): Promise<{
+  broadcast: SocialBroadcastPostItem;
+  auditLogs: Array<{ id: string; action: string; actorId: string; meta: any; createdAt: string }>;
+}> {
+  return await apiFetch(`/api/admin/social/manage/broadcasts/${encodeURIComponent(id)}`);
+}
+
+export async function apiUpdateManagedBroadcast(
+  id: string,
+  payload: { scheduledFor?: string; timezone?: string; baseContent?: string },
+): Promise<{ broadcast: SocialBroadcastPostItem }> {
+  return await apiFetch(`/api/admin/social/manage/broadcasts/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiBulkAdminUsers(payload: {
+  userIds: string[];
+  action: "REVOKE_SESSIONS" | "DEACTIVATE" | "CHANGE_ROLE";
+  role?: string;
+}): Promise<{ succeeded: number; skipped: Array<{ id: string; reason: string }> }> {
+  return await apiFetch("/api/admin/users/bulk", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiReplaceMediaLibraryAsset(
+  id: string,
+  payload: { publicId: string; resourceType: "image" | "video"; fileName?: string },
+): Promise<{ asset: any }> {
+  return await apiFetch(`/api/admin/media/${encodeURIComponent(id)}/replace`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiCreateAdminService(payload: {
+  title: string;
+  summary: string;
+  deliverables: string[];
+  icon?: string;
+  displayOrder?: number;
+}): Promise<{ service: any }> {
+  return await apiFetch("/api/admin/content/services", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiDeleteAdminService(id: string): Promise<{ deleted: boolean; id: string }> {
+  return await apiFetch(`/api/admin/content/services/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
 }
 
 export type {

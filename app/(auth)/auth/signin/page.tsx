@@ -16,11 +16,13 @@ import {
 } from "lucide-react";
 import { AuthLayoutShell } from "@/components/auth/AuthLayoutShell";
 import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { apiSignIn } from "@/lib/api";
 
 function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { setUser } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -88,8 +90,10 @@ function SignInContent() {
       });
 
       if (res.success) {
-        // Redirect
-        router.push(res.redirectUrl || "/");
+        setUser(res.user);
+        const redirectTarget = searchParams.get("redirect");
+        const safeRedirect = redirectTarget && redirectTarget.startsWith("/") ? redirectTarget : null;
+        router.push(safeRedirect || res.redirectUrl || "/");
         router.refresh();
       }
     } catch (err: any) {
@@ -155,12 +159,13 @@ function SignInContent() {
             <span className="font-semibold block">Authentication Failed</span>
             <span>{errorMessage}</span>
             {unverifiedEmail && (
-              <div className="mt-1">
+              <div className="mt-2 pt-2 border-t border-rose-500/20">
                 <Link
-                  href={`/auth/verification-pending?email=${encodeURIComponent(unverifiedEmail)}`}
-                  className="underline font-bold hover:opacity-80"
+                  href={`/auth/verify-email?email=${encodeURIComponent(unverifiedEmail)}`}
+                  className="inline-flex items-center space-x-1.5 font-bold underline hover:opacity-80"
                 >
-                  Click here to verify your account
+                  <span>Click here to enter your verification code</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             )}

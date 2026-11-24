@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Cpu } from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
@@ -73,6 +76,44 @@ const SOCIALS = [
 ];
 
 export function Footer() {
+  const [publicEmail, setPublicEmail] = useState("solutions@devcoresolutions.com");
+  const [socials, setSocials] = useState(SOCIALS);
+
+  useEffect(() => {
+    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    fetch(`${base}/api/public/settings`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data) return;
+        if (typeof data.publicEmail === "string" && data.publicEmail.trim()) {
+          setPublicEmail(data.publicEmail.trim());
+        }
+        if (Array.isArray(data.socialLinks) && data.socialLinks.length > 0) {
+          const mapped = data.socialLinks
+            .filter((l: any) => l && l.url && l.isEnabled !== false)
+            .map((l: any) => {
+              const key = `${l.platform || ""} ${l.label || ""} ${l.url || ""}`.toLowerCase();
+              const icon = key.includes("linkedin")
+                ? LinkedInIcon
+                : key.includes("github")
+                  ? GitHubIcon
+                  : key.includes("facebook")
+                    ? FacebookIcon
+                    : key.includes("youtube")
+                      ? YouTubeIcon
+                      : TwitterIcon;
+              return {
+                icon,
+                label: l.label || l.platform || "Social",
+                href: l.url,
+              };
+            });
+          if (mapped.length > 0) setSocials(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <footer
       id="footer"
@@ -95,27 +136,21 @@ export function Footer() {
 
             <div className="font-mono text-xs text-[var(--text-muted)] space-y-1">
               <div>Dhaka & Chattogram, Bangladesh</div>
-              <div>solutions@devcoresolutions.com</div>
+              <div>{publicEmail}</div>
             </div>
 
             {/* Social icons */}
             <div className="flex items-center gap-2.5 pt-1">
-              {SOCIALS.map(({ icon: Icon, label, href }) => (
+              {socials.map(({ icon: Icon, label, href }) => (
                 <a
                   key={label}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`DevCore on ${label}`}
-                  className={cn(
-                    "w-9 h-9 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]",
-                    "text-[var(--text-primary)] flex items-center justify-center",
-                    "hover:bg-[var(--brand-primary)] hover:text-[var(--brand-contrast)] hover:border-[var(--brand-primary)]",
-                    "transition-colors duration-150",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2"
-                  )}
+                  className="w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-200 shadow-xs bg-white text-[#4A5C6A] border border-[#CCD0CF] hover:bg-[#253745] hover:text-white hover:border-[#253745] hover:-translate-y-0.5 dark:bg-white/[0.08] dark:text-[#CCD0CF] dark:border-white/15 dark:hover:bg-[#8FB4C9] dark:hover:text-[#06141B] dark:hover:border-[#8FB4C9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#253745] focus-visible:ring-offset-2"
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-4 h-4 shrink-0 fill-current" />
                 </a>
               ))}
             </div>

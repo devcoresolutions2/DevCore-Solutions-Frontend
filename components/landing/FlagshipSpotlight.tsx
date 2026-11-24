@@ -23,39 +23,39 @@ export function FlagshipSpotlight({ items }: FlagshipSpotlightProps) {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <span className="devcore-glass-badge inline-flex items-center font-mono text-xs rounded-full px-3.5 py-1 text-[var(--accent-ink)] mb-2">
-              FLAGSHIP CASE STUDIES
+            <span className="devcore-glass-badge inline-flex items-center text-xs font-semibold rounded-full px-3.5 py-1 text-[var(--accent-ink)] mb-2">
+              Flagship Case Studies
             </span>
             <h2
               id="spotlight-heading"
-              className="font-display font-extrabold text-3xl text-[var(--text-primary)] mt-2"
+              className="font-display font-bold text-2xl sm:text-3xl text-[var(--text-primary)] tracking-tight mt-2"
             >
               Engineered In-House by DevCore
             </h2>
           </div>
-          <span className="hidden sm:block font-mono text-xs text-[var(--text-muted)]">Full-Stack Provenance</span>
+          <span className="hidden sm:block text-xs font-medium text-[var(--text-tertiary)]">Full-Stack Architecture</span>
         </div>
 
         {/* Banners */}
         {items.map((item, idx) => {
           const isEven = idx % 2 === 0;
           return (
-            <GlassCard key={item.id} className="p-8 lg:p-10 border border-[var(--border-subtle)]">
+            <GlassCard key={item.id} className="p-6 sm:p-8 lg:p-10 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--border-strong)] transition-all duration-200">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 {/* Text side */}
                 <div className={cn("lg:col-span-7 space-y-5", !isEven && "lg:order-last")}>
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs px-2.5 py-1 rounded bg-[var(--accent-warm)] text-[var(--text-primary)] font-semibold border border-[var(--border-subtle)]">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xs px-2.5 py-1 rounded-md bg-[var(--bg-surface)] text-[var(--text-primary)] font-semibold border border-[var(--border-subtle)]">
                       {item.name}
                     </span>
-                    <span className="text-xs font-mono text-[var(--text-muted)]">{item.category}</span>
+                    <span className="text-xs font-medium text-[var(--text-tertiary)]">{item.category}</span>
                   </div>
 
-                  <h3 className="font-display font-extrabold text-3xl text-[var(--text-primary)] tracking-tight">
+                  <h3 className="font-display font-bold text-2xl sm:text-3xl text-[var(--text-primary)] tracking-tight leading-snug">
                     {item.name}: {item.tagline}
                   </h3>
 
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                  <p className="text-sm sm:text-[15px] text-[var(--text-secondary)] leading-relaxed">
                     {item.description}
                   </p>
 
@@ -92,31 +92,33 @@ export function FlagshipSpotlight({ items }: FlagshipSpotlightProps) {
                 {/* Preview / Image / Metrics */}
                 <div className={cn("lg:col-span-5 space-y-4", !isEven && "lg:order-first")}>
                   {item.coverImage && (
-                    <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden border border-[var(--border-subtle)] shadow-sm">
-                      <Image
-                        src={item.coverImage}
-                        alt={`${item.name} user interface`}
-                        fill
-                        sizes="(max-width: 1024px) 100vw, 40vw"
-                        className="object-cover object-top hover:scale-105 transition-transform duration-500"
-                      />
+                    <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-2 shadow-sm">
+                      <div className="relative w-full h-full rounded-lg overflow-hidden">
+                        <Image
+                          src={item.coverImage}
+                          alt={`${item.name} user interface`}
+                          fill
+                          sizes="(max-width: 1024px) 100vw, 40vw"
+                          className="object-contain object-center transition-transform duration-500 hover:scale-[1.02]"
+                        />
+                      </div>
                     </div>
                   )}
 
-                  <div className="bg-[var(--bg-elevated)] rounded-xl p-5 border border-[var(--border-subtle)] shadow-sm font-mono text-xs">
-                    <div className="flex justify-between items-center pb-3 border-b border-[var(--bg-surface)] mb-4">
-                      <span className="font-bold text-[var(--text-primary)] uppercase">{item.name} Telemetry</span>
-                      <span className="text-[var(--success)] flex items-center gap-1 font-semibold">
+                  <div className="bg-[var(--bg-surface)] rounded-xl p-5 border border-[var(--border-subtle)] shadow-xs text-xs">
+                    <div className="flex justify-between items-center pb-3 border-b border-[var(--border-subtle)] mb-4">
+                      <span className="font-semibold text-[var(--text-primary)]">{item.name} Metrics</span>
+                      <span className="text-[var(--success)] flex items-center gap-1.5 font-medium">
                         <span className="w-2 h-2 rounded-full bg-[var(--success)]" aria-hidden="true" />
                         Live
                       </span>
                     </div>
                     {item.metrics && (
-                      <div className="space-y-3">
+                      <div className="space-y-2.5">
                         {item.metrics.map((m) => (
-                          <div key={m.label} className="flex justify-between text-[var(--text-muted)]">
-                            <span>{m.label}:</span>
-                            <span className="font-bold text-[var(--text-primary)]">{m.value}</span>
+                          <div key={m.label} className="flex justify-between text-[var(--text-secondary)]">
+                            <span>{m.label}</span>
+                            <span className="font-semibold text-[var(--text-primary)] tabular-nums">{m.value}</span>
                           </div>
                         ))}
                       </div>

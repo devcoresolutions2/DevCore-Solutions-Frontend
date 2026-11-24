@@ -3,9 +3,9 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
 
 @theme inline {
-  --font-sans: 'Inter', var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Plus Jakarta Sans', var(--font-display), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', var(--font-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-geist), "Geist", var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
 /* ==========================================================================
@@ -22,12 +22,14 @@
      #253745 -> PRIMARY BRAND ACCENT
   */
   --bg-canvas: #F4F6F7;
-  --bg-surface: #E6EAEB;
+  --bg-surface: #FFFFFF;
   --bg-elevated: #FFFFFF;
+  --bg-card: #FFFFFF;
 
-  --text-primary: #253745;
+  --text-primary: #11212D;
   --text-secondary: #4A5C6A;
-  --text-muted: #4A5C6A;
+  --text-tertiary: #64748B;
+  --text-muted: #5C6F7D;
   --text-muted-strong: #253745;
 
   --brand-primary: #253745;
@@ -73,13 +75,15 @@
      #CCD0CF -> Primary Text / Foreground
   */
   --bg-canvas: #06141B;
-  --bg-surface: #11212D;
-  --bg-elevated: #253745;
+  --bg-surface: #0D1D27;
+  --bg-elevated: #162936;
+  --bg-card: #11212D;
 
-  --text-primary: #CCD0CF;
+  --text-primary: #E2E8F0;
   --text-secondary: #9BA8AB;
+  --text-tertiary: #7B8C94;
   --text-muted: #9BA8AB;
-  --text-muted-strong: #CCD0CF;
+  --text-muted-strong: #E2E8F0;
 
   /* Brand Primary in Dark Mode: Luminous silver-cyan slate for high-contrast foreground visibility */
   --brand-primary: #8FB4C9;
@@ -117,14 +121,50 @@
 /* Dark Mode High-Contrast Overrides for Icons & Micro-typography */
 [data-theme="dark"] .service-icon-box,
 .dark .service-icon-box {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-color: rgba(255, 255, 255, 0.16) !important;
+  background: rgba(143, 180, 201, 0.16) !important;
+  border-color: rgba(143, 180, 201, 0.35) !important;
   color: #FFFFFF !important;
+  box-shadow: 0 0 20px rgba(143, 180, 201, 0.15) !important;
 }
 
 [data-theme="dark"] .service-icon-box svg,
 .dark .service-icon-box svg {
   color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+/* Social Link Action Buttons — High Contrast Hover Guarantee */
+.social-icon-btn {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.social-icon-btn:hover {
+  background-color: var(--brand-primary) !important;
+  border-color: var(--brand-primary) !important;
+  color: var(--brand-contrast) !important;
+  transform: translateY(-1px);
+}
+
+[data-theme="dark"] .social-icon-btn,
+.dark .social-icon-btn {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #CCD0CF;
+}
+
+[data-theme="dark"] .social-icon-btn:hover,
+.dark .social-icon-btn:hover {
+  background-color: #8FB4C9 !important;
+  border-color: #8FB4C9 !important;
+  color: #06141B !important;
+}
+
+.social-icon-btn svg {
+  color: inherit !important;
+  fill: currentColor !important;
 }
 
 /* ==========================================================================

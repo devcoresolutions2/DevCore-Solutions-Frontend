@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   MessageCircle,
@@ -216,166 +217,185 @@ export function ContactHub({ settings }: ContactHubProps) {
             aria-modal="true"
             aria-label="DevCore Contact Hub Options"
             className={cn(
-              "w-[360px] max-w-[calc(100vw-2rem)] rounded-2xl devcore-glass-card shadow-2xl border border-[var(--border-strong)]",
+              "w-[372px] max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl border border-[var(--border-subtle)]",
               "bg-[var(--bg-elevated)] text-xs flex flex-col overflow-hidden animate-scaleUp"
             )}
           >
-            {/* Top Specular Line */}
-            <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-[var(--border-strong)] to-transparent opacity-80" />
-
             {/* Header */}
-            <div className="p-4 pb-3 border-b border-[var(--border-subtle)] space-y-2">
+            <div className="p-5 pb-4 border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-md bg-[var(--brand-primary)] text-[var(--brand-contrast)] flex items-center justify-center">
-                    <Headphones size={14} />
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-[var(--brand-primary)] text-[var(--brand-contrast)] flex items-center justify-center shadow-xs">
+                    <Headphones size={16} />
                   </div>
-                  <h2 className="font-display font-bold text-sm text-[var(--text-primary)]">
-                    DevCore Contact Hub
-                  </h2>
+                  <div>
+                    <h2 className="font-display font-semibold text-sm text-[var(--text-primary)] leading-tight">
+                      Talk to DevCore
+                    </h2>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span
+                        className={cn(
+                          "w-1.5 h-1.5 rounded-full",
+                          isOpenNow ? "bg-[var(--success)] animate-pulse" : "bg-[var(--warning)]"
+                        )}
+                        aria-hidden="true"
+                      />
+                      <span
+                        className={cn(
+                          "text-[11px] font-medium",
+                          isOpenNow ? "text-[var(--success)]" : "text-[var(--text-secondary)]"
+                        )}
+                      >
+                        {isOpenNow ? "Online now · Fast reply" : "Away · Replies by 09:00 BST"}
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
                   aria-label="Close Contact Hub"
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
                 >
                   <X size={16} />
                 </button>
               </div>
 
-              {/* Status Indicator */}
-              <div className="flex items-center gap-2 pt-0.5">
-                <span
-                  className={cn(
-                    "w-2 h-2 rounded-full",
-                    isOpenNow ? "bg-[var(--success)] animate-pulse" : "bg-[var(--warning)]"
-                  )}
-                  aria-hidden="true"
-                />
-                <span
-                  className={cn(
-                    "font-mono text-[11px] font-semibold tracking-wide",
-                    isOpenNow ? "text-[var(--success)]" : "text-[var(--warning)]"
-                  )}
-                >
-                  {isOpenNow ? "Engineering Staff: Online Now" : "Engineering Staff: After Hours"}
-                </span>
-              </div>
-
               {/* After-Hours Notice Banner */}
               {!isOpenNow && (
-                <div className="p-2.5 rounded-lg bg-[var(--bg-surface)] text-[var(--text-secondary)] font-sans text-[11.5px] leading-relaxed flex items-start gap-2 border border-[var(--border-subtle)]">
+                <div className="p-3 rounded-xl bg-[var(--bg-elevated)] text-[var(--text-secondary)] text-xs leading-relaxed flex items-start gap-2.5 border border-[var(--border-subtle)]">
                   <Moon size={14} className="text-[var(--warning)] shrink-0 mt-0.5" />
                   <span>
-                    Office is currently offline. We reply next business day by <strong>09:00 BST</strong> (guaranteed).
+                    We&apos;re currently offline. Leave a message or callback request and we&apos;ll get back to you by <strong className="font-semibold text-[var(--text-primary)]">09:00 BST</strong>.
                   </span>
                 </div>
               )}
             </div>
 
             {/* Interactive Channel Rows */}
-            <div className="p-3.5 space-y-2 max-h-[380px] overflow-y-auto">
-              {/* 1. WhatsApp Direct Dispatch */}
+            <div className="p-3.5 space-y-2 max-h-[380px] overflow-y-auto bg-[var(--bg-canvas)]/50">
+              {/* 1. Start a Project / Send a Message (Always available) */}
+              <Link
+                href="/contact"
+                onClick={() => setIsOpen(false)}
+                className="p-3 rounded-xl bg-[var(--bg-elevated)] hover:border-[var(--brand-primary)] border border-[var(--border-subtle)] transition-all flex items-center justify-between group shadow-xs"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <MessageCircle size={17} />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="font-semibold text-[13px] text-[var(--text-primary)] block truncate">
+                      Send a Message
+                    </span>
+                    <span className="text-[11px] text-[var(--text-secondary)] truncate block">
+                      Tell us about your project or timeline
+                    </span>
+                  </div>
+                </div>
+                <ArrowRight size={14} className="text-[var(--text-tertiary)] group-hover:text-[var(--brand-primary)] group-hover:translate-x-0.5 transition-all shrink-0 ml-1" />
+              </Link>
+
+              {/* 2. WhatsApp Chat */}
               {whatsappNumber && (
                 <a
                   href={waHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => handleChannelClick("whatsapp")}
-                  className="p-3 rounded-xl bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--brand-primary)] transition-all flex items-center justify-between group shadow-sm"
+                  className="p-3 rounded-xl bg-[var(--bg-elevated)] hover:border-[var(--brand-primary)] border border-[var(--border-subtle)] transition-all flex items-center justify-between group shadow-xs"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-[var(--success)]/10 text-[var(--success)] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <div className="w-9 h-9 rounded-xl bg-[var(--success)]/10 text-[var(--success)] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                       <MessageCircle size={17} />
                     </div>
                     <div className="min-w-0">
-                      <span className="font-bold text-[var(--text-primary)] block truncate">
-                        WhatsApp Direct Dispatch
+                      <span className="font-semibold text-[13px] text-[var(--text-primary)] block truncate">
+                        Chat on WhatsApp
                       </span>
-                      <span className="text-[11px] text-[var(--text-muted)] font-mono truncate block">
-                        +{whatsappNumber} &bull; Instant chat
+                      <span className="text-[11px] text-[var(--text-secondary)] truncate block">
+                        +{whatsappNumber} &bull; Quick chat
                       </span>
                     </div>
                   </div>
-                  <ArrowRight size={14} className="text-[var(--text-muted)] group-hover:text-[var(--brand-primary)] group-hover:translate-x-0.5 transition-all shrink-0 ml-1" />
+                  <ArrowRight size={14} className="text-[var(--text-tertiary)] group-hover:text-[var(--brand-primary)] group-hover:translate-x-0.5 transition-all shrink-0 ml-1" />
                 </a>
               )}
 
-              {/* 2. Direct Engineering Line */}
+              {/* 3. Direct Phone */}
               {phone && (
                 <a
                   href={`tel:${phone}`}
                   onClick={() => handleChannelClick("phone")}
-                  className="p-3 rounded-xl bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--brand-primary)] transition-all flex items-center justify-between group shadow-sm"
+                  className="p-3 rounded-xl bg-[var(--bg-elevated)] hover:border-[var(--brand-primary)] border border-[var(--border-subtle)] transition-all flex items-center justify-between group shadow-xs"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <div className="w-9 h-9 rounded-xl bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                       <Phone size={17} />
                     </div>
                     <div className="min-w-0">
-                      <span className="font-bold text-[var(--text-primary)] block truncate">
-                        Direct Voice Line
+                      <span className="font-semibold text-[13px] text-[var(--text-primary)] block truncate">
+                        Call Us Directly
                       </span>
-                      <span className="text-[11px] text-[var(--text-muted)] font-mono truncate block">
-                        {phone} &bull; Direct triage
+                      <span className="text-[11px] text-[var(--text-secondary)] truncate block">
+                        {phone}
                       </span>
                     </div>
                   </div>
-                  <ArrowRight size={14} className="text-[var(--text-muted)] group-hover:text-[var(--brand-primary)] group-hover:translate-x-0.5 transition-all shrink-0 ml-1" />
+                  <ArrowRight size={14} className="text-[var(--text-tertiary)] group-hover:text-[var(--brand-primary)] group-hover:translate-x-0.5 transition-all shrink-0 ml-1" />
                 </a>
               )}
 
-              {/* 3. Secure Email Ingest */}
+              {/* 4. Email */}
               {email && (
                 <a
-                  href={`mailto:${email}?subject=${encodeURIComponent("Technical Project Inquiry")}`}
+                  href={`mailto:${email}?subject=${encodeURIComponent("Project Inquiry")}`}
                   onClick={() => handleChannelClick("email")}
-                  className="p-3 rounded-xl bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--brand-primary)] transition-all flex items-center justify-between group shadow-sm"
+                  className="p-3 rounded-xl bg-[var(--bg-elevated)] hover:border-[var(--brand-primary)] border border-[var(--border-subtle)] transition-all flex items-center justify-between group shadow-xs"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <div className="w-9 h-9 rounded-xl bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                       <Mail size={17} />
                     </div>
                     <div className="min-w-0">
-                      <span className="font-bold text-[var(--text-primary)] block truncate">
-                        Secure Email Ingest
+                      <span className="font-semibold text-[13px] text-[var(--text-primary)] block truncate">
+                        Send an Email
                       </span>
-                      <span className="text-[11px] text-[var(--text-muted)] font-mono truncate block">
+                      <span className="text-[11px] text-[var(--text-secondary)] truncate block">
                         {email}
                       </span>
                     </div>
                   </div>
-                  <ArrowRight size={14} className="text-[var(--text-muted)] group-hover:text-[var(--brand-primary)] group-hover:translate-x-0.5 transition-all shrink-0 ml-1" />
+                  <ArrowRight size={14} className="text-[var(--text-tertiary)] group-hover:text-[var(--brand-primary)] group-hover:translate-x-0.5 transition-all shrink-0 ml-1" />
                 </a>
               )}
 
-              {/* 4. Request a Callback (Expands inline form) */}
-              <div className="rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] overflow-hidden transition-all">
+              {/* 5. Request a Callback (Expands inline form) */}
+              <div className="rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] overflow-hidden transition-all shadow-xs">
                 <button
                   type="button"
                   onClick={() => setCallbackExpanded((prev) => !prev)}
-                  className="w-full p-3 flex items-center justify-between text-left hover:bg-[var(--border-subtle)]/30 transition-colors"
+                  className="w-full p-3 flex items-center justify-between text-left hover:bg-[var(--bg-surface)] transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] flex items-center justify-center shrink-0">
                       <Clock size={17} />
                     </div>
                     <div className="min-w-0">
-                      <span className="font-bold text-[var(--text-primary)] block truncate">
+                      <span className="font-semibold text-[13px] text-[var(--text-primary)] block truncate">
                         Request a Callback
                       </span>
-                      <span className="text-[11px] text-[var(--text-muted)] truncate block">
+                      <span className="text-[11px] text-[var(--text-secondary)] truncate block">
                         {callbackSuccess
                           ? "Requested successfully!"
-                          : "We call back within 1 business hour"}
+                          : "We'll call back within 1 business hour"}
                       </span>
                     </div>
                   </div>
                   <ChevronDown
                     size={14}
                     className={cn(
-                      "text-[var(--text-muted)] transition-transform duration-200 shrink-0 ml-1",
+                      "text-[var(--text-tertiary)] transition-transform duration-200 shrink-0 ml-1",
                       callbackExpanded && "rotate-180"
                     )}
                   />
