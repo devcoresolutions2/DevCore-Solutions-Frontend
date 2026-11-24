@@ -89,7 +89,7 @@ export function ArticleReader({ article, prevArticle, nextArticle }: ArticleRead
           <h2
             key={idx}
             id={id}
-            className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-[var(--text-primary)] mt-12 mb-4 scroll-mt-24 border-b border-[var(--border-subtle)] pb-2"
+            className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)] mt-12 mb-4 scroll-mt-24 border-b border-[var(--border-subtle)] pb-2.5"
           >
             {text}
           </h2>
@@ -107,7 +107,7 @@ export function ArticleReader({ article, prevArticle, nextArticle }: ArticleRead
           <h3
             key={idx}
             id={id}
-            className="text-xl font-bold font-mono tracking-tight text-[var(--text-primary)] mt-8 mb-3 scroll-mt-24"
+            className="font-display text-xl font-semibold tracking-tight text-[var(--text-primary)] mt-8 mb-3 scroll-mt-24"
           >
             {text}
           </h3>
@@ -187,16 +187,16 @@ export function ArticleReader({ article, prevArticle, nextArticle }: ArticleRead
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Top Breadcrumb */}
-      <nav className="flex items-center gap-2 text-xs text-[var(--text-secondary)] mb-8 font-mono flex-wrap">
+      <nav className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)] mb-8 flex-wrap">
         <Link href="/" className="hover:text-[var(--text-primary)] transition-colors">
-          DEVCORE
+          Home
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-[var(--text-tertiary)]" />
         <Link href="/blog" className="hover:text-[var(--text-primary)] transition-colors">
-          ENGINEERING BLOG
+          Engineering Blog
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-[var(--text-tertiary)]" />
-        <span className="uppercase text-[var(--brand-primary)]">
+        <span className="capitalize text-[var(--brand-primary)]">
           {article.category.replace("-", " ")}
         </span>
       </nav>
@@ -204,24 +204,24 @@ export function ArticleReader({ article, prevArticle, nextArticle }: ArticleRead
       {/* Article Header */}
       <header className="max-w-4xl mb-12">
         <div className="flex flex-wrap items-center gap-3 mb-4">
-          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-medium tracking-wide uppercase bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] border border-[var(--brand-primary)]/20">
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] border border-[var(--brand-primary)]/20">
             {article.category.replace("-", " ")}
           </span>
-          <div className="flex items-center gap-1.5 text-xs font-mono text-[var(--text-secondary)]">
-            <Clock className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)]">
+            <Clock className="w-3.5 h-3.5 text-[var(--text-tertiary)]" />
             <span>{article.readTime || `${article.readingMinutes} min read`}</span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs font-mono text-[var(--text-secondary)]">
-            <Calendar className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)]">
+            <Calendar className="w-3.5 h-3.5 text-[var(--text-tertiary)]" />
             <span>{formattedDate}</span>
           </div>
         </div>
 
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[var(--text-primary)] font-mono leading-tight mb-6">
+        <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[var(--text-primary)] leading-[1.15] mb-6">
           {article.title}
         </h1>
 
-        <p className="text-lg sm:text-xl text-[var(--text-secondary)] font-sans leading-relaxed border-l-2 border-[var(--brand-primary)] pl-4 italic">
+        <p className="text-lg sm:text-xl text-[var(--text-secondary)] font-sans leading-relaxed border-l-2 border-[var(--brand-primary)] pl-4">
           {article.excerpt}
         </p>
       </header>
@@ -234,13 +234,13 @@ export function ArticleReader({ article, prevArticle, nextArticle }: ArticleRead
 
           {/* Tags */}
           <div className="mt-12 pt-6 border-t border-[var(--border-subtle)] flex flex-wrap items-center gap-2">
-            <span className="text-xs font-mono text-[var(--text-secondary)] mr-2">Tags:</span>
+            <span className="text-xs font-medium text-[var(--text-tertiary)] mr-1">Tags:</span>
             {article.tags.map((tag) => (
               <span
                 key={tag}
-                className="text-xs font-mono px-2.5 py-1 rounded bg-[var(--bg-surface)] text-[var(--text-secondary)] border border-[var(--border-subtle)]"
+                className="text-xs font-medium px-2.5 py-1 rounded-md bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)]"
               >
-                #{tag}
+                {tag}
               </span>
             ))}
           </div>
@@ -250,13 +250,13 @@ export function ArticleReader({ article, prevArticle, nextArticle }: ArticleRead
             {prevArticle ? (
               <Link
                 href={`/blog/${prevArticle.slug}`}
-                className="p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--brand-primary)] transition-all group"
+                className="p-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--brand-primary)] transition-all group"
               >
-                <div className="text-xs font-mono text-[var(--text-tertiary)] flex items-center gap-1 mb-1">
+                <div className="text-xs font-medium text-[var(--text-tertiary)] flex items-center gap-1 mb-1">
                   <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
-                  <span>PREVIOUS DISPATCH</span>
+                  <span>Previous Article</span>
                 </div>
-                <div className="text-sm font-medium font-mono text-[var(--text-primary)] group-hover:text-[var(--brand-primary)] line-clamp-2">
+                <div className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--brand-primary)] line-clamp-2">
                   {prevArticle.title}
                 </div>
               </Link>
@@ -265,13 +265,13 @@ export function ArticleReader({ article, prevArticle, nextArticle }: ArticleRead
             {nextArticle ? (
               <Link
                 href={`/blog/${nextArticle.slug}`}
-                className="p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--brand-primary)] transition-all group sm:text-right"
+                className="p-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--brand-primary)] transition-all group sm:text-right"
               >
-                <div className="text-xs font-mono text-[var(--text-tertiary)] flex items-center justify-end gap-1 mb-1">
-                  <span>NEXT DISPATCH</span>
+                <div className="text-xs font-medium text-[var(--text-tertiary)] flex items-center justify-end gap-1 mb-1">
+                  <span>Next Article</span>
                   <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
                 </div>
-                <div className="text-sm font-medium font-mono text-[var(--text-primary)] group-hover:text-[var(--brand-primary)] line-clamp-2">
+                <div className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--brand-primary)] line-clamp-2">
                   {nextArticle.title}
                 </div>
               </Link>
@@ -281,27 +281,27 @@ export function ArticleReader({ article, prevArticle, nextArticle }: ArticleRead
 
         {/* Sticky Sidebar: TOC, Author & Share */}
         <aside className="lg:col-span-4 space-y-6">
-          <div className="sticky top-24 space-y-6">
+          <div className="sticky top-24 space-y-5">
             {/* Author Card */}
-            <div className="p-6 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-sm">
-              <div className="text-xs font-mono uppercase tracking-wider text-[var(--text-tertiary)] mb-4">
+            <div className="p-6 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-xs">
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-4">
                 Written By
               </div>
-              <div className="flex items-center gap-3.5 mb-3">
-                <div className="w-12 h-12 rounded-full bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] border border-[var(--brand-primary)]/20 flex items-center justify-center font-mono font-bold text-base">
+              <div className="flex items-center gap-3.5 mb-4">
+                <div className="w-11 h-11 rounded-xl bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] border border-[var(--brand-primary)]/20 flex items-center justify-center font-semibold text-sm shrink-0">
                   {article.authorInitials || "DC"}
                 </div>
-                <div>
-                  <div className="text-sm font-bold text-[var(--text-primary)] font-mono">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-[var(--text-primary)] truncate">
                     {article.authorName}
                   </div>
-                  <div className="text-xs text-[var(--text-secondary)]">
+                  <div className="text-xs text-[var(--text-secondary)] truncate">
                     {article.authorRole}
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 text-xs font-mono text-[var(--text-secondary)] pt-3 border-t border-[var(--border-subtle)]">
+              <div className="flex items-center gap-4 text-xs font-medium text-[var(--text-secondary)] pt-3 border-t border-[var(--border-subtle)]">
                 <a
                   href="https://github.com/devcoresolutions2"
                   target="_blank"
@@ -323,18 +323,18 @@ export function ArticleReader({ article, prevArticle, nextArticle }: ArticleRead
 
             {/* Table of Contents */}
             {sections.length > 0 && (
-              <div className="p-6 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-sm">
-                <div className="text-xs font-mono uppercase tracking-wider text-[var(--text-tertiary)] mb-3 flex items-center gap-2">
+              <div className="p-6 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-xs">
+                <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-3 flex items-center gap-2">
                   <Bookmark className="w-3.5 h-3.5" />
-                  <span>Table of Contents</span>
+                  <span>On This Page</span>
                 </div>
-                <nav className="space-y-2 text-xs font-mono">
+                <nav className="space-y-1.5 text-[13px]">
                   {sections.map((sec) => (
                     <a
                       key={sec.id}
                       href={`#${sec.id}`}
                       className={`block py-1 transition-colors hover:text-[var(--brand-primary)] ${
-                        sec.level === 3 ? "pl-3 text-[var(--text-tertiary)]" : "text-[var(--text-secondary)]"
+                        sec.level === 3 ? "pl-3 text-[var(--text-tertiary)]" : "font-medium text-[var(--text-secondary)]"
                       }`}
                     >
                       {sec.title}
@@ -345,16 +345,16 @@ export function ArticleReader({ article, prevArticle, nextArticle }: ArticleRead
             )}
 
             {/* Share and Action */}
-            <div className="p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] flex items-center justify-between">
-              <span className="text-xs font-mono text-[var(--text-secondary)] flex items-center gap-1.5">
+            <div className="p-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] flex items-center justify-between">
+              <span className="text-xs font-medium text-[var(--text-secondary)] flex items-center gap-1.5">
                 <Share2 className="w-3.5 h-3.5" />
-                <span>Share Dispatch</span>
+                <span>Share Article</span>
               </span>
 
               <button
                 type="button"
                 onClick={handleCopyLink}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-xs font-mono text-[var(--text-primary)] hover:border-[var(--brand-primary)] transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs font-medium text-[var(--text-primary)] hover:border-[var(--brand-primary)] transition-colors"
               >
                 {copiedLink ? (
                   <>
