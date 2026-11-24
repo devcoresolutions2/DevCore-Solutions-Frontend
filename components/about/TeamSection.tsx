@@ -31,11 +31,11 @@ export function TeamSection({ members }: TeamSectionProps) {
   return (
     <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-12">
       <div className="flex flex-col gap-2 mb-10 max-w-2xl">
-        <span className="font-mono text-xs uppercase tracking-widest text-[var(--brand-primary)] font-semibold">
-          ARCHITECTURAL AUTHORITY
+        <span className="text-xs uppercase tracking-wider text-[var(--brand-primary)] font-semibold">
+          Leadership &amp; Engineering
         </span>
-        <h2 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl text-[var(--text-primary)]">
-          Meet the People Behind DEVCORE
+        <h2 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl text-[var(--text-primary)] tracking-tight">
+          Meet the People Behind DevCore
         </h2>
         <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
           DevCore is governed and engineered by experienced full-stack engineers and distributed systems builders dedicated to deterministic craft.
@@ -56,32 +56,32 @@ export function TeamSection({ members }: TeamSectionProps) {
           return (
             <GlassCard
               key={member.id}
-              className="p-6 flex flex-col justify-between hover:border-[var(--brand-primary)]/40 transition-all duration-300 group"
+              className="p-6 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] flex flex-col justify-between hover:border-[var(--border-strong)] hover:shadow-md transition-all duration-300 group"
             >
               <div className="flex flex-col gap-4">
                 {/* Avatar / Portrait Container */}
-                <div className="relative w-full h-52 rounded-xl overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center">
+                <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-[var(--bg-surface)] border border-[var(--border-subtle)] flex items-center justify-center">
                   {member.avatarUrl ? (
                     <img
                       src={member.avatarUrl}
                       alt={member.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover object-top group-hover:scale-[1.03] transition-transform duration-500"
                     />
                   ) : (
                     /* Elegant Initials Avatar */
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[var(--bg-elevated)] via-[var(--bg-surface)] to-[var(--bg-canvas)] select-none">
-                      <div className="w-20 h-20 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-strong)]/40 flex items-center justify-center shadow-inner text-[var(--brand-primary)] font-display font-black text-2xl tracking-wider">
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[var(--bg-surface)] via-[var(--bg-elevated)] to-[var(--bg-canvas)] select-none">
+                      <div className="w-20 h-20 rounded-2xl bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/20 flex items-center justify-center text-[var(--brand-primary)] font-display font-bold text-2xl tracking-wide">
                         {initials}
                       </div>
-                      <span className="text-[10px] font-mono text-[var(--text-muted)] mt-2 uppercase tracking-widest">
-                        Verified Member
+                      <span className="text-xs font-medium text-[var(--text-tertiary)] mt-2.5">
+                        Team Member
                       </span>
                     </div>
                   )}
 
                   {member.badge && (
-                    <div className="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-[var(--bg-surface)]/90 backdrop-blur-md border border-[var(--border-subtle)] shadow-xs">
-                      <span className="text-[10px] font-mono font-semibold text-[var(--text-primary)] uppercase tracking-wider">
+                    <div className="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-[var(--bg-elevated)]/95 backdrop-blur-md border border-[var(--border-subtle)] shadow-xs">
+                      <span className="text-[11px] font-semibold text-[var(--text-primary)] uppercase tracking-wide">
                         {member.badge}
                       </span>
                     </div>
@@ -90,10 +90,10 @@ export function TeamSection({ members }: TeamSectionProps) {
 
                 {/* Identity & Role */}
                 <div className="flex flex-col gap-1">
-                  <h3 className="font-display font-bold text-xl text-[var(--text-primary)]">
+                  <h3 className="font-display font-semibold text-xl text-[var(--text-primary)]">
                     {member.name}
                   </h3>
-                  <span className="text-xs sm:text-sm font-medium text-[var(--brand-primary)] font-mono">
+                  <span className="text-xs sm:text-sm font-medium text-[var(--brand-primary)]">
                     {member.role}
                   </span>
                 </div>
