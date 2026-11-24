@@ -92,14 +92,16 @@ export function FlagshipSpotlight({ items }: FlagshipSpotlightProps) {
                 {/* Preview / Image / Metrics */}
                 <div className={cn("lg:col-span-5 space-y-4", !isEven && "lg:order-first")}>
                   {item.coverImage && (
-                    <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden border border-[var(--border-subtle)] shadow-sm">
-                      <Image
-                        src={item.coverImage}
-                        alt={`${item.name} user interface`}
-                        fill
-                        sizes="(max-width: 1024px) 100vw, 40vw"
-                        className="object-cover object-top hover:scale-105 transition-transform duration-500"
-                      />
+                    <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-2 shadow-sm">
+                      <div className="relative w-full h-full rounded-lg overflow-hidden">
+                        <Image
+                          src={item.coverImage}
+                          alt={`${item.name} user interface`}
+                          fill
+                          sizes="(max-width: 1024px) 100vw, 40vw"
+                          className="object-contain object-center transition-transform duration-500 hover:scale-[1.02]"
+                        />
+                      </div>
                     </div>
                   )}
 

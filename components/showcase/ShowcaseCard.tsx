@@ -28,51 +28,48 @@ export function ShowcaseCard({ item, featured = false, compact = false }: Showca
       {/* Cover */}
       <div
         className={cn(
-          "w-full bg-[var(--bg-elevated)] relative overflow-hidden",
+          "w-full bg-[var(--bg-elevated)] relative overflow-hidden flex items-center justify-center",
           featured
-            ? "lg:col-span-6 aspect-[16/10] lg:aspect-auto lg:min-h-[340px] border-b lg:border-b-0 lg:border-r border-[var(--border-subtle)]"
-            : "aspect-[16/9] border-b border-[var(--border-subtle)]"
+            ? "lg:col-span-6 p-4 sm:p-6 border-b lg:border-b-0 lg:border-r border-[var(--border-subtle)]"
+            : "p-3 border-b border-[var(--border-subtle)]"
         )}
       >
         {item.coverImage ? (
-          <>
+          <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--bg-canvas)]">
             <Image
               src={item.coverImage}
               alt={item.name}
               fill
               sizes={featured ? "(max-width: 1024px) 100vw, 50vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
-              className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+              className="object-contain object-center transition-transform duration-500 group-hover:scale-[1.02]"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/20 pointer-events-none" />
-          </>
-        ) : (
-          <div
-            className="absolute inset-0 opacity-20 pointer-events-none"
-            style={{
-              backgroundImage: "radial-gradient(var(--brand-primary) 1px, transparent 1px)",
-              backgroundSize: "16px 16px",
-            }}
-            aria-hidden="true"
-          />
-        )}
-
-        <div className="absolute inset-0 p-5 flex flex-col justify-start z-10 pointer-events-none">
-          {/* Top row */}
-          <div className="flex items-center justify-between gap-2 pointer-events-auto">
-            <ReleasePill dot dotColor="var(--brand-primary)">
-              {item.badge}&nbsp;•&nbsp;{item.category}
-            </ReleasePill>
-            <span className="text-[11px] font-medium text-[var(--text-secondary)] bg-[var(--bg-elevated)]/90 px-2.5 py-1 rounded-md border border-[var(--border-subtle)]">
-              {launchDate}
-            </span>
           </div>
-        </div>
+        ) : (
+          <div className="relative w-full aspect-[16/10] rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] flex items-center justify-center">
+            <div
+              className="absolute inset-0 opacity-20 pointer-events-none"
+              style={{
+                backgroundImage: "radial-gradient(var(--brand-primary) 1px, transparent 1px)",
+                backgroundSize: "16px 16px",
+              }}
+              aria-hidden="true"
+            />
+          </div>
+        )}
       </div>
 
       {/* Right / Body Column */}
       <div className={cn("flex flex-col justify-between", featured && "lg:col-span-6")}>
         {/* Content */}
         <div className={cn("flex-1 flex flex-col", compact ? "p-4" : "p-6 sm:p-7")}>
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <ReleasePill dot dotColor="var(--brand-primary)">
+              {item.badge}&nbsp;•&nbsp;{item.category}
+            </ReleasePill>
+            <span className="text-[11px] font-medium text-[var(--text-tertiary)] bg-[var(--bg-elevated)] px-2.5 py-1 rounded-md border border-[var(--border-subtle)]">
+              {launchDate}
+            </span>
+          </div>
           <div className="flex items-center gap-2.5 mb-1.5">
             <h3 className={cn("font-display font-bold tracking-tight text-[var(--text-primary)]", featured ? "text-2xl sm:text-3xl" : "text-xl")}>
               {item.name}
