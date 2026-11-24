@@ -2106,6 +2106,533 @@ export async function apiRetryWebhookDelivery(
   });
 }
 
+// ─── ADMIN SOCIAL BROADCAST COMPOSER & PUBLISHING ─────────────────────────────
+
+export type BroadcastPlatformKey =
+  | "LINKEDIN"
+  | "TWITTER_X"
+  | "META_FACEBOOK"
+  | "META_INSTAGRAM"
+  | "YOUTUBE"
+  | "REDDIT"
+  | "GLASSDOOR";
+
+export interface PlatformRuleSpec {
+  platform: BroadcastPlatformKey;
+  displayName: string;
+  maxChars: number;
+  urlShortenedLength: number | null;
+  maxImages: number;
+  maxVideos: number;
+  maxImageBytes: number;
+  maxVideoBytes: number;
+  maxGifBytes: number;
+  supportsMarkdown: boolean;
+  supportsPublish: boolean;
+  requiredWriteScopes: string[];
+}
+
+export interface BroadcastAccountItem {
+  key: string;
+  platform: BroadcastPlatformKey;
+  displayName: string;
+  accountName: string | null;
+  accountHandle: string | null;
+  avatarUrl: string | null;
+  scopes: string[];
+  tokenExpiresAt: string | null;
+  status: string;
+  canPublish: boolean;
+  publishBlockReason: string | null;
+  rules: PlatformRuleSpec;
+}
+
+export interface SocialMediaAssetItem {
+  id: string;
+  postId: string | null;
+  uploadedById: string;
+  publicId: string;
+  secureUrl: string;
+  resourceType: "image" | "video" | string;
+  format: string;
+  bytes: number;
+  width: number | null;
+  height: number | null;
+  durationSec: number | null;
+  fileName: string;
+  altText: string | null;
+  sortOrder: number;
+  createdAt: string;
+}
+
+export interface SocialDeliveryLogItem {
+  id: string;
+  postId: string;
+  platform: BroadcastPlatformKey;
+  status: string;
+  externalPostId: string | null;
+  externalUrl: string | null;
+  latencyMs: number | null;
+  attemptCount: number;
+  error: { message?: string } | null;
+  createdAt: string;
+}
+
+export interface SocialBroadcastPostItem {
+  id: string;
+  title: string | null;
+  baseContent: string;
+  platformContent: Record<string, string> | null;
+  variables: Record<string, string> | null;
+  mediaUrls: string[];
+  mediaAssets: SocialMediaAssetItem[];
+  targetPlatforms: BroadcastPlatformKey[];
+  status: "DRAFT" | "SCHEDULED" | "PROCESSING" | "PUBLISHED" | "PARTIAL_FAILED" | "FAILED" | "CANCELLED";
+  scheduledFor: string | null;
+  timezone: string | null;
+  publishedAt: string | null;
+  cancelledAt: string | null;
+  deliveryLogs: SocialDeliveryLogItem[];
+  createdAt: string;
+  author?: { id: string; name: string; email: string };
+}
+
+export interface BroadcastContextResponse {
+  accounts: BroadcastAccountItem[];
+  aiStatus: { configured: boolean; provider: string; model: string };
+  defaultVariables: Record<string, string>;
+  allowedVariables: string[];
+  recentBroadcasts: SocialBroadcastPostItem[];
+}
+
+export async function apiGetBroadcastContext(): Promise<BroadcastContextResponse> {
+  return await apiFetch("/api/admin/social/broadcasts/context");
+}
+
+export async function apiSignSocialMediaUpload(
+  resourceType: "image" | "video" = "image",
+): Promise<{
+  signature: string;
+  timestamp: number;
+  apiKey: string;
+  cloudName: string;
+  folder: string;
+  publicId: string;
+  resourceType: "image" | "video";
+  allowedFormats: string;
+  maxFileSizeBytes: number;
+}> {
+  return await apiFetch("/api/admin/social/broadcasts/media/sign", {
+    method: "POST",
+    body: JSON.stringify({ resourceType }),
+  });
+}
+
+export async function apiVerifySocialMediaAsset(payload: {
+  publicId: string;
+  resourceType: "image" | "video";
+  fileName: string;
+  altText?: string;
+}): Promise<{ asset: SocialMediaAssetItem }> {
+  return await apiFetch("/api/admin/social/broadcasts/media/verify", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiUpdateSocialMediaAsset(
+  assetId: string,
+  payload: { altText?: string; sortOrder?: number },
+): Promise<{ asset: SocialMediaAssetItem }> {
+  return await apiFetch(`/api/admin/social/broadcasts/media/${encodeURIComponent(assetId)}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiDeleteSocialMediaAsset(assetId: string): Promise<{ deleted: boolean }> {
+  return await apiFetch(`/api/admin/social/broadcasts/media/${encodeURIComponent(assetId)}`, {
+    method: "DELETE",
+  });
+}
+
+export async function apiAdaptSocialCopyWithAi(payload: {
+  content: string;
+  action:
+    | "shorten_x"
+    | "technical_linkedin"
+    | "format_reddit"
+    | "generate_hashtags"
+    | "improve_clarity"
+    | "rewrite_platform";
+  targetPlatform: BroadcastPlatformKey;
+}): Promise<{
+  suggestion: string;
+  targetPlatform: BroadcastPlatformKey;
+  charCount: number;
+  maxChars: number;
+}> {
+  return await apiFetch("/api/admin/social/broadcasts/ai/adapt", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiCreateBroadcast(payload: {
+  title?: string;
+  baseContent: string;
+  platformContent?: Record<string, string>;
+  variables?: Record<string, string>;
+  targetPlatforms: BroadcastPlatformKey[];
+  mediaAssetIds: string[];
+  mode: "IMMEDIATE" | "SCHEDULE" | "DRAFT";
+  scheduledFor?: string;
+  timezone?: string;
+}): Promise<{ broadcast: SocialBroadcastPostItem }> {
+  return await apiFetch("/api/admin/social/broadcasts", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiCancelScheduledBroadcast(
+  id: string,
+): Promise<{ broadcast: SocialBroadcastPostItem }> {
+  return await apiFetch(`/api/admin/social/broadcasts/${encodeURIComponent(id)}/cancel`, {
+    method: "POST",
+  });
+}
+
+export async function apiRetryBroadcast(
+  id: string,
+): Promise<{ broadcast: SocialBroadcastPostItem }> {
+  return await apiFetch(`/api/admin/social/broadcasts/${encodeURIComponent(id)}/retry`, {
+    method: "POST",
+  });
+}
+
+// ─── ADMIN SOCIAL MANAGEMENT ──────────────────────────────────────────────────
+
+export interface SocialManageAnalyticsResponse {
+  analytics: {
+    totalDispatches: number;
+    successfulDeliveries: number;
+    eligibleDeliveries: number;
+    successRate: number | null;
+    pendingScheduledCount: number;
+    failedCount: number;
+    statusCounts: Record<string, number>;
+    nextScheduled: { id: string; scheduledFor: string; timezone: string | null } | null;
+  };
+  failedAlert: {
+    affectedDeliveriesCount: number;
+    affectedBroadcastIds: string[];
+    affectedPlatforms: string[];
+    latestFailureAt: string | null;
+    errors: string[];
+  };
+  platformHealth: Array<{
+    key: string;
+    platform: BroadcastPlatformKey;
+    displayName: string;
+    status: string;
+    accountName: string | null;
+    lastHealthCheckAt: string | null;
+    lastLatencyMs: number | null;
+    lastError: string | null;
+    canPublish: boolean;
+  }>;
+  diagnostics: {
+    workerActive: boolean;
+    pollIntervalSeconds: number;
+    lastHeartbeatAt: string | null;
+    lastTickDurationMs: number | null;
+    pendingCount: number;
+    processingCount: number;
+    failedDeliveriesCount: number;
+    nextScheduled: { id: string; scheduledFor: string; timezone: string | null } | null;
+  };
+}
+
+export async function apiGetSocialManageAnalytics(dateRange = "30d"): Promise<SocialManageAnalyticsResponse> {
+  return await apiFetch(`/api/admin/social/manage/analytics?dateRange=${encodeURIComponent(dateRange)}`);
+}
+
+export async function apiListManagedBroadcasts(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  platform?: string;
+  dateRange?: string;
+}): Promise<{
+  items: SocialBroadcastPostItem[];
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+}> {
+  const sp = new URLSearchParams();
+  if (params.page) sp.set("page", String(params.page));
+  if (params.limit) sp.set("limit", String(params.limit));
+  if (params.search) sp.set("search", params.search);
+  if (params.status && params.status !== "ALL") sp.set("status", params.status);
+  if (params.platform && params.platform !== "ALL") sp.set("platform", params.platform);
+  if (params.dateRange) sp.set("dateRange", params.dateRange);
+  return await apiFetch(`/api/admin/social/manage/broadcasts?${sp.toString()}`);
+}
+
+export async function apiDeleteManagedBroadcast(id: string): Promise<{ deleted: boolean }> {
+  return await apiFetch(`/api/admin/social/manage/broadcasts/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+export async function apiRetryAllFailedBroadcasts(): Promise<{ retriedCount: number }> {
+  return await apiFetch("/api/admin/social/manage/retry-failed", { method: "POST" });
+}
+
+export function getSocialManageExportUrl(status = "ALL"): string {
+  return `${BASE_URL}/api/admin/social/manage/export?status=${encodeURIComponent(status)}`;
+}
+
+// ─── ADMIN USERS & IAM ────────────────────────────────────────────────────────
+
+export interface AdminUserRecord {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl: string | null;
+  role: "USER" | "CLIENT" | "EDITOR" | "SUPER_ADMIN";
+  permissions: string[];
+  isActive: boolean;
+  emailVerified: boolean;
+  authProvider: string;
+  lastLoginAt: string | null;
+  createdAt: string;
+  activeSessionCount: number;
+}
+
+export interface AdminUsersListResponse {
+  items: AdminUserRecord[];
+  pendingInvitations: Array<{
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    expiresAt: string;
+    createdAt: string;
+  }>;
+  stats: {
+    totalUsers: number;
+    activeToday: number;
+    pendingVerification: number;
+    pendingInvitationsCount: number;
+  };
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+}
+
+export async function apiListAdminUsers(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  role?: string;
+  status?: string;
+}): Promise<AdminUsersListResponse> {
+  const sp = new URLSearchParams();
+  if (params.page) sp.set("page", String(params.page));
+  if (params.limit) sp.set("limit", String(params.limit));
+  if (params.search) sp.set("search", params.search);
+  if (params.role && params.role !== "ALL") sp.set("role", params.role);
+  if (params.status && params.status !== "ALL") sp.set("status", params.status);
+  return await apiFetch(`/api/admin/users?${sp.toString()}`);
+}
+
+export async function apiGetAdminUserDetail(id: string): Promise<{
+  user: AdminUserRecord & {
+    sessions: Array<{ id: string; ip: string | null; userAgent: string | null; expiresAt: string; createdAt: string }>;
+    authEvents: Array<{ id: string; type: string; status: string; ip: string | null; createdAt: string }>;
+  };
+  auditLogs: Array<{ id: string; action: string; entity: string; entityId: string; meta: any; createdAt: string }>;
+}> {
+  return await apiFetch(`/api/admin/users/${encodeURIComponent(id)}`);
+}
+
+export async function apiInviteAdminUser(payload: {
+  name: string;
+  email: string;
+  role: string;
+  message?: string;
+}): Promise<{ invitation: any; emailDelivered: boolean }> {
+  return await apiFetch("/api/admin/users/invite", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiChangeUserRole(id: string, role: string): Promise<{ user: any }> {
+  return await apiFetch(`/api/admin/users/${encodeURIComponent(id)}/role`, {
+    method: "PATCH",
+    body: JSON.stringify({ role }),
+  });
+}
+
+export async function apiToggleUserActive(
+  id: string,
+  isActive: boolean,
+  reason?: string,
+): Promise<{ user: any }> {
+  return await apiFetch(`/api/admin/users/${encodeURIComponent(id)}/status`, {
+    method: "POST",
+    body: JSON.stringify({ isActive, reason }),
+  });
+}
+
+export async function apiRevokeUserSessions(id: string): Promise<{ revokedCount: number }> {
+  return await apiFetch(`/api/admin/users/${encodeURIComponent(id)}/revoke-sessions`, {
+    method: "POST",
+  });
+}
+
+export async function apiResendUserVerification(id: string): Promise<{ sent: boolean }> {
+  return await apiFetch(`/api/admin/users/${encodeURIComponent(id)}/resend-verification`, {
+    method: "POST",
+  });
+}
+
+export function getAdminUsersExportUrl(): string {
+  return `${BASE_URL}/api/admin/users/export`;
+}
+
+// ─── ADMIN AUDIT LOG ──────────────────────────────────────────────────────────
+
+export interface AuditLogRecord {
+  id: string;
+  actorId: string;
+  actor: { id: string; name: string; email: string; role: string };
+  action: string;
+  entity: string;
+  entityId: string;
+  meta: Record<string, any> | null;
+  ip: string | null;
+  createdAt: string;
+}
+
+export async function apiGetAuditStats(window = "7d"): Promise<{
+  stats: {
+    mutations24h: number;
+    privilegedChanges: number;
+    accessDenialsAndFailures: number;
+    integrityStatus: string;
+    integrityNote: string;
+  };
+}> {
+  return await apiFetch(`/api/admin/audit/stats?window=${encodeURIComponent(window)}`);
+}
+
+export async function apiGetAuditFilters(): Promise<{
+  actions: string[];
+  entities: string[];
+  actors: Array<{ id: string; name: string; email: string }>;
+}> {
+  return await apiFetch("/api/admin/audit/filters");
+}
+
+export async function apiListAuditLogs(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  actorId?: string;
+  action?: string;
+  entity?: string;
+  window?: string;
+  since?: string;
+}): Promise<{
+  items: AuditLogRecord[];
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+}> {
+  const sp = new URLSearchParams();
+  if (params.page) sp.set("page", String(params.page));
+  if (params.limit) sp.set("limit", String(params.limit));
+  if (params.search) sp.set("search", params.search);
+  if (params.actorId) sp.set("actorId", params.actorId);
+  if (params.action) sp.set("action", params.action);
+  if (params.entity) sp.set("entity", params.entity);
+  if (params.window) sp.set("window", params.window);
+  if (params.since) sp.set("since", params.since);
+  return await apiFetch(`/api/admin/audit?${sp.toString()}`);
+}
+
+export function getAdminAuditExportUrl(): string {
+  return `${BASE_URL}/api/admin/audit/export`;
+}
+
+// ─── ADMIN SETTINGS ───────────────────────────────────────────────────────────
+
+export async function apiGetAdminSettings(): Promise<{ settings: any }> {
+  return await apiFetch("/api/admin/settings");
+}
+
+export async function apiUpdateAdminSettings(payload: Record<string, any>): Promise<{ settings: any }> {
+  return await apiFetch("/api/admin/settings", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiRunSettingsHealthCheck(): Promise<{
+  checkedAt: string;
+  integrations: Array<{
+    key: string;
+    name: string;
+    category: string;
+    status: string;
+    latencyMs: number | null;
+    detail: string;
+  }>;
+}> {
+  return await apiFetch("/api/admin/settings/health-check", { method: "POST" });
+}
+
+// ─── ADMIN MEDIA LIBRARY ──────────────────────────────────────────────────────
+
+export async function apiListMediaLibrary(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  type?: string;
+  usage?: string;
+  sort?: string;
+}): Promise<{
+  items: Array<SocialMediaAssetItem & { tags: string[]; post?: { id: string; title: string | null; status: string } | null }>;
+  stats: { totalAssets: number; totalBytes: number; usedAssets: number; unusedAssets: number };
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+}> {
+  const sp = new URLSearchParams();
+  if (params.page) sp.set("page", String(params.page));
+  if (params.limit) sp.set("limit", String(params.limit));
+  if (params.search) sp.set("search", params.search);
+  if (params.type) sp.set("type", params.type);
+  if (params.usage) sp.set("usage", params.usage);
+  if (params.sort) sp.set("sort", params.sort);
+  return await apiFetch(`/api/admin/media?${sp.toString()}`);
+}
+
+export async function apiUpdateMediaLibraryAsset(
+  id: string,
+  payload: { altText?: string; tags?: string[] },
+): Promise<{ asset: any }> {
+  return await apiFetch(`/api/admin/media/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiDeleteMediaLibraryAsset(id: string): Promise<{ deleted: boolean }> {
+  return await apiFetch(`/api/admin/media/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+export function getMediaManifestExportUrl(): string {
+  return `${BASE_URL}/api/admin/media/export`;
+}
+
 export type {
   ShowcaseItem,
   ProjectItem,
