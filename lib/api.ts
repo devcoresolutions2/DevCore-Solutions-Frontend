@@ -1509,6 +1509,28 @@ export async function apiResendResetOtp(email: string): Promise<ResendResetOtpRe
   };
 }
 
+export async function apiValidateResetToken(token: string): Promise<{
+  valid: boolean;
+  message?: string;
+  expiresInSeconds?: number;
+}> {
+  if (!USE_MOCK) {
+    return await apiFetch<{
+      valid: boolean;
+      message?: string;
+      expiresInSeconds?: number;
+    }>("/api/auth/validate-reset-token", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    });
+  }
+  return {
+    valid: Boolean(token),
+    expiresInSeconds: 900,
+    message: "Token is active and valid.",
+  };
+}
+
 export async function apiResetPassword(payload: {
   token: string;
   password: string;

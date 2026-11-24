@@ -170,7 +170,7 @@ export default function ForgotPasswordPage() {
       const res = await apiVerifyResetOtp(email.trim().toLowerCase(), code);
       if (res.resetToken) {
         setResetToken(res.resetToken);
-        setStep("password");
+        router.push(`/auth/reset-password?token=${encodeURIComponent(res.resetToken)}`);
       } else {
         setErrorMessage(res.message || "Invalid verification code.");
       }
