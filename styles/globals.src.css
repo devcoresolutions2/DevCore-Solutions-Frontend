@@ -117,14 +117,50 @@
 /* Dark Mode High-Contrast Overrides for Icons & Micro-typography */
 [data-theme="dark"] .service-icon-box,
 .dark .service-icon-box {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-color: rgba(255, 255, 255, 0.16) !important;
+  background: rgba(143, 180, 201, 0.16) !important;
+  border-color: rgba(143, 180, 201, 0.35) !important;
   color: #FFFFFF !important;
+  box-shadow: 0 0 20px rgba(143, 180, 201, 0.15) !important;
 }
 
 [data-theme="dark"] .service-icon-box svg,
 .dark .service-icon-box svg {
   color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+/* Social Link Action Buttons — High Contrast Hover Guarantee */
+.social-icon-btn {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.social-icon-btn:hover {
+  background-color: var(--brand-primary) !important;
+  border-color: var(--brand-primary) !important;
+  color: var(--brand-contrast) !important;
+  transform: translateY(-1px);
+}
+
+[data-theme="dark"] .social-icon-btn,
+.dark .social-icon-btn {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #CCD0CF;
+}
+
+[data-theme="dark"] .social-icon-btn:hover,
+.dark .social-icon-btn:hover {
+  background-color: #8FB4C9 !important;
+  border-color: #8FB4C9 !important;
+  color: #06141B !important;
+}
+
+.social-icon-btn svg {
+  color: inherit !important;
+  fill: currentColor !important;
 }
 
 /* ==========================================================================
