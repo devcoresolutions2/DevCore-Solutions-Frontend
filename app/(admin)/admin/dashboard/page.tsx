@@ -627,10 +627,10 @@ function AdminDashboardContent() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg rounded-2xl devcore-glass-card border border-[var(--border-strong)] bg-[var(--bg-elevated)] text-[var(--text-primary)] p-6 shadow-2xl space-y-5 animate-scaleUp"
+            className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-primary)] p-6 shadow-2xl space-y-5 animate-scaleUp"
           >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
-              <h3 className="font-display font-bold text-base text-[var(--text-primary)]">
+              <h3 className="font-display font-semibold text-base text-[var(--text-primary)]">
                 Create New Job Position
               </h3>
               <button
@@ -739,15 +739,15 @@ function AdminDashboardContent() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg rounded-2xl devcore-glass-card border border-[var(--border-strong)] bg-[var(--bg-elevated)] text-[var(--text-primary)] p-6 shadow-2xl space-y-4 animate-scaleUp"
+            className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-primary)] p-6 shadow-2xl space-y-4 animate-scaleUp"
           >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
               <div>
-                <h3 className="font-display font-bold text-base text-[var(--text-primary)]">
+                <h3 className="font-display font-semibold text-base text-[var(--text-primary)]">
                   {selectedApp.name}
                 </h3>
-                <span className="font-mono text-xs text-[var(--brand-primary)]">
-                  Applied for: {selectedApp.jobTitle}
+                <span className="text-xs font-medium text-[var(--brand-primary)]">
+                  Applied for {selectedApp.jobTitle}
                 </span>
               </div>
               <button
@@ -847,10 +847,10 @@ function AdminDashboardContent() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg rounded-2xl devcore-glass-card border border-[var(--border-strong)] bg-[var(--bg-elevated)] text-[var(--text-primary)] p-6 shadow-2xl space-y-5 animate-scaleUp"
+            className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-primary)] p-6 shadow-2xl space-y-5 animate-scaleUp"
           >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
-              <h3 className="font-display font-bold text-base text-[var(--text-primary)]">
+              <h3 className="font-display font-semibold text-base text-[var(--text-primary)]">
                 Add New Service
               </h3>
               <button

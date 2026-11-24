@@ -1104,10 +1104,10 @@ export function AboutCmsManager() {
 
       {/* ─── MODAL: EDIT / CREATE TEAM MEMBER ─── */}
       {showMemberModal && editingMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-xs">
+          <div className="w-full max-w-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
-              <h3 className="font-display font-bold text-base text-[var(--text-primary)]">
+              <h3 className="font-display font-semibold text-base text-[var(--text-primary)]">
                 {editingMember.id.startsWith("new-")
                   ? "Add New Team Member"
                   : `Edit: ${editingMember.name}`}
@@ -1381,10 +1381,10 @@ export function AboutCmsManager() {
 
       {/* ─── MODAL: EDIT / CREATE PRINCIPLE ─── */}
       {showPrincipleModal && editingPrinciple && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-xs">
+          <div className="w-full max-w-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
-              <h3 className="font-display font-bold text-base text-[var(--text-primary)]">
+              <h3 className="font-display font-semibold text-base text-[var(--text-primary)]">
                 {editingPrinciple.id.startsWith("new-")
                   ? "Add Engineering Principle"
                   : `Edit: ${editingPrinciple.title}`}
