@@ -107,9 +107,9 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`DevCore on ${label}`}
-                  className="w-9 h-9 rounded-lg flex items-center justify-center social-icon-btn shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2"
+                  className="w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-200 shadow-xs bg-white text-[#4A5C6A] border border-[#CCD0CF] hover:bg-[#253745] hover:text-white hover:border-[#253745] hover:-translate-y-0.5 dark:bg-white/[0.08] dark:text-[#CCD0CF] dark:border-white/15 dark:hover:bg-[#8FB4C9] dark:hover:text-[#06141B] dark:hover:border-[#8FB4C9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#253745] focus-visible:ring-offset-2"
                 >
-                  <Icon className="w-4 h-4 shrink-0" />
+                  <Icon className="w-4 h-4 shrink-0 fill-current" />
                 </a>
               ))}
             </div>

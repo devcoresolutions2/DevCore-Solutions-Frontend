@@ -115,9 +115,9 @@ export function TeamSection({ members }: TeamSectionProps) {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${member.name} LinkedIn`}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center social-icon-btn shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 shadow-xs bg-white text-[#4A5C6A] border border-[#CCD0CF] hover:bg-[#253745] hover:text-white hover:border-[#253745] hover:-translate-y-0.5 dark:bg-white/[0.08] dark:text-[#CCD0CF] dark:border-white/15 dark:hover:bg-[#8FB4C9] dark:hover:text-[#06141B] dark:hover:border-[#8FB4C9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#253745]"
                     >
-                      <LinkedInIcon />
+                      <LinkedInIcon className="w-3.5 h-3.5 shrink-0 fill-current" />
                     </a>
                   )}
                   {member.githubUrl && (
@@ -126,9 +126,9 @@ export function TeamSection({ members }: TeamSectionProps) {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${member.name} GitHub`}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center social-icon-btn shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 shadow-xs bg-white text-[#4A5C6A] border border-[#CCD0CF] hover:bg-[#253745] hover:text-white hover:border-[#253745] hover:-translate-y-0.5 dark:bg-white/[0.08] dark:text-[#CCD0CF] dark:border-white/15 dark:hover:bg-[#8FB4C9] dark:hover:text-[#06141B] dark:hover:border-[#8FB4C9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#253745]"
                     >
-                      <GitHubIcon />
+                      <GitHubIcon className="w-3.5 h-3.5 shrink-0 fill-current" />
                     </a>
                   )}
                   {member.portfolioUrl && (
@@ -137,7 +137,7 @@ export function TeamSection({ members }: TeamSectionProps) {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${member.name} Portfolio`}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center social-icon-btn shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 shadow-xs bg-white text-[#4A5C6A] border border-[#CCD0CF] hover:bg-[#253745] hover:text-white hover:border-[#253745] hover:-translate-y-0.5 dark:bg-white/[0.08] dark:text-[#CCD0CF] dark:border-white/15 dark:hover:bg-[#8FB4C9] dark:hover:text-[#06141B] dark:hover:border-[#8FB4C9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#253745]"
                     >
                       <Globe size={14} className="shrink-0" />
                     </a>
