@@ -13,9 +13,12 @@ interface ShowcaseCardProps {
 }
 
 export function ShowcaseCard({ item, featured = false, compact = false }: ShowcaseCardProps) {
-  const launchDate = new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(
-    new Date(item.launchedAt)
-  );
+  const launchDate =
+    item.slug === "dinedesk"
+      ? "Oct – Nov 2026"
+      : new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(
+          new Date(item.launchedAt)
+        );
 
   return (
     <article
