@@ -66,21 +66,21 @@ export function ServicesGrid({ services }: ServicesGridProps) {
                     {service.features.map((f) => {
                       const [title, ...rest] = f.split(":");
                       return (
-                        <div key={f} className="p-4 rounded-xl bg-[var(--bg-elevated)]/70 border border-[var(--border-subtle)]">
-                          <span className="font-mono text-xs font-bold text-[var(--text-primary)] block">{title}</span>
+                        <div key={f} className="p-4 rounded-xl bg-[var(--bg-elevated)]/70 border border-[var(--border-subtle)] dark:bg-white/[0.04] dark:border-white/10">
+                          <span className="font-mono text-xs font-bold text-[var(--text-primary)] dark:text-white block">{title}</span>
                           {rest.length > 0 && (
-                            <p className="text-xs text-[var(--text-muted)] mt-1">{rest.join(":").trim()}</p>
+                            <p className="text-xs text-[var(--text-muted)] dark:text-slate-300 mt-1">{rest.join(":").trim()}</p>
                           )}
                         </div>
                       );
                     })}
                   </div>
                 ) : (
-                  <ul className="mt-6 space-y-2 text-xs text-[var(--text-primary)] font-medium">
+                  <ul className="mt-6 space-y-2 text-xs text-[var(--text-primary)] dark:text-slate-200 font-medium">
                     {service.features.map((f) => (
                       <li key={f} className="flex items-center gap-2">
                         <Check size={13} className="text-[var(--success)] flex-shrink-0" aria-hidden="true" />
-                        {f}
+                        <span>{f}</span>
                       </li>
                     ))}
                   </ul>
@@ -88,7 +88,7 @@ export function ServicesGrid({ services }: ServicesGridProps) {
               </div>
 
               <div className="mt-8 pt-4 border-t border-[var(--border-subtle)] flex items-center justify-between">
-                <span className="font-mono text-xs text-[var(--text-muted)] dark:text-slate-400">
+                <span className="font-mono text-xs text-[var(--text-muted)] dark:text-slate-300 font-medium">
                   Service ID: {service.serviceCode}
                 </span>
                 <Link

@@ -86,7 +86,7 @@ export function ServicesBento({ services }: ServicesBentoProps) {
                 {/* Header Row */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3.5">
-                    <div className="w-11 h-11 rounded-xl bg-[var(--brand-primary)] text-[var(--brand-contrast)] flex items-center justify-center shadow-sm shrink-0">
+                    <div className="w-11 h-11 rounded-xl bg-[var(--brand-primary)] text-[var(--brand-contrast)] dark:bg-sky-400/15 dark:text-sky-300 dark:border dark:border-sky-400/30 flex items-center justify-center shadow-sm shrink-0">
                       {getServiceIcon(service.icon)}
                     </div>
                     <div>

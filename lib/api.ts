@@ -177,7 +177,17 @@ export async function getServices(): Promise<ServiceItem[]> {
         description: item.summary || item.description || "",
         features: item.deliverables || item.features || [],
         deliverables: item.deliverables || item.features || [],
-        icon: item.icon || "Code2",
+        icon:
+          item.icon ||
+          (item.serviceCode === "ENG-WEB" || item.title?.toLowerCase().includes("web")
+            ? "Layers"
+            : item.serviceCode === "ENG-CLD" || item.title?.toLowerCase().includes("cloud")
+            ? "Boxes"
+            : item.serviceCode === "ENG-AUT" || item.title?.toLowerCase().includes("ai")
+            ? "Bot"
+            : item.serviceCode === "ENG-DSN" || item.title?.toLowerCase().includes("design")
+            ? "Layout"
+            : "Terminal"),
         serviceCode: item.serviceCode || item.slug || `ENG-0${idx + 1}`,
         disciplineNumber: item.disciplineNumber || String(idx + 1).padStart(2, "0"),
         category: item.category || "Engineering Discipline",
