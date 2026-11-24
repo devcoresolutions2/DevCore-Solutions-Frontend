@@ -1713,6 +1713,198 @@ export function getOAuthLinkUrl(provider: "google" | "github"): string {
   return `${BASE_URL}/api/auth/${provider}?mode=link`;
 }
 
+// ─── ADMIN LEAD MANAGEMENT API ──────────────────────────────────────────────
+
+export type LeadStatus = "NEW" | "CONTACTED" | "PROPOSAL_SENT" | "WON" | "ARCHIVED";
+export type LeadSource = "ESTIMATOR" | "QUICK_CALLBACK" | "BOOKING" | "CONTACT_FORM";
+export type LeadPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+
+export interface LeadAssignee {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  avatarUrl?: string | null;
+}
+
+export interface LeadNoteItem {
+  id: string;
+  leadId: string;
+  authorId: string;
+  body: string;
+  createdAt: string;
+  author: LeadAssignee;
+}
+
+export interface LeadActivityItem {
+  id: string;
+  leadId: string;
+  eventType: string;
+  fromStatus: LeadStatus | null;
+  toStatus: LeadStatus;
+  details: string | null;
+  actorId: string | null;
+  createdAt: string;
+  actor?: { id: string; name: string; email: string; role: string } | null;
+}
+
+export interface LeadRecord {
+  id: string;
+  source: LeadSource;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  company: string | null;
+  jobTitle: string | null;
+  website: string | null;
+  subject: string | null;
+  services: string[];
+  budget: string | null;
+  budgetMin: number | null;
+  currency: string;
+  timeline: string | null;
+  brief: string | null;
+  pageUrl: string | null;
+  referrer: string | null;
+  utm: Record<string, any> | null;
+  status: LeadStatus;
+  priority: LeadPriority;
+  assignedToId: string | null;
+  assignedTo?: LeadAssignee | null;
+  lastContactedAt: string | null;
+  nextFollowUpAt: string | null;
+  archivedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count?: { notes: number };
+  notes?: LeadNoteItem[];
+  history?: LeadActivityItem[];
+}
+
+export interface AdminLeadsStatsResponse {
+  dateRange: string;
+  slaHours: number;
+  totalInbound: number;
+  awaitingSla: {
+    newCount: number;
+    breachingCount: number;
+    slaHours: number;
+  };
+  activeNegotiationCount: number;
+  pipelineValue: {
+    estimatedTotal: number;
+    leadsWithBudget: number;
+    wonEstimatedTotal: number;
+    wonWithBudget: number;
+  };
+  statusSummary: Record<LeadStatus, { count: number; budgetSum: number }>;
+}
+
+export async function apiGetAdminLeadStats(params?: {
+  dateRange?: string;
+  startDate?: string;
+  endDate?: string;
+  slaHours?: number;
+}): Promise<AdminLeadsStatsResponse> {
+  const sp = new URLSearchParams();
+  if (params?.dateRange) sp.set("dateRange", params.dateRange);
+  if (params?.startDate) sp.set("startDate", params.startDate);
+  if (params?.endDate) sp.set("endDate", params.endDate);
+  if (params?.slaHours) sp.set("slaHours", String(params.slaHours));
+  const qs = sp.toString();
+  return await apiFetch<AdminLeadsStatsResponse>(`/api/admin/leads/stats${qs ? `?${qs}` : ""}`);
+}
+
+export async function apiGetAdminLeads(params?: {
+  page?: number;
+  pageSize?: number;
+  q?: string;
+  source?: string;
+  status?: string;
+  priority?: string;
+  assignedToId?: string;
+  dateRange?: string;
+  startDate?: string;
+  endDate?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}): Promise<{
+  items: LeadRecord[];
+  pagination: { page: number; pageSize: number; total: number; totalPages: number };
+  assignees: LeadAssignee[];
+}> {
+  const sp = new URLSearchParams();
+  if (params?.page) sp.set("page", String(params.page));
+  if (params?.pageSize) sp.set("pageSize", String(params.pageSize));
+  if (params?.q) sp.set("q", params.q);
+  if (params?.source && params.source !== "ALL") sp.set("source", params.source);
+  if (params?.status && params.status !== "ALL") sp.set("status", params.status);
+  if (params?.priority && params.priority !== "ALL") sp.set("priority", params.priority);
+  if (params?.assignedToId && params.assignedToId !== "ALL") sp.set("assignedToId", params.assignedToId);
+  if (params?.dateRange) sp.set("dateRange", params.dateRange);
+  if (params?.startDate) sp.set("startDate", params.startDate);
+  if (params?.endDate) sp.set("endDate", params.endDate);
+  if (params?.sortBy) sp.set("sortBy", params.sortBy);
+  if (params?.sortOrder) sp.set("sortOrder", params.sortOrder);
+  const qs = sp.toString();
+  return await apiFetch(`/api/admin/leads${qs ? `?${qs}` : ""}`);
+}
+
+export async function apiGetAdminLeadById(id: string): Promise<{ lead: LeadRecord }> {
+  return await apiFetch(`/api/admin/leads/${encodeURIComponent(id)}`);
+}
+
+export async function apiUpdateAdminLead(
+  id: string,
+  payload: {
+    status?: LeadStatus;
+    priority?: LeadPriority;
+    assignedToId?: string | null;
+    nextFollowUpAt?: string | null;
+  }
+): Promise<{ success: boolean; lead: LeadRecord }> {
+  return await apiFetch(`/api/admin/leads/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiBulkAdminLeads(payload: {
+  leadIds: string[];
+  action: "STATUS" | "ARCHIVE" | "RESTORE" | "ASSIGN";
+  status?: LeadStatus;
+  assignedToId?: string | null;
+}): Promise<{ success: boolean; updatedCount: number; message: string }> {
+  return await apiFetch("/api/admin/leads/bulk", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiAppendLeadNote(
+  leadId: string,
+  body: string
+): Promise<{ success: boolean; note: LeadNoteItem }> {
+  return await apiFetch(`/api/admin/leads/${encodeURIComponent(leadId)}/notes`, {
+    method: "POST",
+    body: JSON.stringify({ body }),
+  });
+}
+
+export function getAdminLeadsExportUrl(params?: {
+  format?: "csv" | "json";
+  status?: string;
+  source?: string;
+  ids?: string[];
+}): string {
+  const sp = new URLSearchParams();
+  sp.set("format", params?.format || "csv");
+  if (params?.status && params.status !== "ALL") sp.set("status", params.status);
+  if (params?.source && params.source !== "ALL") sp.set("source", params.source);
+  if (params?.ids && params.ids.length > 0) sp.set("ids", params.ids.join(","));
+  return `${BASE_URL}/api/admin/leads/export?${sp.toString()}`;
+}
+
 export type {
   ShowcaseItem,
   ProjectItem,

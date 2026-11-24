@@ -37,12 +37,13 @@ import {
 } from "@/lib/api";
 import { AboutCmsManager } from "@/components/admin/AboutCmsManager";
 import { BlogCmsManager } from "@/components/admin/BlogCmsManager";
+import { LeadsManager } from "@/components/admin/leads/LeadsManager";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-type AdminTab = "about" | "blog" | "jobs" | "applications" | "services";
+type AdminTab = "leads" | "about" | "blog" | "jobs" | "applications" | "services";
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>("jobs");
@@ -332,7 +333,28 @@ export default function AdminDashboardPage() {
           <Layers size={14} />
           <span>Services & Capabilities ({services.length})</span>
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("leads")}
+          className={cn(
+            "px-4 py-2 rounded-lg font-semibold transition-all inline-flex items-center gap-2",
+            activeTab === "leads"
+              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-sm"
+              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
+          )}
+        >
+          <Mail size={14} />
+          <span>Leads & Inquiries</span>
+        </button>
       </div>
+
+      {/* TAB: LEADS & INQUIRIES */}
+      {activeTab === "leads" && (
+        <section className="space-y-4">
+          <LeadsManager />
+        </section>
+      )}
 
       {/* TAB 0: ABOUT PAGE MANAGEMENT */}
       {activeTab === "about" && (
