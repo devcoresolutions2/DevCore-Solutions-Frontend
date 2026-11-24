@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Briefcase,
   Users,
@@ -48,6 +49,15 @@ import AdminShell from "@/components/admin/AdminShell";
 type AdminTab = "leads" | "about" | "blog" | "jobs" | "applications" | "services";
 
 export default function AdminDashboardPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[var(--bg-canvas)]" />}>
+      <AdminDashboardContent />
+    </Suspense>
+  );
+}
+
+function AdminDashboardContent() {
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<AdminTab>("jobs");
   const [jobs, setJobs] = useState<JobItem[]>([]);
   const [applications, setApplications] = useState<SubmittedApplicationItem[]>([]);
@@ -91,14 +101,14 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     loadData();
-    if (typeof window !== "undefined") {
-      const sp = new URLSearchParams(window.location.search);
-      const t = sp.get("tab") as AdminTab | null;
-      if (t && ["leads", "about", "blog", "jobs", "applications", "services"].includes(t)) {
-        setActiveTab(t);
-      }
-    }
   }, []);
+
+  useEffect(() => {
+    const t = searchParams.get("tab") as AdminTab | null;
+    if (t && ["leads", "about", "blog", "jobs", "applications", "services"].includes(t)) {
+      setActiveTab(t);
+    }
+  }, [searchParams]);
 
   const handleToggleJobStatus = async (job: JobItem) => {
     const nextStatus = job.status === "OPEN" ? "CLOSED" : "OPEN";
@@ -223,101 +233,6 @@ export default function AdminDashboardPage() {
             Founders, principles & manifesto
           </span>
         </div>
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-[var(--border-subtle)] pb-2 font-mono text-xs">
-        <button
-          type="button"
-          onClick={() => setActiveTab("about")}
-          className={cn(
-            "px-4 py-2 rounded-lg font-semibold transition-all inline-flex items-center gap-2",
-            activeTab === "about"
-              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-sm"
-              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
-          )}
-        >
-          <Compass size={14} />
-          <span>About Page Management</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("blog")}
-          className={cn(
-            "px-4 py-2 rounded-lg font-semibold transition-all inline-flex items-center gap-2",
-            activeTab === "blog"
-              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-sm"
-              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
-          )}
-        >
-          <BookOpen size={14} />
-          <span>Blog & Technical CMS</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("jobs")}
-          className={cn(
-            "px-4 py-2 rounded-lg font-semibold transition-all inline-flex items-center gap-2",
-            activeTab === "jobs"
-              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-sm"
-              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
-          )}
-        >
-          <Briefcase size={14} />
-          <span>Job Postings ({jobs.length})</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("applications")}
-          className={cn(
-            "px-4 py-2 rounded-lg font-semibold transition-all inline-flex items-center gap-2",
-            activeTab === "applications"
-              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-sm"
-              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
-          )}
-        >
-          <Users size={14} />
-          <span>Applications Inbox ({applications.length})</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("services")}
-          className={cn(
-            "px-4 py-2 rounded-lg font-semibold transition-all inline-flex items-center gap-2",
-            activeTab === "services"
-              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-sm"
-              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
-          )}
-        >
-          <Layers size={14} />
-          <span>Services & Capabilities ({services.length})</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("leads")}
-          className={cn(
-            "px-4 py-2 rounded-lg font-semibold transition-all inline-flex items-center gap-2",
-            activeTab === "leads"
-              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-sm"
-              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
-          )}
-        >
-          <Mail size={14} />
-          <span>Leads & Inquiries</span>
-        </button>
-
-        <Link
-          href="/admin/social"
-          className="px-4 py-2 rounded-lg font-semibold transition-all inline-flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
-        >
-          <Share2 size={14} />
-          <span>Social Channels</span>
-        </Link>
       </div>
 
       {/* TAB: LEADS & INQUIRIES */}

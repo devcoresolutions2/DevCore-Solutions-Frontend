@@ -27,6 +27,9 @@ import {
   Compass,
   Menu,
   X,
+  PanelLeftClose,
+  PanelLeftOpen,
+  FileText,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { UserAvatar } from "@/components/shared/UserAvatar";
@@ -47,6 +50,7 @@ const NAV_GROUPS = [
   {
     label: "Content & CMS",
     items: [
+      { href: "/admin/content", label: "Content Operations", icon: FileText },
       { href: "/admin/dashboard?tab=blog", label: "Blog & Technical CMS", icon: BookOpen },
       { href: "/admin/dashboard?tab=jobs", label: "Job Postings", icon: Briefcase },
       { href: "/admin/dashboard?tab=applications", label: "Applications Inbox", icon: Users },
@@ -106,6 +110,7 @@ export default function AdminShell({
   const [mounted, setMounted] = useState(false);
   const [newMenuOpen, setNewMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -135,16 +140,26 @@ export default function AdminShell({
     <div className="min-h-screen flex bg-[var(--bg-canvas)] text-[var(--text-primary)]">
       {/* Desktop Fixed Left Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-[260px] bg-[var(--bg-surface)]/95 backdrop-blur-xl border-r border-[var(--border-subtle)] flex flex-col justify-between transition-transform duration-200 lg:translate-x-0 ${
-          mobileNavOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-50 bg-[var(--bg-surface)]/95 backdrop-blur-xl border-r border-[var(--border-subtle)] flex flex-col justify-between transition-all duration-200 lg:translate-x-0 ${
+          sidebarCollapsed ? "lg:w-[74px]" : "lg:w-[260px]"
+        } w-[260px] ${mobileNavOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="flex flex-col flex-1 overflow-y-auto">
-          {/* Sidebar Brand Header */}
-          <div className="h-16 px-5 border-b border-[var(--border-subtle)] flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-2.5">
-              <BrandLogo size="sm" href="/admin/dashboard" />
-            </div>
+          {/* Sidebar Brand Header + Collapse Toggle */}
+          <div className="h-16 px-4 border-b border-[var(--border-subtle)] flex items-center justify-between shrink-0">
+            {!sidebarCollapsed && (
+              <div className="flex items-center gap-2.5 min-w-0">
+                <BrandLogo size="sm" href="/admin/dashboard" />
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed((c) => !c)}
+              className="hidden lg:inline-flex p-1.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] mx-auto"
+              title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {sidebarCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
+            </button>
             <button
               type="button"
               onClick={() => setMobileNavOpen(false)}
@@ -155,12 +170,14 @@ export default function AdminShell({
           </div>
 
           {/* Navigation Groups */}
-          <div className="px-3 py-4 space-y-5 flex-1">
+          <div className="px-2.5 py-4 space-y-5 flex-1">
             {NAV_GROUPS.map((group) => (
               <div key={group.label} className="space-y-1">
-                <div className="px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-[var(--text-tertiary)]">
-                  {group.label}
-                </div>
+                {!sidebarCollapsed && (
+                  <div className="px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-[var(--text-tertiary)]">
+                    {group.label}
+                  </div>
+                )}
                 <nav className="space-y-0.5">
                   {group.items.map((item) => {
                     const Icon = item.icon;
@@ -173,15 +190,18 @@ export default function AdminShell({
                       <Link
                         key={item.href}
                         href={item.href}
+                        title={item.label}
                         onClick={() => setMobileNavOpen(false)}
-                        className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-all ${
+                        className={`flex items-center ${
+                          sidebarCollapsed ? "justify-center px-2" : "gap-2.5 px-3"
+                        } py-2 rounded-lg text-xs transition-all ${
                           active
                             ? "font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-xs"
                             : "font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
                         }`}
                       >
-                        <Icon size={15} />
-                        <span className="truncate">{item.label}</span>
+                        <Icon size={16} className="shrink-0" />
+                        {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
                       </Link>
                     );
                   })}
@@ -192,18 +212,27 @@ export default function AdminShell({
         </div>
 
         {/* Sidebar Bottom Account & Public Link */}
-        <div className="p-3 border-t border-[var(--border-subtle)] space-y-2 shrink-0 bg-[var(--bg-surface)]">
+        <div className="p-2.5 border-t border-[var(--border-subtle)] space-y-2 shrink-0 bg-[var(--bg-surface)]">
           <Link
             href="/"
-            className="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] transition-colors"
+            title="Public Website"
+            className={`flex items-center ${
+              sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"
+            } py-2 rounded-lg text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] transition-colors`}
           >
             <span className="flex items-center gap-2">
-              <Home size={14} />
-              Public Website
+              <Home size={15} />
+              {!sidebarCollapsed && "Public Website"}
             </span>
-            <span className="font-mono text-[10px] text-[var(--text-tertiary)]">↗</span>
+            {!sidebarCollapsed && (
+              <span className="font-mono text-[10px] text-[var(--text-tertiary)]">↗</span>
+            )}
           </Link>
-          <div className="px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-between gap-2">
+          <div
+            className={`p-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center ${
+              sidebarCollapsed ? "justify-center" : "justify-between gap-2"
+            }`}
+          >
             <div className="flex items-center gap-2 min-w-0">
               <UserAvatar
                 name={user.name}
@@ -212,21 +241,25 @@ export default function AdminShell({
                 className="w-7 h-7"
                 textClassName="text-[10px]"
               />
-              <div className="min-w-0">
-                <div className="text-xs font-semibold truncate">{user.name}</div>
-                <div className="font-mono text-[10px] text-[var(--brand-primary)] truncate">
-                  {user.role}
+              {!sidebarCollapsed && (
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold truncate">{user.name}</div>
+                  <div className="font-mono text-[10px] text-[var(--brand-primary)] truncate">
+                    {user.role}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
-            <button
-              type="button"
-              onClick={() => signOut()}
-              title="Sign Out"
-              className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/10 transition-colors shrink-0"
-            >
-              <LogOut size={14} />
-            </button>
+            {!sidebarCollapsed && (
+              <button
+                type="button"
+                onClick={() => signOut()}
+                title="Sign Out"
+                className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/10 transition-colors shrink-0"
+              >
+                <LogOut size={14} />
+              </button>
+            )}
           </div>
         </div>
       </aside>
@@ -240,7 +273,11 @@ export default function AdminShell({
       )}
 
       {/* Main Column (Top Navbar + Content + Footer) */}
-      <div className="flex-1 lg:pl-[260px] flex flex-col min-h-screen min-w-0">
+      <div
+        className={`flex-1 flex flex-col min-h-screen min-w-0 transition-all duration-200 ${
+          sidebarCollapsed ? "lg:pl-[74px]" : "lg:pl-[260px]"
+        }`}
+      >
         {/* Top Fixed/Sticky Navbar */}
         <header className="sticky top-0 z-30 h-16 bg-[var(--bg-surface)]/85 backdrop-blur-xl border-b border-[var(--border-subtle)] px-4 sm:px-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">

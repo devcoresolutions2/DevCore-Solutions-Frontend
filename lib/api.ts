@@ -2633,6 +2633,74 @@ export function getMediaManifestExportUrl(): string {
   return `${BASE_URL}/api/admin/media/export`;
 }
 
+// ─── ADMIN CONTENT OPERATIONS ─────────────────────────────────────────────────
+
+export interface AdminTestimonialItem {
+  id: string;
+  authorName: string;
+  company: string | null;
+  role: string | null;
+  quote: string;
+  rating: number | null;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  featured: boolean;
+  createdAt: string;
+}
+
+export async function apiGetContentOverview(): Promise<{
+  stats: {
+    publishedArticles: number;
+    draftArticles: number;
+    approvedTestimonials: number;
+    pendingTestimonials: number;
+    openJobs: number;
+    pendingApplications: number;
+  };
+  recentTestimonials: AdminTestimonialItem[];
+  recentJobs: Array<{ id: string; title: string; department: string; location: string; status: string; _count: { applications: number } }>;
+  recentApplications: Array<{ id: string; name: string; email: string; status: string; createdAt: string; job: { id: string; title: string } }>;
+}> {
+  return await apiFetch("/api/admin/content/overview");
+}
+
+export async function apiListAdminTestimonials(): Promise<{ items: AdminTestimonialItem[] }> {
+  return await apiFetch("/api/admin/content/testimonials");
+}
+
+export async function apiCreateAdminTestimonial(payload: {
+  authorName: string;
+  company?: string;
+  role?: string;
+  quote: string;
+  rating?: number;
+  status?: "PENDING" | "APPROVED" | "REJECTED";
+}): Promise<{ testimonial: AdminTestimonialItem }> {
+  return await apiFetch("/api/admin/content/testimonials", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiUpdateAdminTestimonial(
+  id: string,
+  payload: Partial<{ status: "PENDING" | "APPROVED" | "REJECTED"; featured: boolean; quote: string }>,
+): Promise<{ testimonial: AdminTestimonialItem }> {
+  return await apiFetch(`/api/admin/content/testimonials/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiDeleteAdminTestimonial(id: string): Promise<{ deleted: boolean }> {
+  return await apiFetch(`/api/admin/content/testimonials/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+export function getContentCatalogExportUrl(): string {
+  return `${BASE_URL}/api/admin/content/export`;
+}
+
 export type {
   ShowcaseItem,
   ProjectItem,
