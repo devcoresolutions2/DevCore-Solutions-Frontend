@@ -1360,13 +1360,61 @@ export async function apiSignOut(): Promise<{ success: boolean }> {
   return { success: true };
 }
 
+export interface VerificationStatusResponse {
+  hasActiveOtp: boolean;
+  expiresInSeconds: number;
+  cooldownSeconds: number;
+  attemptsLeft: number;
+  resendsLeft: number;
+  isLocked: boolean;
+  emailVerified: boolean;
+}
+
+export async function apiGetVerificationStatus(email: string): Promise<VerificationStatusResponse> {
+  if (!USE_MOCK) {
+    return await apiFetch<VerificationStatusResponse>(
+      `/api/auth/verification-status?email=${encodeURIComponent(email)}`,
+      { method: "GET" }
+    );
+  }
+  return {
+    hasActiveOtp: true,
+    expiresInSeconds: 600,
+    cooldownSeconds: 0,
+    attemptsLeft: 5,
+    resendsLeft: 3,
+    isLocked: false,
+    emailVerified: false,
+  };
+}
+
+export async function apiChangePendingEmail(
+  currentEmail: string,
+  newEmail: string
+): Promise<{ success: boolean; message: string; newEmail?: string }> {
+  if (!USE_MOCK) {
+    return await apiFetch<{ success: boolean; message: string; newEmail?: string }>(
+      "/api/auth/change-pending-email",
+      {
+        method: "POST",
+        body: JSON.stringify({ currentEmail, newEmail }),
+      }
+    );
+  }
+  return {
+    success: true,
+    message: `Verification code dispatched to ${newEmail}`,
+    newEmail,
+  };
+}
+
 export async function apiVerifyEmail(payload: {
   token?: string;
   otp?: string;
   email?: string;
-}): Promise<{ success: boolean; message: string }> {
+}): Promise<{ success: boolean; message: string; attemptsLeft?: number }> {
   if (!USE_MOCK) {
-    return await apiFetch<{ success: boolean; message: string }>("/api/auth/verify-email", {
+    return await apiFetch<{ success: boolean; message: string; attemptsLeft?: number }>("/api/auth/verify-email", {
       method: "POST",
       body: JSON.stringify(payload),
     });
@@ -1377,12 +1425,17 @@ export async function apiVerifyEmail(payload: {
   return { success: true, message: "Email verified successfully! You may now sign in." };
 }
 
-export async function apiResendVerification(email: string): Promise<{ success: boolean; message: string }> {
+export async function apiResendVerification(
+  email: string
+): Promise<{ success: boolean; message: string; cooldownSeconds?: number; resendsLeft?: number }> {
   if (!USE_MOCK) {
-    return await apiFetch<{ success: boolean; message: string }>("/api/auth/resend-verification", {
-      method: "POST",
-      body: JSON.stringify({ email }),
-    });
+    return await apiFetch<{ success: boolean; message: string; cooldownSeconds?: number; resendsLeft?: number }>(
+      "/api/auth/resend-verification",
+      {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      }
+    );
   }
   return { success: true, message: "A fresh verification link and security code have been sent." };
 }
