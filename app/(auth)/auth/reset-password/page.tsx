@@ -41,18 +41,21 @@ function ResetPasswordContent() {
   }, [searchParams]);
 
   const isPasswordValid =
-    password.length >= 10 && /[A-Za-z]/.test(password) && /[0-9]/.test(password);
+    password.length >= 12 &&
+    /[A-Z]/.test(password) &&
+    /[a-z]/.test(password) &&
+    /[\d\W]/.test(password);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) {
-      setErrorMessage("Missing recovery token. Please request a new link.");
+      setErrorMessage("Missing recovery token. Please request a new verification code.");
       return;
     }
 
     if (!isPasswordValid) {
       setErrorMessage(
-        "Password must be at least 10 characters and contain both letters and numbers."
+        "Password must be at least 12 characters and contain uppercase, lowercase, and numbers/symbols."
       );
       return;
     }
