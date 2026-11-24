@@ -216,12 +216,10 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
-          <div className="flex items-center gap-2 flex-wrap">
+          <div>
             <span>&copy; {new Date().getFullYear()} DevCore Solutions. All rights reserved.</span>
-            <span className="inline-block w-1 h-1 rounded-full bg-[var(--text-muted)]" aria-hidden="true" />
-            <span>Liquid Glass Design Standard v3</span>
           </div>
-          <div className="font-mono text-[11px] flex items-center gap-4">
+          <div className="text-xs font-medium flex items-center gap-4">
             <span className="flex items-center gap-1.5 text-[var(--success)]">
               <span
                 className="w-1.5 h-1.5 rounded-full bg-[var(--success)]"
