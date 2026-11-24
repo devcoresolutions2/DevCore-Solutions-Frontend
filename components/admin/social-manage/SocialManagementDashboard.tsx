@@ -673,25 +673,47 @@ export default function SocialManagementDashboard() {
                 Manage All Connectors →
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {analyticsData.platformHealth.map((ph) => (
-                <div
-                  key={ph.key}
-                  className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-3 space-y-1 text-xs"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-[var(--text-primary)]">
-                      {ph.displayName}
-                    </span>
-                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-surface)] text-[var(--text-secondary)]">
-                      {ph.status}
-                    </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              {analyticsData.platformHealth.map((ph) => {
+                const statusLabel =
+                  ph.status === "CONNECTED"
+                    ? "Connected"
+                    : ph.status === "NOT_CONFIGURED"
+                      ? "Not Configured"
+                      : ph.status === "PUBLISHING_UNSUPPORTED"
+                        ? "Read-Only"
+                        : ph.status === "TOKEN_EXPIRED"
+                          ? "Expired"
+                          : ph.status === "ERROR"
+                            ? "Error"
+                            : ph.status.replace(/_/g, " ");
+                const statusTone =
+                  ph.status === "CONNECTED"
+                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                    : ph.status === "ERROR" || ph.status === "TOKEN_EXPIRED"
+                      ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
+                      : "bg-[var(--bg-surface)] text-[var(--text-secondary)] border-[var(--border-subtle)]";
+                return (
+                  <div
+                    key={ph.key}
+                    className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-3.5 space-y-1.5 text-xs min-w-0 overflow-hidden"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2 min-w-0">
+                      <span className="font-semibold text-[var(--text-primary)] truncate">
+                        {ph.displayName}
+                      </span>
+                      <span
+                        className={`text-[11px] font-medium px-2 py-0.5 rounded-md border shrink-0 whitespace-nowrap ${statusTone}`}
+                      >
+                        {statusLabel}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-[var(--text-tertiary)] truncate">
+                      {ph.accountName || (ph.lastLatencyMs ? `${ph.lastLatencyMs}ms` : "Not linked")}
+                    </div>
                   </div>
-                  <div className="font-mono text-[10px] text-[var(--text-tertiary)] truncate">
-                    {ph.accountName || (ph.lastLatencyMs ? `${ph.lastLatencyMs}ms` : "Not linked")}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
