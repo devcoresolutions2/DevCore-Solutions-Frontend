@@ -438,47 +438,62 @@ export function AboutCmsManager() {
                       : "border-dashed border-[var(--border-strong)] opacity-65"
                   )}
                 >
-                  <div className="flex items-start gap-3.5">
-                    {/* Avatar Preview */}
-                    <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] shrink-0 flex items-center justify-center">
-                      {member.avatarUrl ? (
-                        <img
-                          src={member.avatarUrl}
-                          alt={member.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-sm font-semibold text-[var(--brand-primary)]">
-                          {initials}
+                  <div className="space-y-3.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {/* Avatar Preview */}
+                        <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/20 shrink-0 flex items-center justify-center">
+                          {member.avatarUrl ? (
+                            <img
+                              src={member.avatarUrl}
+                              alt={member.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-sm font-bold text-[var(--brand-primary)]">
+                              {initials}
+                            </span>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-[15px] text-[var(--text-primary)] truncate">
+                            {member.name}
+                          </h3>
+                          <p className="text-xs text-[var(--text-secondary)] truncate mt-0.5">
+                            {member.role}
+                          </p>
+                        </div>
+                      </div>
+
+                      <span
+                        className={cn(
+                          "text-[11px] font-medium px-2 py-0.5 rounded-md border shrink-0",
+                          member.isPublished
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                            : "bg-[var(--bg-elevated)] text-[var(--text-tertiary)] border-[var(--border-subtle)]"
+                        )}
+                      >
+                        {member.isPublished ? "Published" : "Draft"}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      {member.badge && (
+                        <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-[var(--bg-canvas)] text-[var(--brand-primary)] border border-[var(--border-subtle)]">
+                          {member.badge}
                         </span>
                       )}
+                      <span className="text-[11px] text-[var(--text-tertiary)]">
+                        Display order #{member.displayOrder}
+                      </span>
                     </div>
 
-                    <div className="flex flex-col min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold text-[15px] text-[var(--text-primary)] truncate">
-                          {member.name}
-                        </span>
-                        {member.badge && (
-                          <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] text-[var(--brand-primary)] border border-[var(--border-subtle)]">
-                            {member.badge}
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-[13px] text-[var(--text-secondary)] truncate mt-0.5">
-                        {member.role}
-                      </span>
-                      <span className="text-xs text-[var(--text-tertiary)] mt-1">
-                        Order #{member.displayOrder} &bull; {member.isPublished ? "Published" : "Draft"}
-                      </span>
-                    </div>
+                    {member.bio && (
+                      <p className="text-[13px] text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
+                        {member.bio}
+                      </p>
+                    )}
                   </div>
-
-                  {member.bio && (
-                    <p className="text-[13px] text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
-                      {member.bio}
-                    </p>
-                  )}
 
                   {/* Actions */}
                   <div className="flex items-center justify-between pt-3 border-t border-[var(--border-subtle)] text-xs">
