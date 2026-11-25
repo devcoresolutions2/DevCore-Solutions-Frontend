@@ -30,6 +30,7 @@ import { SecurityPasswordSection } from "@/components/account/SecurityPasswordSe
 import { ConnectedProvidersSection } from "@/components/account/ConnectedProvidersSection";
 import { ActiveSessionsSection } from "@/components/account/ActiveSessionsSection";
 import { AuditTracesSection } from "@/components/account/AuditTracesSection";
+import { GlobalLoader } from "@/components/shared/GlobalLoader";
 import { cn } from "@/lib/utils";
 
 type SettingsTab = "profile" | "security" | "providers" | "sessions" | "audit";
@@ -178,12 +179,7 @@ function AccountSettingsContent() {
   };
 
   if (authLoading || (!authUser && !loadError)) {
-    return (
-      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-16 flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <Loader2 size={32} className="animate-spin text-[var(--brand-primary)]" />
-        <p className="font-mono text-xs text-[var(--text-muted)]">Loading your account...</p>
-      </div>
-    );
+    return <GlobalLoader variant="inline" label="Loading your account" />;
   }
 
   return (
@@ -428,13 +424,7 @@ function AccountSettingsContent() {
 
 export default function AccountSettingsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-[60vh] flex items-center justify-center">
-          <Loader2 size={32} className="animate-spin text-[var(--brand-primary)]" />
-        </div>
-      }
-    >
+    <Suspense fallback={<GlobalLoader variant="inline" label="Loading account settings" />}>
       <AccountSettingsContent />
     </Suspense>
   );
