@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Hero } from "@/components/landing/Hero";
-import { VisualArchitectureStory } from "@/components/landing/VisualArchitectureStory";
 import { NewLaunches } from "@/components/landing/NewLaunches";
 import { BentoProof } from "@/components/landing/BentoProof";
 import { ServicesGrid } from "@/components/landing/ServicesGrid";
@@ -43,7 +42,6 @@ export default async function HomePage() {
   return (
     <>
       <Hero newestRelease={newestRelease} />
-      {/* <VisualArchitectureStory /> */}
       <NewLaunches items={showcaseItems} />
       <BentoProof items={bentoProof} />
       <ServicesGrid services={services} />

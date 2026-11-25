@@ -39,6 +39,27 @@ const ROTATING_DOMAINS = [
   "Zero-Trust Cloud Systems",
 ];
 
+const PULSE_HIGHLIGHTS = [
+  {
+    tag: "OPEN FOR Q1",
+    text: "Accepting 2 new enterprise architecture builds",
+    cta: "Book Discovery",
+    href: "/contact",
+  },
+  {
+    tag: "AI & SAAS LAB",
+    text: "Full-stack Next.js, PostgreSQL & Gemini AI systems",
+    cta: "Explore Stack",
+    href: "/services",
+  },
+  {
+    tag: "ZERO-DRIFT SLA",
+    text: "99.998% multi-region uptime with < 14ms edge P99",
+    cta: "See Architecture",
+    href: "/process",
+  },
+];
+
 interface KernelLog {
   id: string;
   ts: string;
@@ -115,7 +136,178 @@ const CLUSTER_REGIONS: ClusterRegion[] = [
   },
 ];
 
-// ─── SUBTLE AMBIENT CONSTELLATION CANVAS (NO HEAVY GRID LINES) ───────────────
+// ─── 18-LAYER RISING BOTTOM-TO-TOP FLAME / AURORA 3D WAVE ────────────────────
+function Smoky3DWaveCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let rafId = 0;
+    let width = 0;
+    let height = 0;
+    let pointerX = 0;
+    let targetPointerX = 0;
+
+    const resize = () => {
+      const parent = canvas.parentElement;
+      if (!parent) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      width = parent.clientWidth || window.innerWidth;
+      height = parent.clientHeight || 780;
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    resize();
+
+    const onPointerMove = (e: MouseEvent) => {
+      targetPointerX = (e.clientX / Math.max(window.innerWidth, 1) - 0.5) * 0.9;
+    };
+
+    window.addEventListener("resize", resize);
+    window.addEventListener("mousemove", onPointerMove, { passive: true });
+
+    const plumeCount = 18;
+
+    const render = (now: number) => {
+      const isDark =
+        document.documentElement.classList.contains("dark") ||
+        document.documentElement.getAttribute("data-theme") === "dark";
+
+      pointerX += (targetPointerX - pointerX) * 0.035;
+      const t = prefersReducedMotion ? 1.8 : now * 0.00072;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const baseGlow = ctx.createRadialGradient(
+        width * 0.5,
+        height * 0.78,
+        20,
+        width * 0.5,
+        height * 0.56,
+        Math.max(width, height) * 0.55
+      );
+      if (isDark) {
+        baseGlow.addColorStop(0, "rgba(79, 181, 138, 0.16)");
+        baseGlow.addColorStop(0.5, "rgba(143, 180, 201, 0.08)");
+        baseGlow.addColorStop(1, "rgba(6, 20, 27, 0)");
+      } else {
+        baseGlow.addColorStop(0, "rgba(37, 55, 69, 0.09)");
+        baseGlow.addColorStop(0.5, "rgba(84, 101, 113, 0.045)");
+        baseGlow.addColorStop(1, "rgba(244, 246, 247, 0)");
+      }
+      ctx.fillStyle = baseGlow;
+      ctx.fillRect(0, 0, width, height);
+
+      for (let i = 0; i < plumeCount; i++) {
+        const riseProgress = (t * 0.24 + i / plumeCount) % 1;
+        const envelope = Math.pow(Math.sin(riseProgress * Math.PI), 1.15);
+
+        const plumeBaseY = height * (0.94 - riseProgress * 0.64);
+        const tongueAmp = (48 + (1 - riseProgress) * 38) * (width < 640 ? 0.65 : 1);
+        const flickerAmp = (22 + (1 - riseProgress) * 18) * (width < 640 ? 0.65 : 1);
+
+        const freq1 = 0.0038 + (i % 4) * 0.0012;
+        const freq2 = 0.0088 + (i % 5) * 0.0017;
+        const freq3 = 0.0155 + (i % 3) * 0.0022;
+        const swayPhase = Math.sin(t * 1.1 + i * 1.45) * 0.95 + pointerX * (0.35 + (i % 3) * 0.15);
+        const verticalLick = t * 2.3 + i * 1.15;
+
+        ctx.beginPath();
+        ctx.moveTo(-40, height + 40);
+
+        const step = width < 640 ? 14 : 9;
+        for (let x = -40; x <= width + 40; x += step) {
+          const mainTongue =
+            Math.sin(x * freq1 + swayPhase + i * 0.95) *
+            tongueAmp *
+            (0.72 + 0.28 * Math.sin(verticalLick + x * 0.0032));
+          const secondaryFlame =
+            Math.cos(x * freq2 - swayPhase * 1.25 + verticalLick * 0.65) * flickerAmp;
+          const microTongue =
+            Math.sin(x * freq3 + verticalLick * 1.5 + i * 1.7) * 9 * (1 - riseProgress * 0.45);
+
+          const y =
+            plumeBaseY -
+            Math.abs(mainTongue) * 0.6 +
+            mainTongue * 0.4 +
+            secondaryFlame +
+            microTongue;
+          ctx.lineTo(x, y);
+        }
+
+        ctx.lineTo(width + 40, height + 40);
+        ctx.closePath();
+
+        const crestY = plumeBaseY - tongueAmp - flickerAmp;
+        const grad = ctx.createLinearGradient(0, crestY, 0, height);
+
+        if (isDark) {
+          const variant = i % 3;
+          const peakAlpha = (envelope * 0.12).toFixed(3);
+          const bodyAlpha = (envelope * 0.17).toFixed(3);
+          const crestRgb =
+            variant === 0
+              ? "79, 181, 138"
+              : variant === 1
+                ? "143, 180, 201"
+                : "94, 196, 172";
+          const midRgb = variant === 0 ? "22, 66, 60" : "20, 48, 62";
+
+          grad.addColorStop(0, "rgba(6, 20, 27, 0)");
+          grad.addColorStop(0.24, `rgba(${crestRgb}, ${peakAlpha})`);
+          grad.addColorStop(0.58, `rgba(${midRgb}, ${bodyAlpha})`);
+          grad.addColorStop(1, "rgba(6, 20, 27, 0)");
+        } else {
+          const peakAlpha = (envelope * 0.058).toFixed(3);
+          const bodyAlpha = (envelope * 0.078).toFixed(3);
+
+          grad.addColorStop(0, "rgba(244, 246, 247, 0)");
+          grad.addColorStop(0.24, `rgba(37, 55, 69, ${peakAlpha})`);
+          grad.addColorStop(0.58, `rgba(84, 101, 113, ${bodyAlpha})`);
+          grad.addColorStop(1, "rgba(244, 246, 247, 0)");
+        }
+
+        ctx.fillStyle = grad;
+        ctx.fill();
+      }
+
+      rafId = requestAnimationFrame(render);
+    };
+
+    rafId = requestAnimationFrame(render);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("mousemove", onPointerMove);
+    };
+  }, []);
+
+  return (
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+      <canvas
+        ref={canvasRef}
+        className="h-full w-full blur-[16px] sm:blur-[22px] scale-105 will-change-transform"
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 65% 70% at 26% 48%, color-mix(in oklab, var(--bg-canvas) 56%, transparent) 0%, transparent 100%)",
+        }}
+      />
+    </div>
+  );
+}
+
+// ─── SUBTLE AMBIENT CONSTELLATION CANVAS ──────────────────────────────────────
 function ArchitectureMeshCanvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -363,7 +555,10 @@ function formatNowTimestamp(): string {
 
 // ─── MAIN HERO COMPONENT ──────────────────────────────────────────────────────
 export function Hero({ newestRelease }: HeroProps) {
+  void newestRelease;
+
   const [domainIndex, setDomainIndex] = useState(0);
+  const [pulseIndex, setPulseIndex] = useState(0);
   const [activeRegionIdx, setActiveRegionIdx] = useState(0);
   const [liveTick, setLiveTick] = useState(0);
   const [isStreaming, setIsStreaming] = useState(true);
@@ -409,6 +604,13 @@ export function Hero({ newestRelease }: HeroProps) {
       setDomainIndex((prev) => (prev + 1) % ROTATING_DOMAINS.length);
     }, 3400);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const pulseTimer = setInterval(() => {
+      setPulseIndex((prev) => (prev + 1) % PULSE_HIGHLIGHTS.length);
+    }, 4600);
+    return () => clearInterval(pulseTimer);
   }, []);
 
   // Live telemetry stream tick when ACTIVE (strict-mode safe unique keys)
@@ -471,8 +673,8 @@ export function Hero({ newestRelease }: HeroProps) {
 
   const activeRegion = CLUSTER_REGIONS[activeRegionIdx];
   const visibleLogs = customLogs[activeRegion.id] ?? activeRegion.logs;
+  const activePulse = PULSE_HIGHLIGHTS[pulseIndex];
 
-  // Subtle live variance around baseline telemetry
   const variance = isStreaming ? ((liveTick % 5) - 2) * 0.02 : 0;
   const liveGbps = (activeRegion.baseGbps + variance).toFixed(2);
   const liveBar = Math.min(
@@ -494,13 +696,20 @@ export function Hero({ newestRelease }: HeroProps) {
       ref={sectionRef}
       id="hero"
       aria-label="Hero section"
-      className="relative isolate overflow-hidden pt-6 sm:pt-10 pb-20 sm:pb-28"
+      className="relative isolate overflow-hidden -mt-24 pt-36 sm:pt-40 pb-24 sm:pb-32"
     >
-      {/* Clean Subtle Particle Constellation + Soft Ambient Glows with Parallax */}
+      {/* Rising 18-Plume Flame/Aurora Wave + Constellation Mesh with True Alpha Edge Dissolution */}
       <motion.div
-        style={{ y: bgParallaxY }}
+        style={{
+          y: bgParallaxY,
+          maskImage:
+            "linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.45) 12%, black 26%, black 70%, rgba(0,0,0,0.45) 86%, transparent 100%)",
+          WebkitMaskImage:
+            "linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.45) 12%, black 26%, black 70%, rgba(0,0,0,0.45) 86%, transparent 100%)",
+        }}
         className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
       >
+        <Smoky3DWaveCanvas />
         <ArchitectureMeshCanvas />
 
         <motion.div
@@ -510,7 +719,7 @@ export function Hero({ newestRelease }: HeroProps) {
             scale: [1, 1.08, 0.96, 1],
           }}
           transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-24 left-1/4 h-80 w-80 rounded-full bg-[var(--brand-primary)]/10 blur-[120px]"
+          className="absolute top-12 left-1/4 h-80 w-80 rounded-full bg-[var(--brand-primary)]/10 blur-[120px]"
         />
         <motion.div
           animate={{
@@ -519,7 +728,7 @@ export function Hero({ newestRelease }: HeroProps) {
             scale: [1, 0.94, 1.06, 1],
           }}
           transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-0 right-1/5 h-96 w-96 rounded-full bg-[var(--border-strong)]/18 blur-[130px]"
+          className="absolute bottom-12 right-1/5 h-96 w-96 rounded-full bg-[var(--border-strong)]/18 blur-[130px]"
         />
       </motion.div>
 
@@ -528,37 +737,67 @@ export function Hero({ newestRelease }: HeroProps) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
           {/* LEFT COLUMN — Executive Value Proposition */}
           <div className="lg:col-span-7 flex flex-col items-start space-y-6 min-w-0">
-            {/* Release Pill */}
-            {newestRelease && (
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="max-w-full"
+            {/* Interactive Live Engineering Pulse Pill */}
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-flex flex-wrap items-center gap-2 sm:gap-2.5 max-w-full p-1.5 pr-2.5 rounded-full devcore-glass-badge transition-all duration-200 hover:border-[var(--brand-primary)]/70 hover:shadow-sm"
+            >
+              {/* Animated Live Equalizer + Tag (Click to cycle) */}
+              <button
+                type="button"
+                onClick={() => setPulseIndex((prev) => (prev + 1) % PULSE_HIGHLIGHTS.length)}
+                title="Cycle studio updates"
+                className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[var(--brand-primary)] text-[var(--brand-contrast)] font-mono text-[10px] font-bold tracking-wider uppercase cursor-pointer shrink-0 transition-transform active:scale-95"
               >
-                <Link
-                  href="/launches"
-                  className="group relative overflow-hidden inline-flex items-center gap-2 max-w-full px-3.5 py-1.5 rounded-full devcore-glass-badge font-mono text-xs font-medium tracking-wide transition-all duration-200 hover:border-[var(--brand-primary)] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
-                >
-                  <span className="relative flex size-2 shrink-0">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--success)] opacity-75" />
-                    <span className="relative inline-flex rounded-full size-2 bg-[var(--success)]" />
-                  </span>
-                  <span className="font-bold text-[var(--brand-primary)] shrink-0">NEW:</span>
-                  <span className="truncate text-[var(--text-primary)]">
-                    <strong className="font-semibold">{newestRelease.name}</strong>
-                    <span className="hidden sm:inline text-[var(--text-secondary)]">
-                      {" "}
-                      — {newestRelease.tagline}
-                    </span>
-                  </span>
-                  <ArrowUpRight
-                    size={13}
-                    className="shrink-0 text-[var(--brand-primary)] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                <span className="flex items-end gap-[2px] h-2.5" aria-hidden="true">
+                  <motion.span
+                    animate={{ height: ["35%", "100%", "45%"] }}
+                    transition={{ duration: 0.9, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-[2px] rounded-full bg-[var(--success)]"
                   />
-                </Link>
-              </motion.div>
-            )}
+                  <motion.span
+                    animate={{ height: ["90%", "30%", "85%"] }}
+                    transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-[2px] rounded-full bg-[var(--success)]"
+                  />
+                  <motion.span
+                    animate={{ height: ["45%", "95%", "35%"] }}
+                    transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-[2px] rounded-full bg-[var(--success)]"
+                  />
+                </span>
+                <span>{activePulse.tag}</span>
+              </button>
+
+              {/* Animated Rotating Studio Insight */}
+              <Link
+                href={activePulse.href}
+                className="group inline-flex items-center gap-1.5 min-w-0 text-xs font-medium text-[var(--text-primary)] hover:text-[var(--brand-primary)] transition-colors"
+              >
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={activePulse.text}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.25 }}
+                    className="truncate max-w-[210px] sm:max-w-[320px]"
+                  >
+                    {activePulse.text}
+                  </motion.span>
+                </AnimatePresence>
+
+                <span className="hidden sm:inline-flex items-center gap-0.5 font-mono text-[11px] font-semibold text-[var(--brand-primary)] shrink-0">
+                  · {activePulse.cta}
+                </span>
+                <ArrowUpRight
+                  size={13}
+                  className="shrink-0 text-[var(--brand-primary)] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                />
+              </Link>
+            </motion.div>
 
             {/* Main Headline with Animated Domain Rotator */}
             <motion.div
@@ -675,7 +914,7 @@ export function Hero({ newestRelease }: HeroProps) {
               <motion.div
                 whileHover={{ y: -2 }}
                 transition={{ type: "spring", stiffness: 360, damping: 24 }}
-                className="rounded-xl p-2.5 sm:p-3.5 bg-[var(--bg-surface)]/70 border border-[var(--border-subtle)]/70 hover:border-[var(--brand-primary)]/45 shadow-2xs transition-colors"
+                className="rounded-xl p-2.5 sm:p-3.5 bg-[var(--bg-surface)]/75 backdrop-blur-md border border-[var(--border-subtle)]/70 hover:border-[var(--brand-primary)]/45 shadow-2xs transition-colors"
               >
                 <div className="font-mono font-bold text-xl sm:text-2xl lg:text-3xl text-[var(--text-primary)] tabular-nums">
                   <AnimatedMetric target={99.998} decimals={3} suffix="%" />
@@ -688,7 +927,7 @@ export function Hero({ newestRelease }: HeroProps) {
               <motion.div
                 whileHover={{ y: -2 }}
                 transition={{ type: "spring", stiffness: 360, damping: 24 }}
-                className="rounded-xl p-2.5 sm:p-3.5 bg-[var(--bg-surface)]/70 border border-[var(--border-subtle)]/70 hover:border-[var(--brand-primary)]/45 shadow-2xs transition-colors"
+                className="rounded-xl p-2.5 sm:p-3.5 bg-[var(--bg-surface)]/75 backdrop-blur-md border border-[var(--border-subtle)]/70 hover:border-[var(--brand-primary)]/45 shadow-2xs transition-colors"
               >
                 <div className="font-mono font-bold text-xl sm:text-2xl lg:text-3xl text-[var(--text-primary)] tabular-nums">
                   <AnimatedMetric prefix="< " target={14} decimals={0} suffix="ms" />
@@ -701,7 +940,7 @@ export function Hero({ newestRelease }: HeroProps) {
               <motion.div
                 whileHover={{ y: -2 }}
                 transition={{ type: "spring", stiffness: 360, damping: 24 }}
-                className="rounded-xl p-2.5 sm:p-3.5 bg-[var(--bg-surface)]/70 border border-[var(--border-subtle)]/70 hover:border-[var(--brand-primary)]/45 shadow-2xs transition-colors"
+                className="rounded-xl p-2.5 sm:p-3.5 bg-[var(--bg-surface)]/75 backdrop-blur-md border border-[var(--border-subtle)]/70 hover:border-[var(--brand-primary)]/45 shadow-2xs transition-colors"
               >
                 <div className="font-mono font-bold text-xl sm:text-2xl lg:text-3xl text-[var(--text-primary)] tabular-nums">
                   <AnimatedMetric target={420} decimals={0} suffix="k+" />
