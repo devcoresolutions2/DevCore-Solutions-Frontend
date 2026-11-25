@@ -774,7 +774,32 @@ export async function reorderTeamMembers(ids: string[]): Promise<boolean> {
 }
 
 export async function uploadAvatar(file: File): Promise<string> {
-  // Convert to Base64 data URL for instant client preview and offline persistence
+  if (!USE_MOCK) {
+    try {
+      const resourceType: "image" = "image";
+      const sig = await apiSignSocialMediaUpload(resourceType);
+      const form = new FormData();
+      form.append("file", file);
+      form.append("api_key", sig.apiKey);
+      form.append("timestamp", String(sig.timestamp));
+      form.append("signature", sig.signature);
+      form.append("folder", sig.folder);
+      form.append("public_id", sig.publicId);
+
+      const uploadRes = await fetch(
+        `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`,
+        { method: "POST", body: form }
+      );
+      if (uploadRes.ok) {
+        const data = await uploadRes.json();
+        if (data?.secure_url) return data.secure_url;
+      }
+    } catch {
+      // Fallback to data URL below if Cloudinary signing fails
+    }
+  }
+
+  // Fallback: Base64 data URL for local preview/offline mode
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as string);
