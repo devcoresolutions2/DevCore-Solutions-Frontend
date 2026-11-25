@@ -286,7 +286,7 @@ export function AboutCmsManager() {
           className={cn(
             "px-3 py-1.5 rounded-lg font-medium transition-colors inline-flex items-center gap-1.5",
             subSection === "team"
-              ? "bg-[var(--brand-primary)] text-white shadow-xs"
+              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-xs"
               : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
           )}
         >
@@ -300,7 +300,7 @@ export function AboutCmsManager() {
           className={cn(
             "px-3 py-1.5 rounded-lg font-medium transition-colors inline-flex items-center gap-1.5",
             subSection === "principles"
-              ? "bg-[var(--brand-primary)] text-white shadow-xs"
+              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-xs"
               : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
           )}
         >
@@ -314,7 +314,7 @@ export function AboutCmsManager() {
           className={cn(
             "px-3 py-1.5 rounded-lg font-medium transition-colors inline-flex items-center gap-1.5",
             subSection === "general"
-              ? "bg-[var(--brand-primary)] text-white shadow-xs"
+              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-xs"
               : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
           )}
         >
@@ -328,7 +328,7 @@ export function AboutCmsManager() {
           className={cn(
             "px-3 py-1.5 rounded-lg font-medium transition-colors inline-flex items-center gap-1.5",
             subSection === "vision_mission"
-              ? "bg-[var(--brand-primary)] text-white shadow-xs"
+              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-xs"
               : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
           )}
         >
@@ -342,7 +342,7 @@ export function AboutCmsManager() {
           className={cn(
             "px-3 py-1.5 rounded-lg font-medium transition-colors inline-flex items-center gap-1.5",
             subSection === "philosophy"
-              ? "bg-[var(--brand-primary)] text-white shadow-xs"
+              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-xs"
               : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
           )}
         >
@@ -356,7 +356,7 @@ export function AboutCmsManager() {
           className={cn(
             "px-3 py-1.5 rounded-lg font-medium transition-colors inline-flex items-center gap-1.5",
             subSection === "location"
-              ? "bg-[var(--brand-primary)] text-white shadow-xs"
+              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-xs"
               : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
           )}
         >
@@ -370,7 +370,7 @@ export function AboutCmsManager() {
           className={cn(
             "px-3 py-1.5 rounded-lg font-medium transition-colors inline-flex items-center gap-1.5",
             subSection === "cta"
-              ? "bg-[var(--brand-primary)] text-white shadow-xs"
+              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-xs"
               : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
           )}
         >
@@ -410,7 +410,7 @@ export function AboutCmsManager() {
                 });
                 setShowMemberModal(true);
               }}
-              className="px-3.5 py-2 rounded-lg bg-[var(--brand-primary)] text-white text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors inline-flex items-center gap-1.5 shadow-xs"
+              className="px-3.5 py-2 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors inline-flex items-center gap-1.5 shadow-xs"
             >
               <Plus size={14} />
               <span>Add Team Member</span>
@@ -589,7 +589,7 @@ export function AboutCmsManager() {
                 });
                 setShowPrincipleModal(true);
               }}
-              className="px-3.5 py-2 rounded-lg bg-[var(--brand-primary)] text-white text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors inline-flex items-center gap-1.5 shadow-xs"
+              className="px-3.5 py-2 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors inline-flex items-center gap-1.5 shadow-xs"
             >
               <Plus size={14} />
               <span>Add Principle</span>
@@ -753,7 +753,7 @@ export function AboutCmsManager() {
             type="button"
             onClick={handleSaveContent}
             disabled={savingGeneral}
-            className="px-4 py-2 rounded-lg bg-[var(--brand-primary)] text-white text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors inline-flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+            className="px-4 py-2 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors inline-flex items-center gap-1.5 shadow-xs disabled:opacity-50"
           >
             <Save size={14} />
             <span>{savingGeneral ? "Saving..." : "Save Hero Content"}</span>
@@ -828,7 +828,7 @@ export function AboutCmsManager() {
             type="button"
             onClick={handleSaveContent}
             disabled={savingGeneral}
-            className="px-4 py-2 rounded-lg bg-[var(--brand-primary)] text-white text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors inline-flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+            className="px-4 py-2 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors inline-flex items-center gap-1.5 shadow-xs disabled:opacity-50"
           >
             <Save size={14} />
             <span>{savingGeneral ? "Saving..." : "Save Vision & Mission"}</span>
@@ -912,7 +912,7 @@ export function AboutCmsManager() {
             type="button"
             onClick={handleSaveContent}
             disabled={savingGeneral}
-            className="px-4 py-2 rounded-lg bg-[var(--brand-primary)] text-white text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors inline-flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+            className="px-4 py-2 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors inline-flex items-center gap-1.5 shadow-xs disabled:opacity-50"
           >
             <Save size={14} />
             <span>{savingGeneral ? "Saving..." : "Save Philosophy"}</span>
@@ -1008,7 +1008,7 @@ export function AboutCmsManager() {
             type="button"
             onClick={handleSaveContent}
             disabled={savingGeneral}
-            className="px-4 py-2 rounded-lg bg-[var(--brand-primary)] text-white text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors inline-flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+            className="px-4 py-2 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors inline-flex items-center gap-1.5 shadow-xs disabled:opacity-50"
           >
             <Save size={14} />
             <span>{savingGeneral ? "Saving..." : "Save Location Settings"}</span>
@@ -1109,7 +1109,7 @@ export function AboutCmsManager() {
             type="button"
             onClick={handleSaveContent}
             disabled={savingGeneral}
-            className="px-4 py-2 rounded-lg bg-[var(--brand-primary)] text-white text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors inline-flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+            className="px-4 py-2 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors inline-flex items-center gap-1.5 shadow-xs disabled:opacity-50"
           >
             <Save size={14} />
             <span>{savingGeneral ? "Saving..." : "Save CTA Settings"}</span>
@@ -1384,7 +1384,7 @@ export function AboutCmsManager() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-[var(--brand-primary)] text-white text-xs font-semibold hover:bg-[var(--brand-hover)] shadow-xs"
+                  className="px-4 py-2 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-semibold hover:bg-[var(--brand-hover)] shadow-xs"
                 >
                   Save Member
                 </button>
@@ -1562,7 +1562,7 @@ export function AboutCmsManager() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-[var(--brand-primary)] text-white text-xs font-semibold hover:bg-[var(--brand-hover)] shadow-xs"
+                  className="px-4 py-2 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-semibold hover:bg-[var(--brand-hover)] shadow-xs"
                 >
                   Save Principle
                 </button>

@@ -146,7 +146,7 @@ export default function BroadcastConfirmModal({
             type="button"
             disabled={submitting || !allReady}
             onClick={onConfirm}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white hover:opacity-90 disabled:opacity-40 inline-flex items-center gap-1.5"
+            className="px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:opacity-90 disabled:opacity-40 inline-flex items-center gap-1.5"
           >
             <Send className="w-3.5 h-3.5" />
             {submitting

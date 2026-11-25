@@ -213,7 +213,7 @@ export default function SocialBroadcastComposer() {
         <button
           type="button"
           onClick={() => void loadContext()}
-          className="px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white"
+          className="px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)]"
         >
           Retry
         </button>
@@ -557,7 +557,7 @@ export default function SocialBroadcastComposer() {
                 type="button"
                 disabled={selectedPlatforms.length === 0 || submitting}
                 onClick={() => setConfirmOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white hover:opacity-90 disabled:opacity-40"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:opacity-90 disabled:opacity-40"
               >
                 <Send className="w-3.5 h-3.5" />
                 {timingMode === "SCHEDULE"

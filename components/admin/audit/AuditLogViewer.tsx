@@ -117,7 +117,7 @@ export default function AuditLogViewer() {
             onClick={() => setLiveStream((v) => !v)}
             className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
               liveStream
-                ? "bg-[var(--brand-primary)] text-white"
+                ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)]"
                 : "bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-primary)]"
             }`}
           >

@@ -62,7 +62,7 @@ export default function WebhookManagerPanel({
           <button
             type="button"
             onClick={onOpenCreate}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white hover:opacity-90 transition-all shrink-0"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:opacity-90 transition-all shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
             Register Webhook

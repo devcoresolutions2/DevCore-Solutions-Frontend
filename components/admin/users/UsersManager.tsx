@@ -227,7 +227,7 @@ function UsersManagerInner() {
           <button
             type="button"
             onClick={() => setInviteOpen(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white hover:opacity-90"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:opacity-90"
           >
             <UserPlus className="w-3.5 h-3.5" />
             Invite New User
@@ -256,7 +256,7 @@ function UsersManagerInner() {
           href="/admin/users"
           className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors ${
             activeTab === "directory"
-              ? "bg-[var(--brand-primary)] text-white"
+              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)]"
               : "bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
           }`}
         >
@@ -272,7 +272,7 @@ function UsersManagerInner() {
           href="/admin/users?tab=invitations"
           className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors ${
             activeTab === "invitations"
-              ? "bg-[var(--brand-primary)] text-white"
+              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)]"
               : "bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
           }`}
         >
@@ -288,7 +288,7 @@ function UsersManagerInner() {
           href="/admin/users?tab=roles"
           className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors ${
             activeTab === "roles"
-              ? "bg-[var(--brand-primary)] text-white"
+              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)]"
               : "bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
           }`}
         >
@@ -309,7 +309,7 @@ function UsersManagerInner() {
             <button
               type="button"
               onClick={() => setInviteOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white hover:opacity-90"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:opacity-90"
             >
               <UserPlus className="w-3.5 h-3.5" />
               Send Invitation
@@ -862,7 +862,7 @@ function UsersManagerInner() {
                 <button
                   type="submit"
                   disabled={inviting}
-                  className="px-4 py-2 rounded-xl bg-[var(--brand-primary)] text-white font-semibold"
+                  className="px-4 py-2 rounded-xl bg-[var(--brand-primary)] text-[var(--brand-contrast)] font-semibold"
                 >
                   {inviting ? "Sending..." : "Send Invitation"}
                 </button>

@@ -243,7 +243,7 @@ export default function SocialManagementDashboard() {
           </a>
           <Link
             href="/admin/social/broadcast"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white hover:opacity-90"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:opacity-90"
           >
             <Plus className="w-3.5 h-3.5" />
             Create New Broadcast
@@ -360,7 +360,7 @@ export default function SocialManagementDashboard() {
           <button
             type="button"
             onClick={() => void handleRetryAllFailed()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--brand-primary)] text-white text-xs font-semibold shrink-0"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-semibold shrink-0"
           >
             <RotateCw className="w-3.5 h-3.5" />
             Retry All Failed
@@ -437,7 +437,7 @@ export default function SocialManagementDashboard() {
                 }}
                 className={`px-3 py-1 rounded-lg font-medium transition-colors ${
                   statusFilter === st
-                    ? "bg-[var(--brand-primary)] text-white"
+                    ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)]"
                     : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 }`}
               >
@@ -460,7 +460,7 @@ export default function SocialManagementDashboard() {
             </p>
             <Link
               href="/admin/social/broadcast"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)]"
             >
               <Plus className="w-3.5 h-3.5" />
               Create New Broadcast
@@ -952,7 +952,7 @@ export default function SocialManagementDashboard() {
               <button
                 type="submit"
                 disabled={savingSchedule}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white disabled:opacity-50"
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] disabled:opacity-50"
               >
                 {savingSchedule ? "Saving..." : "Save Schedule"}
               </button>

@@ -103,7 +103,7 @@ export default function WebhookModal({
               <button
                 type="button"
                 onClick={handleCopy}
-                className="px-3 py-2.5 rounded-xl bg-[var(--brand-primary)] text-white text-xs font-semibold inline-flex items-center gap-1.5 shrink-0"
+                className="px-3 py-2.5 rounded-xl bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-semibold inline-flex items-center gap-1.5 shrink-0"
               >
                 {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                 {copied ? "Copied" : "Copy"}
@@ -195,7 +195,7 @@ export default function WebhookModal({
               <button
                 type="submit"
                 disabled={saving || events.length === 0}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white hover:opacity-90 disabled:opacity-50"
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:opacity-90 disabled:opacity-50"
               >
                 {saving ? "Saving..." : editing ? "Save Changes" : "Create Endpoint"}
               </button>

@@ -442,7 +442,7 @@ export function BlogCmsManager() {
             className={cn(
               "flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors",
               activeTab === "articles"
-                ? "bg-[var(--brand-primary)] text-white font-medium"
+                ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] font-medium"
                 : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]"
             )}
           >
@@ -456,7 +456,7 @@ export function BlogCmsManager() {
             className={cn(
               "flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors",
               activeTab === "categories"
-                ? "bg-[var(--brand-primary)] text-white font-medium"
+                ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] font-medium"
                 : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]"
             )}
           >
@@ -470,7 +470,7 @@ export function BlogCmsManager() {
             className={cn(
               "flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors",
               activeTab === "authors"
-                ? "bg-[var(--brand-primary)] text-white font-medium"
+                ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] font-medium"
                 : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]"
             )}
           >
@@ -484,7 +484,7 @@ export function BlogCmsManager() {
             className={cn(
               "flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors",
               activeTab === "subscribers"
-                ? "bg-[var(--brand-primary)] text-white font-medium"
+                ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] font-medium"
                 : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]"
             )}
           >
@@ -498,7 +498,7 @@ export function BlogCmsManager() {
             className={cn(
               "flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors",
               activeTab === "hero"
-                ? "bg-[var(--brand-primary)] text-white font-medium"
+                ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)] font-medium"
                 : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]"
             )}
           >
@@ -536,7 +536,7 @@ export function BlogCmsManager() {
             <button
               type="button"
               onClick={() => handleOpenArticleModal()}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--brand-primary)] text-white text-xs font-mono font-medium hover:opacity-90 transition-opacity"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-mono font-medium hover:opacity-90 transition-opacity"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Create New Article</span>
@@ -664,7 +664,7 @@ export function BlogCmsManager() {
             <button
               type="button"
               onClick={() => handleOpenCategoryModal()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--brand-primary)] text-white text-xs font-mono font-medium hover:opacity-90"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-mono font-medium hover:opacity-90"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Category</span>
@@ -730,7 +730,7 @@ export function BlogCmsManager() {
             <button
               type="button"
               onClick={() => handleOpenAuthorModal()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--brand-primary)] text-white text-xs font-mono font-medium hover:opacity-90"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-mono font-medium hover:opacity-90"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Author</span>
@@ -927,7 +927,7 @@ export function BlogCmsManager() {
           <div className="pt-2">
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg bg-[var(--brand-primary)] text-white text-xs font-mono font-medium hover:opacity-90"
+              className="px-4 py-2 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-mono font-medium hover:opacity-90"
             >
               Save Hero Settings
             </button>
@@ -1154,7 +1154,7 @@ export function BlogCmsManager() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-[var(--brand-primary)] text-white text-xs font-mono font-medium hover:opacity-90"
+                  className="px-5 py-2 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-mono font-medium hover:opacity-90"
                 >
                   Save Article
                 </button>
@@ -1222,7 +1222,7 @@ export function BlogCmsManager() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-lg bg-[var(--brand-primary)] text-white text-xs font-mono"
+                  className="px-4 py-1.5 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-mono"
                 >
                   Save
                 </button>
@@ -1328,7 +1328,7 @@ export function BlogCmsManager() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-lg bg-[var(--brand-primary)] text-white text-xs font-mono"
+                  className="px-4 py-1.5 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-mono"
                 >
                   Save
                 </button>

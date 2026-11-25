@@ -81,7 +81,7 @@ export default function ForbiddenView({ requestedPath }: { requestedPath?: strin
             </Link>
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white hover:opacity-90"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:opacity-90"
             >
               <Home className="w-3.5 h-3.5" />
               Return to Website

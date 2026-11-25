@@ -154,7 +154,7 @@ export default function MediaPickerModal({
                         className="w-full h-full object-cover"
                       />
                       {active && (
-                        <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[var(--brand-primary)] text-white flex items-center justify-center">
+                        <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[var(--brand-primary)] text-[var(--brand-contrast)] flex items-center justify-center">
                           <Check className="w-3 h-3" />
                         </span>
                       )}
@@ -186,7 +186,7 @@ export default function MediaPickerModal({
                 onClose();
               }
             }}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white disabled:opacity-40"
+            className="px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] disabled:opacity-40"
           >
             Use Selected Asset
           </button>

@@ -722,3 +722,15 @@ body {
 .dark .devcore-logo-dark {
   display: inline-block !important;
 }
+
+@keyframes devcore-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(120%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}

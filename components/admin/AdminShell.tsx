@@ -39,6 +39,7 @@ import {
 import { useAuth } from "@/components/auth/AuthProvider";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { BrandLogo } from "@/components/shared/BrandLogo";
+import { GlobalLoader } from "@/components/shared/GlobalLoader";
 
 interface AdminShellProps {
   children: React.ReactNode;
@@ -177,11 +178,7 @@ function AdminShellInner({
   }, [user, loading, router, pathname, requiredRoles]);
 
   if (loading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-canvas)]">
-        <div className="w-8 h-8 border-2 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <GlobalLoader variant="fullscreen" label="Loading admin workspace" />;
   }
 
   const breadcrumb = getBreadcrumbLabel(pathname, activeTab);
@@ -649,11 +646,7 @@ function AdminShellInner({
 export default function AdminShell(props: AdminShellProps) {
   return (
     <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[var(--bg-canvas)]">
-          <div className="w-8 h-8 border-2 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin" />
-        </div>
-      }
+      fallback={<GlobalLoader variant="fullscreen" label="Loading admin workspace" />}
     >
       <AdminShellInner {...props} />
     </Suspense>

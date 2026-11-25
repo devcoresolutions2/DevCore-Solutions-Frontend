@@ -113,7 +113,7 @@ export default function ChannelPreviewPanel({
                     className="w-9 h-9 rounded-full object-cover border border-[var(--border-subtle)]"
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-[var(--brand-primary)] text-white flex items-center justify-center font-bold text-xs shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-[var(--brand-primary)] text-[var(--brand-contrast)] flex items-center justify-center font-bold text-xs shrink-0">
                     {(activeAccount.accountName || activeAccount.displayName).slice(0, 2).toUpperCase()}
                   </div>
                 )}

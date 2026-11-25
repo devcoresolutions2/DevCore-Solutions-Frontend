@@ -237,7 +237,7 @@ export default function BroadcastEditor({
           onClick={() => onChangeScope("MASTER")}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
             activeScope === "MASTER"
-              ? "bg-[var(--brand-primary)] text-white"
+              ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)]"
               : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
           }`}
         >
@@ -254,7 +254,7 @@ export default function BroadcastEditor({
               onClick={() => onChangeScope(acc.platform)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all inline-flex items-center gap-1.5 ${
                 activeScope === acc.platform
-                  ? "bg-[var(--brand-primary)] text-white"
+                  ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)]"
                   : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
             >
@@ -418,7 +418,7 @@ export default function BroadcastEditor({
               <button
                 type="button"
                 onClick={acceptAiPreview}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--brand-primary)] text-white text-[11px] font-semibold"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-[11px] font-semibold"
               >
                 <Check className="w-3 h-3" /> Accept
               </button>

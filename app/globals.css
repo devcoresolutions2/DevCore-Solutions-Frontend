@@ -286,6 +286,9 @@
   .pointer-events-none {
     pointer-events: none;
   }
+  .visible {
+    visibility: visible;
+  }
   .sr-only {
     position: absolute;
     width: 1px;
@@ -311,6 +314,9 @@
   }
   .sticky {
     position: sticky;
+  }
+  .-inset-1 {
+    inset: calc(var(--spacing) * -1);
   }
   .inset-0 {
     inset: 0px;
@@ -491,6 +497,9 @@
   }
   .z-50 {
     z-index: 50;
+  }
+  .z-\[100\] {
+    z-index: 100;
   }
   .order-first {
     order: -9999;
@@ -931,6 +940,9 @@
   .w-1\.5 {
     width: calc(var(--spacing) * 1.5);
   }
+  .w-1\/3 {
+    width: calc(1 / 3 * 100%);
+  }
   .w-2 {
     width: calc(var(--spacing) * 2);
   }
@@ -1200,6 +1212,9 @@
   }
   .transform {
     transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);
+  }
+  .animate-\[devcore-progress_1\.2s_ease-in-out_infinite\] {
+    animation: devcore-progress 1.2s ease-in-out infinite;
   }
   .animate-\[progress_2s_ease-in-out_forwards\] {
     animation: progress 2s ease-in-out forwards;
@@ -1540,6 +1555,9 @@
   .rounded-\[10px\] {
     border-radius: 10px;
   }
+  .rounded-\[20px\] {
+    border-radius: 20px;
+  }
   .rounded-\[calc\(var\(--radius\)-3px\)\] {
     border-radius: calc(var(--radius) - 3px);
   }
@@ -1847,8 +1865,17 @@
       border-color: color-mix(in oklab, var(--color-white) 25%, transparent);
     }
   }
+  .border-t-\[var\(--brand-primary\)\] {
+    border-top-color: var(--brand-primary);
+  }
   .border-t-transparent {
     border-top-color: transparent;
+  }
+  .border-r-\[var\(--brand-primary\)\]\/30 {
+    border-right-color: var(--brand-primary);
+    @supports (color: color-mix(in lab, red, red)) {
+      border-right-color: color-mix(in oklab, var(--brand-primary) 30%, transparent);
+    }
   }
   .border-l-\[var\(--success\)\] {
     border-left-color: var(--success);
@@ -2074,6 +2101,12 @@
   }
   .bg-\[var\(--border-subtle\)\] {
     background-color: var(--border-subtle);
+  }
+  .bg-\[var\(--border-subtle\)\]\/40 {
+    background-color: var(--border-subtle);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--border-subtle) 40%, transparent);
+    }
   }
   .bg-\[var\(--brand-hover\)\] {
     background-color: var(--brand-hover);
@@ -5765,6 +5798,17 @@ body {
 }
 [data-theme="dark"] .devcore-logo-dark, .dark .devcore-logo-dark {
   display: inline-block !important;
+}
+@keyframes devcore-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(120%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
 }
 @property --tw-translate-x {
   syntax: "*";

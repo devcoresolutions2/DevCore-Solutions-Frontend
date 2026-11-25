@@ -311,7 +311,7 @@ export default function SocialChannelsManager() {
         <button
           type="button"
           onClick={loadOverview}
-          className="px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white"
+          className="px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)]"
         >
           Retry
         </button>
