@@ -21,7 +21,7 @@ It powers both the public engineering studio experience (services, launches, cas
 - **Executive Overview & CMS** (`/admin/dashboard`, `/admin/content`): Manage Blog Articles, Job Postings, Candidate Applications, Services, About Page (Team Members, Engineering Principles, Vision/Mission, Headquarters, CTA), and Testimonials.
 - **Media Library** (`/admin/media`): Direct-to-Cloudinary signed uploads, metadata/alt-text editing, asset replacement, usage tracking, and manifest export.
 - **Growth & Social Syndication** (`/admin/leads`, `/admin/social`, `/admin/social/broadcast`, `/admin/social/manage`): Leads pipeline, OAuth social channel connectors, multi-platform broadcast composer with scheduling/retries, and delivery diagnostics.
-- **Team & Security** (`/admin/users`, `/admin/audit-log`, `/admin/settings`): User directory, bulk actions, SMTP invitations, RBAC role matrix (`SUPER_ADMIN`, `EDITOR`, `USER`), immutable audit logs, and platform settings.
+- **Team & Security** (`/admin/users`, `/admin/audit-log`, `/admin/settings`): User directory, bulk actions, SMTP invitations, RBAC role matrix (`SUPER_ADMIN`, `EDITOR`, `USER`), immutable audit logs, and platform settings and data.
 
 ---
 
