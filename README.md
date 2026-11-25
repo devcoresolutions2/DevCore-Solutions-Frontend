@@ -1,48 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DevCore Solutions — Web Platform & Enterprise Admin Console
 
-## DevCore Solutions — Platform Architecture
+The official frontend application for **DevCore Solutions**, built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, and **Tailwind CSS v4**.
 
-DevCore Solutions is an enterprise engineering studio specializing in high-concurrency SaaS platforms, distributed cloud infrastructure, deterministic API topologies, and AI workflow automation.
+It powers both the public engineering studio experience (services, launches, case studies, careers, blog, and project inquiry workflows) and the unified, role-based **Admin Dashboard** (`SUPER_ADMIN` / `EDITOR`).
 
-### Features
-- **Liquid Glass Theme Engine**: High-contrast dark and light mode architecture with dynamic CSS variables and Tailwind utilities.
-- **Enterprise Technology Matrix**: Visual stack proficiency tiered by production deployment frequency (Core, Standard, Specialized, Emerging).
-- **Decoupled Architecture**: High-performance Next.js 16 App Router frontend paired with an Express/Prisma microservices backend.
-- **Founding Team**:
-  - **Kazi Mahedi Hasan**: Co-Founder & Systems Architect ([GitHub](https://github.com/kazi-Samin) | [LinkedIn](https://www.linkedin.com/in/kazi-mahedi-hasan))
-  - **Fourkan Bin Ilias**: Co-Founder & Infrastructure Engineer ([GitHub](https://github.com/Pinon1345) | [LinkedIn](https://www.linkedin.com/in/fourkan-bin-ilias/))
+---
+
+## Key Capabilities
+
+### Public Engineering Platform
+- **Studio Showcase & Launches** (`/`, `/launches`, `/projects/[slug]`): Interactive case studies, architecture breakdowns, and live product metrics (e.g., DineDesk).
+- **Services & Capabilities** (`/services`): Dynamic service catalog managed directly from the Admin Console.
+- **Technical Blog** (`/blog`, `/blog/[slug]`): Editorial technical articles with table of contents, code blocks with one-click copy, and newsletter subscription.
+- **Careers & Applications** (`/careers`): Live job openings with detail modals and resume upload.
+- **Contact & Project Inquiry** (`/contact`, `ContactHub`): Multi-channel inquiry flow with after-hours awareness and callback requests.
+- **Authentication & Account Portal** (`/auth/*`, `/account/settings`): Email/password, Google & GitHub OAuth, OTP email verification, invite-token onboarding, active session management, and security activity logs.
+
+### Enterprise Admin Console (`/admin/*`)
+- **Unified `AdminShell`**: Collapsible left sidebar, tab-aware breadcrumbs, `Ctrl+K` Command Palette, light/dark theme toggle (`next-themes`), and profile dropdown.
+- **Executive Overview & CMS** (`/admin/dashboard`, `/admin/content`): Manage Blog Articles, Job Postings, Candidate Applications, Services, About Page (Team Members, Engineering Principles, Vision/Mission, Headquarters, CTA), and Testimonials.
+- **Media Library** (`/admin/media`): Direct-to-Cloudinary signed uploads, metadata/alt-text editing, asset replacement, usage tracking, and manifest export.
+- **Growth & Social Syndication** (`/admin/leads`, `/admin/social`, `/admin/social/broadcast`, `/admin/social/manage`): Leads pipeline, OAuth social channel connectors, multi-platform broadcast composer with scheduling/retries, and delivery diagnostics.
+- **Team & Security** (`/admin/users`, `/admin/audit-log`, `/admin/settings`): User directory, bulk actions, SMTP invitations, RBAC role matrix (`SUPER_ADMIN`, `EDITOR`, `USER`), immutable audit logs, and platform settings.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+| --- | --- |
+| **Framework** | Next.js `16.4.6` (App Router, Turbopack), React `19.3.0`, TypeScript `5` |
+| **Styling & UI** | Tailwind CSS `4.3.3` (`@tailwindcss/node`), `next-themes`, `lucide-react`, `sonner` |
+| **Typography** | Self-hosted `next/font/google` (`Inter`, `Geist`, `JetBrains Mono`) |
+| **Forms & Data** | `react-hook-form`, `zod`, `@tanstack/react-query`, `@tanstack/react-table` |
+| **Rich Text & Charts** | TipTap (`@tiptap/react`), Recharts |
+| **Media & Backend** | Express + Prisma + Neon PostgreSQL API (`DevCore-Backend`), Cloudinary CDN |
+
+---
+
+## Project Structure
+
+```text
+app/
+├── (public)/              # Public pages (Home, Services, Launches, Projects, Careers, Blog, About, Contact, Account)
+├── (admin)/               # Protected Admin Console (/admin/dashboard, /content, /media, /leads, /social/*, /users, /audit-log, /settings)
+├── (auth)/                # Sign In, Sign Up (supports ?invite=), Email Verification, Password Reset
+└── api/auth/              # OAuth callback handlers (Google, GitHub)
+components/
+├── admin/                 # AdminShell, AboutCmsManager, BlogCmsManager, MediaLibraryManager, UsersManager, Social*, shared modals
+├── account/               # Profile, Security, Connected Accounts, Active Sessions, Security Activity
+├── careers/               # JobList, JobDetailsModal, JobApplicationForm
+├── contact/               # ContactHub & inquiry components
+├── glass/                 # GlassNav, GlassCard, theme surface primitives
+├── landing/               # Hero, FlagshipSpotlight, BentoProof, ProcessTimeline, TechMatrix
+└── shared/                # BrandLogo, GlobalLoader, Footer, ThemeToggle, UserAvatar, Toaster
+lib/
+├── api.ts                 # Typed API client with global 401/403 admin session handling
+└── mock/data.ts           # Fallback data when backend is offline during static build
+styles/
+└── globals.src.css        # Tailwind v4 theme tokens (compiled to app/globals.css via scripts/build-css.js)
+```
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- **Node.js** `20+`
+- Running instance of **DevCore-Backend** (default `http://localhost:5000`)
 
+### 1. Install Dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Configure Environment Variables
+Copy `.env.example` to `.env.local` and configure the values:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Run Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Available Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Compiles CSS tokens (`scripts/build-css.js`) and starts Next.js dev server |
+| `npm run build` | Compiles CSS tokens and builds the production bundle |
+| `npm run start` | Starts the production Next.js server |
+| `npm run lint` | Runs ESLint across the project |
+| `npm run build:css` | Rebuilds `app/globals.css` from `styles/globals.src.css` |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Team
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Kazi Mahedi Hasan** — Co-Founder & Full Stack Developer ([GitHub](https://github.com/kazi-Samin) · [LinkedIn](https://www.linkedin.com/in/kazi-mahedi-hasan))
+- **Fourkan Bin Ilias** — Co-Founder & Full Stack Developer ([GitHub](https://github.com/Pinon1345) · [LinkedIn](https://www.linkedin.com/in/fourkan-bin-ilias/))
