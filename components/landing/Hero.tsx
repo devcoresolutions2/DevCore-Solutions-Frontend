@@ -696,7 +696,7 @@ export function Hero({ newestRelease }: HeroProps) {
       ref={sectionRef}
       id="hero"
       aria-label="Hero section"
-      className="relative isolate overflow-hidden -mt-24 pt-36 sm:pt-40 pb-24 sm:pb-32"
+      className="relative isolate overflow-hidden -mt-24 pt-24 sm:pt-28 pb-24 sm:pb-32"
     >
       {/* Rising 18-Plume Flame/Aurora Wave + Constellation Mesh with True Alpha Edge Dissolution */}
       <motion.div
