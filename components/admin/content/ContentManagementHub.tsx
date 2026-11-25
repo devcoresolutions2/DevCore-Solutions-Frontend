@@ -118,7 +118,7 @@ export default function ContentManagementHub() {
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white hover:opacity-90"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:opacity-90"
           >
             <Plus className="w-3.5 h-3.5" />
             Add Testimonial
@@ -368,7 +368,7 @@ export default function ContentManagementHub() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-4 py-2 rounded-xl bg-[var(--brand-primary)] text-white font-semibold"
+                  className="px-4 py-2 rounded-xl bg-[var(--brand-primary)] text-[var(--brand-contrast)] font-semibold"
                 >
                   {saving ? "Saving..." : "Save Testimonial"}
                 </button>

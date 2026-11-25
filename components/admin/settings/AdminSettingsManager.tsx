@@ -164,7 +164,7 @@ export default function AdminSettingsManager() {
             type="button"
             disabled={!isDirty || saving}
             onClick={() => void handleSave()}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white hover:opacity-90 disabled:opacity-40"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:opacity-90 disabled:opacity-40"
           >
             <Save className="w-3.5 h-3.5" />
             {saving ? "Saving..." : "Save Settings Changes"}
@@ -204,7 +204,7 @@ export default function AdminSettingsManager() {
               onClick={() => setTab(t.id as SettingsTab)}
               className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
                 tab === t.id
-                  ? "bg-[var(--brand-primary)] text-white"
+                  ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)]"
                   : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]"
               }`}
             >
@@ -485,7 +485,7 @@ export default function AdminSettingsManager() {
                   socialLinks: [...socialLinks, { platform: "LinkedIn", url: "", isEnabled: true }],
                 })
               }
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)]"
             >
               <Plus className="w-3.5 h-3.5" /> Add Social URL
             </button>

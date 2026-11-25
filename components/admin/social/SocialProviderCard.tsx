@@ -274,7 +274,7 @@ export default function SocialProviderCard({
             type="button"
             disabled={!channel.configured || isBusy}
             onClick={() => onConnect(channel.key)}
-            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
           >
             <Link2 className="w-3.5 h-3.5" />
             {isBusy ? "Redirecting..." : channel.configured ? "Connect OAuth" : "Configure Env First"}

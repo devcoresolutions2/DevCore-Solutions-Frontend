@@ -36,7 +36,7 @@ export default function SessionExpiredView({ nextPath }: { nextPath?: string }) 
         <div className="space-y-2.5 pt-2">
           <Link
             href={`/auth/signin?next=${encodeURIComponent(safeNext)}`}
-            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white hover:opacity-90"
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:opacity-90"
           >
             <LogIn className="w-4 h-4" />
             Sign In Again

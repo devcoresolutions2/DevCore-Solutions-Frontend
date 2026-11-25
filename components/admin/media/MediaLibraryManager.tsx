@@ -269,7 +269,7 @@ export default function MediaLibraryManager() {
             type="button"
             disabled={uploading}
             onClick={() => fileInputRef.current?.click()}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-white hover:opacity-90 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:opacity-90 disabled:opacity-50"
           >
             <UploadCloud className="w-3.5 h-3.5" />
             {uploading ? "Uploading..." : "Upload New Assets"}
@@ -373,14 +373,14 @@ export default function MediaLibraryManager() {
             <button
               type="button"
               onClick={() => setViewMode("grid")}
-              className={`p-2 ${viewMode === "grid" ? "bg-[var(--brand-primary)] text-white" : "bg-[var(--bg-elevated)]"}`}
+              className={`p-2 ${viewMode === "grid" ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)]" : "bg-[var(--bg-elevated)]"}`}
             >
               <Grid className="w-4 h-4" />
             </button>
             <button
               type="button"
               onClick={() => setViewMode("list")}
-              className={`p-2 ${viewMode === "list" ? "bg-[var(--brand-primary)] text-white" : "bg-[var(--bg-elevated)]"}`}
+              className={`p-2 ${viewMode === "list" ? "bg-[var(--brand-primary)] text-[var(--brand-contrast)]" : "bg-[var(--bg-elevated)]"}`}
             >
               <List className="w-4 h-4" />
             </button>
@@ -598,7 +598,7 @@ export default function MediaLibraryManager() {
                   type="button"
                   disabled={savingMeta}
                   onClick={() => void handleSaveMeta()}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--brand-primary)] text-white font-semibold"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--brand-primary)] text-[var(--brand-contrast)] font-semibold"
                 >
                   <Save className="w-3.5 h-3.5" />
                   {savingMeta ? "Saving..." : "Save Metadata"}
