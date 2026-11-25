@@ -1,7 +1,8 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Inter, Geist, JetBrains_Mono } from "next/font/google";
-import "./globals.css";
+import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import "./globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,42 +22,27 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#F4F6F7" },
-    { media: "(prefers-color-scheme: dark)", color: "#06141B" },
-  ],
-};
-
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-  ),
   title: {
-    default: "DevCore Solutions — Building the Digital Core for a Smarter Tomorrow",
+    default: "DevCore Solutions – Software & IT Consultation",
     template: "%s | DevCore Solutions",
   },
   description:
-    "Full-stack software engineering, SaaS product development, AI automation, and enterprise web consultation studio based in Chattogram, Bangladesh.",
+    "Architecting scalable SaaS platforms, enterprise web applications, and AI-powered digital products.",
   keywords: [
     "DevCore Solutions",
-    "Software Development Company Bangladesh",
+    "SaaS Development",
+    "Enterprise Software",
+    "Cloud Infrastructure",
+    "AI Engineering",
     "Full-Stack Web Development",
-    "SaaS Engineering",
-    "Next.js Development Agency",
-    "AI Automation",
-    "Chattogram Software Firm",
-    "DineDesk",
   ],
-  authors: [{ name: "DevCore Solutions", url: "https://github.com/Pinon1345" }],
+  authors: [{ name: "DevCore Solutions" }],
   creator: "DevCore Solutions",
   openGraph: {
     type: "website",
-    locale: "en_US",
     siteName: "DevCore Solutions",
-    title: "DevCore Solutions — Building the Digital Core for a Smarter Tomorrow",
+    title: "DevCore Solutions – Software & IT Consultation",
     description:
       "Architecting scalable SaaS platforms, enterprise web applications, and AI-powered digital products.",
   },
@@ -64,7 +50,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@DevCoreSolution",
     creator: "@DevCoreSolution",
-    title: "DevCore Solutions — Software & IT Consultation",
+    title: "DevCore Solutions – Software & IT Consultation",
     description:
       "Architecting scalable SaaS platforms, enterprise web applications, and AI-powered digital products.",
   },
@@ -86,7 +72,14 @@ export default function RootLayout({
       className={`${inter.variable} ${geist.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans animate-mesh-drift">
-        <AuthProvider>{children}</AuthProvider>
+        <ThemeProvider
+          attribute={["class", "data-theme"]}
+          defaultTheme="light"
+          enableSystem={false}
+          disableTransitionOnChange={false}
+        >
+          <AuthProvider>{children}</AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
