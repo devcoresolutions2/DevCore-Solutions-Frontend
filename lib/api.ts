@@ -44,17 +44,61 @@ import {
   type BlogHeroConfig,
 } from "./mock/data";
 
-// ─── ENVELOPE TYPES ──────────────────────────────────────────────────────────
-type ApiOk<T> = { data: T; message?: string };
-type ApiError = { error: { code: string; message: string; fields?: Record<string, string> } };
-type ApiResult<T> = ApiOk<T> | ApiError | T;
+// ─── INTERNAL RAW BACKEND SHAPES ──────────────────────────────────────────────
+interface RawBackendService {
+  id?: string;
+  slug?: string;
+  title: string;
+  summary?: string;
+  description?: string;
+  deliverables?: string[];
+  features?: string[];
+  icon?: string;
+  serviceCode?: string;
+  disciplineNumber?: string;
+  category?: string;
+  slaBadge?: string;
+  techStack?: string[];
+  leadTime?: string;
+  ctaLabel?: string;
+  gridSpan?: "large" | "medium" | "small";
+}
+
+interface RawBackendContactSettings {
+  whatsappNumber?: string;
+  phone?: string;
+  publicEmail?: string;
+  email?: string;
+  businessHours?: { start?: number; end?: number };
+  timezone?: string;
+  callbackPromise?: string;
+  bookingUrl?: string;
+}
+
+interface RawBackendJob {
+  id: string;
+  slug?: string;
+  title: string;
+  department?: string;
+  location?: string;
+  type?: string;
+  workplaceType?: "Remote" | "Hybrid" | "On-site";
+  description?: string;
+  skills?: string[];
+  responsibilities?: string[];
+  requirements?: string[];
+  salary?: string;
+  status?: "OPEN" | "CLOSED";
+  createdAt?: string;
+}
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 const USE_MOCK = !BASE_URL;
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${BASE_URL}${path}`;
-  const signal = init?.signal || (AbortSignal.timeout ? AbortSignal.timeout(30000) : undefined);
+  const signal =
+    init?.signal || (AbortSignal.timeout ? AbortSignal.timeout(30000) : undefined);
   const res = await fetch(url, {
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     credentials: "include",
@@ -67,7 +111,7 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
       const p = window.location.pathname;
       if (res.status === 401 && !p.startsWith("/admin/session-expired")) {
         window.location.assign(
-          `/admin/session-expired?next=${encodeURIComponent(p + window.location.search)}`,
+          `/admin/session-expired?next=${encodeURIComponent(p + window.location.search)}`
         );
       } else if (res.status === 403 && !p.startsWith("/admin/403")) {
         window.location.assign("/admin/403");
@@ -76,7 +120,10 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 
     let errorMsg = `HTTP ${res.status}: ${res.statusText}`;
     try {
-      const errJson = await res.json();
+      const errJson = (await res.json()) as {
+        error?: { message?: string };
+        message?: string;
+      };
       if (errJson?.error?.message) errorMsg = errJson.error.message;
       else if (errJson?.message) errorMsg = errJson.message;
     } catch {
@@ -85,9 +132,9 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(errorMsg);
   }
 
-  const json: any = await res.json();
+  const json = (await res.json()) as unknown;
   if (json && typeof json === "object" && "data" in json) {
-    return json.data as T;
+    return (json as { data: T }).data;
   }
   return json as T;
 }
@@ -105,7 +152,9 @@ export type ShowcaseListResult = {
   total: number;
 };
 
-export async function getShowcaseList(params: ShowcaseListParams = {}): Promise<ShowcaseListResult> {
+export async function getShowcaseList(
+  params: ShowcaseListParams = {}
+): Promise<ShowcaseListResult> {
   if (USE_MOCK) {
     const { limit = 6, category, cursor } = params;
     let items = [...MOCK_SHOWCASE];
@@ -113,7 +162,11 @@ export async function getShowcaseList(params: ShowcaseListParams = {}): Promise<
     items.sort((a, b) => new Date(b.launchedAt).getTime() - new Date(a.launchedAt).getTime());
     const startIdx = cursor ? items.findIndex((i) => i.id === cursor) + 1 : 0;
     const page = items.slice(startIdx, startIdx + limit);
-    return { items: page, nextCursor: page.length === limit ? page[page.length - 1].id : undefined, total: items.length };
+    return {
+      items: page,
+      nextCursor: page.length === limit ? page[page.length - 1].id : undefined,
+      total: items.length,
+    };
   }
 
   try {
@@ -139,17 +192,28 @@ export async function getShowcaseBySlug(slug: string): Promise<ShowcaseItem | nu
 }
 
 // ─── PROJECTS ─────────────────────────────────────────────────────────────────
-export type ProjectListParams = { limit?: number; cursor?: string; category?: string; tech?: string };
+export type ProjectListParams = {
+  limit?: number;
+  cursor?: string;
+  category?: string;
+  tech?: string;
+};
 export type ProjectListResult = { items: ProjectItem[]; nextCursor?: string; total: number };
 
-export async function getProjectList(params: ProjectListParams = {}): Promise<ProjectListResult> {
+export async function getProjectList(
+  params: ProjectListParams = {}
+): Promise<ProjectListResult> {
   if (USE_MOCK) {
     const { limit = 6, category, cursor } = params;
     let items = [...MOCK_PROJECTS];
     if (category) items = items.filter((p) => p.category === category);
     const startIdx = cursor ? items.findIndex((i) => i.id === cursor) + 1 : 0;
     const page = items.slice(startIdx, startIdx + limit);
-    return { items: page, nextCursor: page.length === limit ? page[page.length - 1].id : undefined, total: items.length };
+    return {
+      items: page,
+      nextCursor: page.length === limit ? page[page.length - 1].id : undefined,
+      total: items.length,
+    };
   }
 
   try {
@@ -179,9 +243,8 @@ export async function getProjectBySlug(slug: string): Promise<ProjectItem | null
 export async function getServices(): Promise<ServiceItem[]> {
   if (USE_MOCK) return MOCK_SERVICES;
   try {
-    const raw = await apiFetch<any[]>("/api/public/services");
+    const raw = await apiFetch<RawBackendService[]>("/api/public/services");
     if (Array.isArray(raw) && raw.length > 0) {
-      // Map Prisma backend Service model into frontend ServiceItem
       return raw.map((item, idx) => ({
         id: item.id || String(idx + 1),
         title: item.title,
@@ -193,12 +256,12 @@ export async function getServices(): Promise<ServiceItem[]> {
           (item.serviceCode === "ENG-WEB" || item.title?.toLowerCase().includes("web")
             ? "Layers"
             : item.serviceCode === "ENG-CLD" || item.title?.toLowerCase().includes("cloud")
-            ? "Boxes"
-            : item.serviceCode === "ENG-AUT" || item.title?.toLowerCase().includes("ai")
-            ? "Bot"
-            : item.serviceCode === "ENG-DSN" || item.title?.toLowerCase().includes("design")
-            ? "Layout"
-            : "Terminal"),
+              ? "Boxes"
+              : item.serviceCode === "ENG-AUT" || item.title?.toLowerCase().includes("ai")
+                ? "Bot"
+                : item.serviceCode === "ENG-DSN" || item.title?.toLowerCase().includes("design")
+                  ? "Layout"
+                  : "Terminal"),
         serviceCode: item.serviceCode || item.slug || `ENG-0${idx + 1}`,
         disciplineNumber: item.disciplineNumber || String(idx + 1).padStart(2, "0"),
         category: item.category || "Engineering Discipline",
@@ -222,7 +285,7 @@ export async function getLifecycleStages(): Promise<LifecycleStage[]> {
     const raw = await apiFetch<LifecycleStage[]>("/api/public/lifecycle-stages");
     if (Array.isArray(raw) && raw.length > 0) return raw;
     return MOCK_LIFECYCLE_STAGES;
-  } catch (err) {
+  } catch {
     return MOCK_LIFECYCLE_STAGES;
   }
 }
@@ -233,7 +296,7 @@ export async function getEngagementTiers(): Promise<EngagementTier[]> {
     const raw = await apiFetch<EngagementTier[]>("/api/public/engagement-tiers");
     if (Array.isArray(raw) && raw.length > 0) return raw;
     return MOCK_ENGAGEMENT_TIERS;
-  } catch (err) {
+  } catch {
     return MOCK_ENGAGEMENT_TIERS;
   }
 }
@@ -253,7 +316,7 @@ export async function getTestimonials(): Promise<TestimonialItem[]> {
 export async function getContactSettings(): Promise<ContactSettings> {
   if (USE_MOCK) return MOCK_CONTACT_SETTINGS;
   try {
-    const raw = await apiFetch<any>("/api/public/contact-settings");
+    const raw = await apiFetch<RawBackendContactSettings>("/api/public/contact-settings");
     if (raw) {
       return {
         whatsappNumber: raw.whatsappNumber || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "",
@@ -283,7 +346,7 @@ export async function getBentoProof(): Promise<BentoProofItem[]> {
   if (USE_MOCK) return MOCK_BENTO_PROOF;
   try {
     return await apiFetch<BentoProofItem[]>("/api/public/bento-proof");
-  } catch (err) {
+  } catch {
     return MOCK_BENTO_PROOF;
   }
 }
@@ -314,7 +377,9 @@ export type QuickCallbackPayload = {
   source: "QUICK_CALLBACK";
 };
 
-export async function submitLead(payload: LeadPayload): Promise<{ id: string; reference?: string }> {
+export async function submitLead(
+  payload: LeadPayload
+): Promise<{ id: string; reference?: string }> {
   if (USE_MOCK) {
     await new Promise((r) => setTimeout(r, 600));
     const randomHex = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -332,7 +397,6 @@ export async function submitLead(payload: LeadPayload): Promise<{ id: string; re
     headers["Idempotency-Key"] = payload.idempotencyKey;
   }
 
-  // Mapped to match backend Prisma model Lead
   const backendBody = {
     name: payload.name,
     email: payload.email,
@@ -359,7 +423,6 @@ export function beaconContactEvent(type: string, pageUrl: string): void {
   if (typeof window === "undefined") return;
   const url = `${BASE_URL}/api/public/contact-events`;
 
-  // Map to Prisma ContactEventType enum
   const eventTypeMap: Record<string, string> = {
     whatsapp: "WHATSAPP_CLICK",
     phone: "CALL_CLICK",
@@ -380,12 +443,14 @@ export function beaconContactEvent(type: string, pageUrl: string): void {
       headers: { "Content-Type": "application/json" },
       body,
       keepalive: true,
-    }).catch(() => {});
+    }).catch(() => { });
   }
 }
 
 // ─── CAREERS & OPEN ROLES ────────────────────────────────────────────────────
-export async function getJobs(params?: { status?: "OPEN" | "CLOSED" | "ALL" }): Promise<JobItem[]> {
+export async function getJobs(params?: {
+  status?: "OPEN" | "CLOSED" | "ALL";
+}): Promise<JobItem[]> {
   const filterStatus = params?.status || "OPEN";
   if (USE_MOCK) {
     if (filterStatus === "ALL") return MOCK_JOBS;
@@ -393,9 +458,8 @@ export async function getJobs(params?: { status?: "OPEN" | "CLOSED" | "ALL" }): 
   }
 
   try {
-    const raw = await apiFetch<any[]>("/api/public/jobs");
+    const raw = await apiFetch<RawBackendJob[]>("/api/public/jobs");
     if (Array.isArray(raw) && raw.length > 0) {
-      // Map Prisma backend Job model to frontend JobItem
       const mapped: JobItem[] = raw.map((j) => ({
         id: j.id,
         slug: j.slug || j.id,
@@ -403,13 +467,13 @@ export async function getJobs(params?: { status?: "OPEN" | "CLOSED" | "ALL" }): 
         department: j.department || "Engineering",
         location: j.location || "Dhaka / Remote",
         type: j.type || "Full-time",
-        workplaceType: (j.workplaceType as "Remote" | "Hybrid" | "On-site") || "Remote",
+        workplaceType: j.workplaceType || "Remote",
         description: j.description || "",
         skills: Array.isArray(j.skills) ? j.skills : [],
         responsibilities: Array.isArray(j.responsibilities) ? j.responsibilities : [],
         requirements: Array.isArray(j.requirements) ? j.requirements : [],
         salary: j.salary,
-        status: (j.status as "OPEN" | "CLOSED") || "OPEN",
+        status: j.status || "OPEN",
         createdAt: j.createdAt,
       }));
       if (filterStatus === "ALL") return mapped;
@@ -429,7 +493,7 @@ export async function getJobById(id: string): Promise<JobItem | null> {
     return MOCK_JOBS.find((j) => j.id === id || j.slug === id) ?? null;
   }
   try {
-    const j: any = await apiFetch<any>(`/api/public/jobs/${id}`);
+    const j = await apiFetch<RawBackendJob | null>(`/api/public/jobs/${id}`);
     if (j) {
       return {
         id: j.id,
@@ -438,7 +502,7 @@ export async function getJobById(id: string): Promise<JobItem | null> {
         department: j.department || "Engineering",
         location: j.location || "Dhaka / Remote",
         type: j.type || "Full-time",
-        workplaceType: (j.workplaceType as "Remote" | "Hybrid" | "On-site") || "Remote",
+        workplaceType: j.workplaceType || "Remote",
         description: j.description || "",
         skills: Array.isArray(j.skills) ? j.skills : [],
         responsibilities: Array.isArray(j.responsibilities) ? j.responsibilities : [],
@@ -449,7 +513,7 @@ export async function getJobById(id: string): Promise<JobItem | null> {
       };
     }
     return MOCK_JOBS.find((m) => m.id === id || m.slug === id) ?? null;
-  } catch (err) {
+  } catch {
     return MOCK_JOBS.find((m) => m.id === id || m.slug === id) ?? null;
   }
 }
@@ -482,7 +546,6 @@ export async function submitJobApplication(
     };
   }
 
-  // Format payload for backend JobApplication endpoint
   const backendBody = {
     jobId: payload.jobId,
     name: payload.name,
@@ -503,8 +566,12 @@ export async function submitJobApplication(
       id: res.id,
       message: res.message || "Application received successfully.",
     };
-  } catch (err: any) {
-    throw new Error(err.message || "Could not submit candidacy. Please check details and retry.");
+  } catch (err: unknown) {
+    const msg =
+      err instanceof Error
+        ? err.message
+        : "Could not submit candidacy. Please check details and retry.";
+    throw new Error(msg);
   }
 }
 
@@ -517,7 +584,10 @@ export async function getSubmittedApplications(): Promise<SubmittedApplicationIt
   }
 }
 
-export async function updateJobStatus(jobId: string, status: "OPEN" | "CLOSED"): Promise<boolean> {
+export async function updateJobStatus(
+  jobId: string,
+  status: "OPEN" | "CLOSED"
+): Promise<boolean> {
   const target = MOCK_JOBS.find((j) => j.id === jobId);
   if (target) target.status = status;
   if (!USE_MOCK) {
@@ -628,7 +698,10 @@ export async function updateEngineeringPrinciple(
 ): Promise<EngineeringPrincipleItem> {
   const idx = IN_MEMORY_ENGINEERING_PRINCIPLES.findIndex((p) => p.id === id);
   if (idx !== -1) {
-    IN_MEMORY_ENGINEERING_PRINCIPLES[idx] = { ...IN_MEMORY_ENGINEERING_PRINCIPLES[idx], ...payload };
+    IN_MEMORY_ENGINEERING_PRINCIPLES[idx] = {
+      ...IN_MEMORY_ENGINEERING_PRINCIPLES[idx],
+      ...payload,
+    };
   }
   if (!USE_MOCK) {
     try {
@@ -640,7 +713,9 @@ export async function updateEngineeringPrinciple(
       // ignore
     }
   }
-  return idx !== -1 ? IN_MEMORY_ENGINEERING_PRINCIPLES[idx] : (payload as EngineeringPrincipleItem);
+  return idx !== -1
+    ? IN_MEMORY_ENGINEERING_PRINCIPLES[idx]
+    : (payload as EngineeringPrincipleItem);
 }
 
 export async function deleteEngineeringPrinciple(id: string): Promise<boolean> {
@@ -776,7 +851,7 @@ export async function reorderTeamMembers(ids: string[]): Promise<boolean> {
 export async function uploadAvatar(file: File): Promise<string> {
   if (!USE_MOCK) {
     try {
-      const resourceType: "image" = "image";
+      const resourceType = "image" as const;
       const sig = await apiSignSocialMediaUpload(resourceType);
       const form = new FormData();
       form.append("file", file);
@@ -791,7 +866,7 @@ export async function uploadAvatar(file: File): Promise<string> {
         { method: "POST", body: form }
       );
       if (uploadRes.ok) {
-        const data = await uploadRes.json();
+        const data = (await uploadRes.json()) as { secure_url?: string };
         if (data?.secure_url) return data.secure_url;
       }
     } catch {
@@ -810,10 +885,8 @@ export async function uploadAvatar(file: File): Promise<string> {
 
 // ─── BLOG & TECHNICAL CMS ──────────────────────────────────────────────────
 
-const IS_SERVER = !USE_MOCK;
-
 export async function getBlogHeroConfig(): Promise<BlogHeroConfig> {
-  if (IS_SERVER) {
+  if (!USE_MOCK) {
     try {
       const res = await apiFetch<BlogHeroConfig>("/api/public/blog/hero");
       if (res) return res;
@@ -824,9 +897,11 @@ export async function getBlogHeroConfig(): Promise<BlogHeroConfig> {
   return { ...IN_MEMORY_BLOG_HERO_CONFIG };
 }
 
-export async function updateBlogHeroConfig(config: Partial<BlogHeroConfig>): Promise<BlogHeroConfig> {
+export async function updateBlogHeroConfig(
+  config: Partial<BlogHeroConfig>
+): Promise<BlogHeroConfig> {
   Object.assign(IN_MEMORY_BLOG_HERO_CONFIG, config);
-  if (!IS_SERVER) {
+  if (!USE_MOCK) {
     try {
       const res = await apiFetch<BlogHeroConfig>("/api/admin/blog/hero", {
         method: "PUT",
@@ -841,7 +916,7 @@ export async function updateBlogHeroConfig(config: Partial<BlogHeroConfig>): Pro
 }
 
 export async function getBlogCategories(): Promise<BlogCategoryItem[]> {
-  if (IS_SERVER) {
+  if (!USE_MOCK) {
     try {
       const res = await apiFetch<BlogCategoryItem[]>("/api/public/blog/categories");
       if (res) return res;
@@ -849,7 +924,6 @@ export async function getBlogCategories(): Promise<BlogCategoryItem[]> {
       // fallback
     }
   }
-  // Calculate counts dynamically from articles
   return IN_MEMORY_BLOG_CATEGORIES.map((cat) => ({
     ...cat,
     count: IN_MEMORY_BLOG_ARTICLES.filter(
@@ -870,7 +944,7 @@ export async function createBlogCategory(
     isActive: data.isActive !== undefined ? data.isActive : true,
   };
   IN_MEMORY_BLOG_CATEGORIES.push(newCat);
-  if (!IS_SERVER) {
+  if (!USE_MOCK) {
     try {
       const res = await apiFetch<BlogCategoryItem>("/api/admin/blog/categories", {
         method: "POST",
@@ -892,7 +966,7 @@ export async function updateBlogCategory(
   if (idx !== -1) {
     IN_MEMORY_BLOG_CATEGORIES[idx] = { ...IN_MEMORY_BLOG_CATEGORIES[idx], ...data };
   }
-  if (!IS_SERVER) {
+  if (!USE_MOCK) {
     try {
       const res = await apiFetch<BlogCategoryItem>(`/api/admin/blog/categories/${id}`, {
         method: "PUT",
@@ -909,7 +983,7 @@ export async function updateBlogCategory(
 export async function deleteBlogCategory(id: string): Promise<boolean> {
   const idx = IN_MEMORY_BLOG_CATEGORIES.findIndex((c) => c.id === id);
   if (idx !== -1) IN_MEMORY_BLOG_CATEGORIES.splice(idx, 1);
-  if (!IS_SERVER) {
+  if (!USE_MOCK) {
     try {
       await apiFetch(`/api/admin/blog/categories/${id}`, { method: "DELETE" });
     } catch {
@@ -920,7 +994,7 @@ export async function deleteBlogCategory(id: string): Promise<boolean> {
 }
 
 export async function getBlogAuthors(): Promise<BlogAuthorItem[]> {
-  if (IS_SERVER) {
+  if (!USE_MOCK) {
     try {
       const res = await apiFetch<BlogAuthorItem[]>("/api/public/blog/authors");
       if (res) return res;
@@ -939,7 +1013,7 @@ export async function createBlogAuthor(
     id: `auth-${Date.now()}`,
   };
   IN_MEMORY_BLOG_AUTHORS.push(newAuthor);
-  if (!IS_SERVER) {
+  if (!USE_MOCK) {
     try {
       const res = await apiFetch<BlogAuthorItem>("/api/admin/blog/authors", {
         method: "POST",
@@ -961,7 +1035,7 @@ export async function updateBlogAuthor(
   if (idx !== -1) {
     IN_MEMORY_BLOG_AUTHORS[idx] = { ...IN_MEMORY_BLOG_AUTHORS[idx], ...data };
   }
-  if (!IS_SERVER) {
+  if (!USE_MOCK) {
     try {
       const res = await apiFetch<BlogAuthorItem>(`/api/admin/blog/authors/${id}`, {
         method: "PUT",
@@ -978,7 +1052,7 @@ export async function updateBlogAuthor(
 export async function deleteBlogAuthor(id: string): Promise<boolean> {
   const idx = IN_MEMORY_BLOG_AUTHORS.findIndex((a) => a.id === id);
   if (idx !== -1) IN_MEMORY_BLOG_AUTHORS.splice(idx, 1);
-  if (!IS_SERVER) {
+  if (!USE_MOCK) {
     try {
       await apiFetch(`/api/admin/blog/authors/${id}`, { method: "DELETE" });
     } catch {
@@ -995,7 +1069,7 @@ export async function getBlogArticles(params?: {
   sort?: "newest" | "oldest" | "readingTime";
   status?: "PUBLISHED" | "DRAFT" | "ALL";
 }): Promise<BlogArticleItem[]> {
-  if (IS_SERVER) {
+  if (!USE_MOCK) {
     try {
       const query = new URLSearchParams();
       if (params?.category) query.set("category", params.category);
@@ -1012,14 +1086,12 @@ export async function getBlogArticles(params?: {
 
   let list = [...IN_MEMORY_BLOG_ARTICLES];
 
-  // Status filter (defaults to PUBLISHED for public view unless ALL is requested)
   if (params?.status === "DRAFT") {
     list = list.filter((a) => a.status === "DRAFT");
   } else if (params?.status !== "ALL") {
     list = list.filter((a) => a.status === "PUBLISHED");
   }
 
-  // Category filter
   if (params?.category && params.category !== "all") {
     const cat = params.category.toLowerCase();
     list = list.filter(
@@ -1027,13 +1099,11 @@ export async function getBlogArticles(params?: {
     );
   }
 
-  // Tag filter
   if (params?.tag) {
     const t = params.tag.toLowerCase();
     list = list.filter((a) => a.tags.some((tag) => tag.toLowerCase() === t));
   }
 
-  // Search filter
   if (params?.search?.trim()) {
     const q = params.search.toLowerCase().trim();
     list = list.filter(
@@ -1046,13 +1116,11 @@ export async function getBlogArticles(params?: {
     );
   }
 
-  // Sorting
   if (params?.sort === "oldest") {
     list.sort((a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime());
   } else if (params?.sort === "readingTime") {
     list.sort((a, b) => a.readingMinutes - b.readingMinutes);
   } else {
-    // Newest first
     list.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
   }
 
@@ -1066,7 +1134,7 @@ export async function getFeaturedArticle(): Promise<BlogArticleItem | null> {
 }
 
 export async function getArticleBySlug(slug: string): Promise<BlogArticleItem | null> {
-  if (IS_SERVER) {
+  if (!USE_MOCK) {
     try {
       const res = await apiFetch<BlogArticleItem>(`/api/public/blog/${slug}`);
       if (res) return res;
@@ -1094,7 +1162,7 @@ export async function createBlogArticle(
   };
   IN_MEMORY_BLOG_ARTICLES.unshift(newArticle);
 
-  if (!IS_SERVER) {
+  if (!USE_MOCK) {
     try {
       const res = await apiFetch<BlogArticleItem>("/api/admin/blog/articles", {
         method: "POST",
@@ -1123,7 +1191,7 @@ export async function updateBlogArticle(
     };
     IN_MEMORY_BLOG_ARTICLES[idx] = updated;
   }
-  if (!IS_SERVER) {
+  if (!USE_MOCK) {
     try {
       const res = await apiFetch<BlogArticleItem>(`/api/admin/blog/articles/${id}`, {
         method: "PUT",
@@ -1140,7 +1208,7 @@ export async function updateBlogArticle(
 export async function deleteBlogArticle(id: string): Promise<boolean> {
   const idx = IN_MEMORY_BLOG_ARTICLES.findIndex((a) => a.id === id);
   if (idx !== -1) IN_MEMORY_BLOG_ARTICLES.splice(idx, 1);
-  if (!IS_SERVER) {
+  if (!USE_MOCK) {
     try {
       await apiFetch(`/api/admin/blog/articles/${id}`, { method: "DELETE" });
     } catch {
@@ -1184,15 +1252,16 @@ export async function subscribeNewsletter(
   };
   IN_MEMORY_SUBSCRIBERS.unshift(newSub);
 
-  if (!IS_SERVER) {
+  if (!USE_MOCK) {
     try {
-      const res = await apiFetch<{ success: boolean; message: string; subscriber?: NewsletterSubscriberItem }>(
-        "/api/public/newsletter/subscribe",
-        {
-          method: "POST",
-          body: JSON.stringify({ email: normalized, source }),
-        }
-      );
+      const res = await apiFetch<{
+        success: boolean;
+        message: string;
+        subscriber?: NewsletterSubscriberItem;
+      }>("/api/public/newsletter/subscribe", {
+        method: "POST",
+        body: JSON.stringify({ email: normalized, source }),
+      });
       if (res) return res;
     } catch {
       // ignore
@@ -1215,7 +1284,7 @@ export async function unsubscribeNewsletter(
     sub.status = "UNSUBSCRIBED";
   }
 
-  if (!IS_SERVER) {
+  if (!USE_MOCK) {
     try {
       await apiFetch("/api/public/newsletter/unsubscribe", {
         method: "POST",
@@ -1230,9 +1299,11 @@ export async function unsubscribeNewsletter(
 }
 
 export async function getNewsletterSubscribers(): Promise<NewsletterSubscriberItem[]> {
-  if (IS_SERVER) {
+  if (!USE_MOCK) {
     try {
-      const res = await apiFetch<NewsletterSubscriberItem[]>("/api/admin/newsletter/subscribers");
+      const res = await apiFetch<NewsletterSubscriberItem[]>(
+        "/api/admin/newsletter/subscribers"
+      );
       if (res) return res;
     } catch {
       // fallback
@@ -1244,7 +1315,7 @@ export async function getNewsletterSubscribers(): Promise<NewsletterSubscriberIt
 export async function deleteNewsletterSubscriber(id: string): Promise<boolean> {
   const idx = IN_MEMORY_SUBSCRIBERS.findIndex((s) => s.id === id);
   if (idx !== -1) IN_MEMORY_SUBSCRIBERS.splice(idx, 1);
-  if (!IS_SERVER) {
+  if (!USE_MOCK) {
     try {
       await apiFetch(`/api/admin/newsletter/subscribers/${id}`, { method: "DELETE" });
     } catch {
@@ -1260,12 +1331,15 @@ export async function updateNewsletterSubscriberStatus(
 ): Promise<NewsletterSubscriberItem> {
   const sub = IN_MEMORY_SUBSCRIBERS.find((s) => s.id === id);
   if (sub) sub.status = status;
-  if (!IS_SERVER) {
+  if (!USE_MOCK) {
     try {
-      const res = await apiFetch<NewsletterSubscriberItem>(`/api/admin/newsletter/subscribers/${id}`, {
-        method: "PUT",
-        body: JSON.stringify({ status }),
-      });
+      const res = await apiFetch<NewsletterSubscriberItem>(
+        `/api/admin/newsletter/subscribers/${id}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({ status }),
+        }
+      );
       if (res) return res;
     } catch {
       // ignore
@@ -1306,7 +1380,6 @@ export type AuthUser = {
   hasPassword?: boolean;
 };
 
-// Mock in-memory session for offline preview / fallback
 let IN_MEMORY_CURRENT_USER: AuthUser | null = null;
 
 export async function apiSignUp(payload: {
@@ -1317,13 +1390,17 @@ export async function apiSignUp(payload: {
   inviteToken?: string;
 }): Promise<{ success: boolean; message: string; email: string; inviteAccepted?: boolean }> {
   if (!USE_MOCK) {
-    return await apiFetch<{ success: boolean; message: string; email: string; inviteAccepted?: boolean }>("/api/auth/signup", {
+    return await apiFetch<{
+      success: boolean;
+      message: string;
+      email: string;
+      inviteAccepted?: boolean;
+    }>("/api/auth/signup", {
       method: "POST",
       body: JSON.stringify(payload),
     });
   }
 
-  // Fallback in-memory
   const normalized = payload.email.trim().toLowerCase();
   IN_MEMORY_CURRENT_USER = {
     id: `user-${Date.now()}`,
@@ -1346,13 +1423,15 @@ export async function apiSignIn(payload: {
   rememberMe?: boolean;
 }): Promise<{ success: boolean; user: AuthUser; redirectUrl: string }> {
   if (!USE_MOCK) {
-    return await apiFetch<{ success: boolean; user: AuthUser; redirectUrl: string }>("/api/auth/signin", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
+    return await apiFetch<{ success: boolean; user: AuthUser; redirectUrl: string }>(
+      "/api/auth/signin",
+      {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }
+    );
   }
 
-  // Fallback in-memory
   const normalized = payload.email.trim().toLowerCase();
   const isAdmin =
     normalized.includes("admin") ||
@@ -1409,7 +1488,9 @@ export interface VerificationStatusResponse {
   emailVerified: boolean;
 }
 
-export async function apiGetVerificationStatus(email: string): Promise<VerificationStatusResponse> {
+export async function apiGetVerificationStatus(
+  email: string
+): Promise<VerificationStatusResponse> {
   if (!USE_MOCK) {
     return await apiFetch<VerificationStatusResponse>(
       `/api/auth/verification-status?email=${encodeURIComponent(email)}`,
@@ -1453,10 +1534,13 @@ export async function apiVerifyEmail(payload: {
   email?: string;
 }): Promise<{ success: boolean; message: string; attemptsLeft?: number }> {
   if (!USE_MOCK) {
-    return await apiFetch<{ success: boolean; message: string; attemptsLeft?: number }>("/api/auth/verify-email", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
+    return await apiFetch<{ success: boolean; message: string; attemptsLeft?: number }>(
+      "/api/auth/verify-email",
+      {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }
+    );
   }
   if (IN_MEMORY_CURRENT_USER) {
     IN_MEMORY_CURRENT_USER.emailVerified = true;
@@ -1468,15 +1552,20 @@ export async function apiResendVerification(
   email: string
 ): Promise<{ success: boolean; message: string; cooldownSeconds?: number; resendsLeft?: number }> {
   if (!USE_MOCK) {
-    return await apiFetch<{ success: boolean; message: string; cooldownSeconds?: number; resendsLeft?: number }>(
-      "/api/auth/resend-verification",
-      {
-        method: "POST",
-        body: JSON.stringify({ email }),
-      }
-    );
+    return await apiFetch<{
+      success: boolean;
+      message: string;
+      cooldownSeconds?: number;
+      resendsLeft?: number;
+    }>("/api/auth/resend-verification", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
   }
-  return { success: true, message: "A fresh verification link and security code have been sent." };
+  return {
+    success: true,
+    message: "A fresh verification link and security code have been sent.",
+  };
 }
 
 export interface ForgotPasswordResponse {
@@ -1519,7 +1608,10 @@ export async function apiForgotPassword(email: string): Promise<ForgotPasswordRe
   };
 }
 
-export async function apiVerifyResetOtp(email: string, otp: string): Promise<VerifyResetOtpResponse> {
+export async function apiVerifyResetOtp(
+  email: string,
+  otp: string
+): Promise<VerifyResetOtpResponse> {
   if (!USE_MOCK) {
     return await apiFetch<VerifyResetOtpResponse>("/api/auth/verify-reset-otp", {
       method: "POST",
@@ -1648,7 +1740,7 @@ export interface AccountAuditEventItem {
   status: string;
   ip: string | null;
   client: { browser: string; os: string; deviceType: string };
-  metadata?: Record<string, any> | null;
+  metadata?: Record<string, unknown> | null;
   createdAt: string;
 }
 
@@ -1803,7 +1895,7 @@ export interface LeadRecord {
   brief: string | null;
   pageUrl: string | null;
   referrer: string | null;
-  utm: Record<string, any> | null;
+  utm: Record<string, unknown> | null;
   status: LeadStatus;
   priority: LeadPriority;
   assignedToId: string | null;
@@ -1849,7 +1941,9 @@ export async function apiGetAdminLeadStats(params?: {
   if (params?.endDate) sp.set("endDate", params.endDate);
   if (params?.slaHours) sp.set("slaHours", String(params.slaHours));
   const qs = sp.toString();
-  return await apiFetch<AdminLeadsStatsResponse>(`/api/admin/leads/stats${qs ? `?${qs}` : ""}`);
+  return await apiFetch<AdminLeadsStatsResponse>(
+    `/api/admin/leads/stats${qs ? `?${qs}` : ""}`
+  );
 }
 
 export async function apiGetAdminLeads(params?: {
@@ -1877,7 +1971,8 @@ export async function apiGetAdminLeads(params?: {
   if (params?.source && params.source !== "ALL") sp.set("source", params.source);
   if (params?.status && params.status !== "ALL") sp.set("status", params.status);
   if (params?.priority && params.priority !== "ALL") sp.set("priority", params.priority);
-  if (params?.assignedToId && params.assignedToId !== "ALL") sp.set("assignedToId", params.assignedToId);
+  if (params?.assignedToId && params.assignedToId !== "ALL")
+    sp.set("assignedToId", params.assignedToId);
   if (params?.dateRange) sp.set("dateRange", params.dateRange);
   if (params?.startDate) sp.set("startDate", params.startDate);
   if (params?.endDate) sp.set("endDate", params.endDate);
@@ -2065,19 +2160,25 @@ export async function apiStartSocialOAuth(key: string): Promise<{ authorizeUrl: 
   });
 }
 
-export async function apiSyncSocialProvider(key: string): Promise<{ channel: SocialChannelItem }> {
+export async function apiSyncSocialProvider(
+  key: string
+): Promise<{ channel: SocialChannelItem }> {
   return await apiFetch(`/api/admin/social/providers/${encodeURIComponent(key)}/sync`, {
     method: "POST",
   });
 }
 
-export async function apiToggleSocialProvider(key: string): Promise<{ channel: SocialChannelItem }> {
+export async function apiToggleSocialProvider(
+  key: string
+): Promise<{ channel: SocialChannelItem }> {
   return await apiFetch(`/api/admin/social/providers/${encodeURIComponent(key)}/toggle`, {
     method: "POST",
   });
 }
 
-export async function apiDisconnectSocialProvider(key: string): Promise<{ channel: SocialChannelItem }> {
+export async function apiDisconnectSocialProvider(
+  key: string
+): Promise<{ channel: SocialChannelItem }> {
   return await apiFetch(`/api/admin/social/providers/${encodeURIComponent(key)}/disconnect`, {
     method: "POST",
   });
@@ -2107,7 +2208,7 @@ export async function apiCreateWebhook(payload: {
 
 export async function apiUpdateWebhook(
   id: string,
-  payload: { name?: string; url?: string; events?: string[]; isActive?: boolean },
+  payload: { name?: string; url?: string; events?: string[]; isActive?: boolean }
 ): Promise<{ webhook: WebhookEndpointItem }> {
   return await apiFetch(`/api/admin/social/webhooks/${encodeURIComponent(id)}`, {
     method: "PATCH",
@@ -2116,11 +2217,14 @@ export async function apiUpdateWebhook(
 }
 
 export async function apiRotateWebhookSecret(
-  id: string,
+  id: string
 ): Promise<{ webhook: WebhookEndpointItem; plaintextSecret: string }> {
-  return await apiFetch(`/api/admin/social/webhooks/${encodeURIComponent(id)}/rotate-secret`, {
-    method: "POST",
-  });
+  return await apiFetch(
+    `/api/admin/social/webhooks/${encodeURIComponent(id)}/rotate-secret`,
+    {
+      method: "POST",
+    }
+  );
 }
 
 export async function apiTestWebhook(id: string): Promise<{ delivery: WebhookDeliveryItem }> {
@@ -2136,11 +2240,14 @@ export async function apiDeleteWebhook(id: string): Promise<{ deleted: boolean; 
 }
 
 export async function apiRetryWebhookDelivery(
-  deliveryId: string,
+  deliveryId: string
 ): Promise<{ delivery: WebhookDeliveryItem }> {
-  return await apiFetch(`/api/admin/social/deliveries/${encodeURIComponent(deliveryId)}/retry`, {
-    method: "POST",
-  });
+  return await apiFetch(
+    `/api/admin/social/deliveries/${encodeURIComponent(deliveryId)}/retry`,
+    {
+      method: "POST",
+    }
+  );
 }
 
 // ─── ADMIN SOCIAL BROADCAST COMPOSER & PUBLISHING ─────────────────────────────
@@ -2224,7 +2331,14 @@ export interface SocialBroadcastPostItem {
   mediaUrls: string[];
   mediaAssets: SocialMediaAssetItem[];
   targetPlatforms: BroadcastPlatformKey[];
-  status: "DRAFT" | "SCHEDULED" | "PROCESSING" | "PUBLISHED" | "PARTIAL_FAILED" | "FAILED" | "CANCELLED";
+  status:
+  | "DRAFT"
+  | "SCHEDULED"
+  | "PROCESSING"
+  | "PUBLISHED"
+  | "PARTIAL_FAILED"
+  | "FAILED"
+  | "CANCELLED";
   scheduledFor: string | null;
   timezone: string | null;
   publishedAt: string | null;
@@ -2247,7 +2361,7 @@ export async function apiGetBroadcastContext(): Promise<BroadcastContextResponse
 }
 
 export async function apiSignSocialMediaUpload(
-  resourceType: "image" | "video" = "image",
+  resourceType: "image" | "video" = "image"
 ): Promise<{
   signature: string;
   timestamp: number;
@@ -2279,29 +2393,37 @@ export async function apiVerifySocialMediaAsset(payload: {
 
 export async function apiUpdateSocialMediaAsset(
   assetId: string,
-  payload: { altText?: string; sortOrder?: number },
+  payload: { altText?: string; sortOrder?: number }
 ): Promise<{ asset: SocialMediaAssetItem }> {
-  return await apiFetch(`/api/admin/social/broadcasts/media/${encodeURIComponent(assetId)}`, {
-    method: "PATCH",
-    body: JSON.stringify(payload),
-  });
+  return await apiFetch(
+    `/api/admin/social/broadcasts/media/${encodeURIComponent(assetId)}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }
+  );
 }
 
-export async function apiDeleteSocialMediaAsset(assetId: string): Promise<{ deleted: boolean }> {
-  return await apiFetch(`/api/admin/social/broadcasts/media/${encodeURIComponent(assetId)}`, {
-    method: "DELETE",
-  });
+export async function apiDeleteSocialMediaAsset(
+  assetId: string
+): Promise<{ deleted: boolean }> {
+  return await apiFetch(
+    `/api/admin/social/broadcasts/media/${encodeURIComponent(assetId)}`,
+    {
+      method: "DELETE",
+    }
+  );
 }
 
 export async function apiAdaptSocialCopyWithAi(payload: {
   content: string;
   action:
-    | "shorten_x"
-    | "technical_linkedin"
-    | "format_reddit"
-    | "generate_hashtags"
-    | "improve_clarity"
-    | "rewrite_platform";
+  | "shorten_x"
+  | "technical_linkedin"
+  | "format_reddit"
+  | "generate_hashtags"
+  | "improve_clarity"
+  | "rewrite_platform";
   targetPlatform: BroadcastPlatformKey;
 }): Promise<{
   suggestion: string;
@@ -2333,19 +2455,25 @@ export async function apiCreateBroadcast(payload: {
 }
 
 export async function apiCancelScheduledBroadcast(
-  id: string,
+  id: string
 ): Promise<{ broadcast: SocialBroadcastPostItem }> {
-  return await apiFetch(`/api/admin/social/broadcasts/${encodeURIComponent(id)}/cancel`, {
-    method: "POST",
-  });
+  return await apiFetch(
+    `/api/admin/social/broadcasts/${encodeURIComponent(id)}/cancel`,
+    {
+      method: "POST",
+    }
+  );
 }
 
 export async function apiRetryBroadcast(
-  id: string,
+  id: string
 ): Promise<{ broadcast: SocialBroadcastPostItem }> {
-  return await apiFetch(`/api/admin/social/broadcasts/${encodeURIComponent(id)}/retry`, {
-    method: "POST",
-  });
+  return await apiFetch(
+    `/api/admin/social/broadcasts/${encodeURIComponent(id)}/retry`,
+    {
+      method: "POST",
+    }
+  );
 }
 
 // ─── ADMIN SOCIAL MANAGEMENT ──────────────────────────────────────────────────
@@ -2391,8 +2519,12 @@ export interface SocialManageAnalyticsResponse {
   };
 }
 
-export async function apiGetSocialManageAnalytics(dateRange = "30d"): Promise<SocialManageAnalyticsResponse> {
-  return await apiFetch(`/api/admin/social/manage/analytics?dateRange=${encodeURIComponent(dateRange)}`);
+export async function apiGetSocialManageAnalytics(
+  dateRange = "30d"
+): Promise<SocialManageAnalyticsResponse> {
+  return await apiFetch(
+    `/api/admin/social/manage/analytics?dateRange=${encodeURIComponent(dateRange)}`
+  );
 }
 
 export async function apiListManagedBroadcasts(params: {
@@ -2417,9 +2549,12 @@ export async function apiListManagedBroadcasts(params: {
 }
 
 export async function apiDeleteManagedBroadcast(id: string): Promise<{ deleted: boolean }> {
-  return await apiFetch(`/api/admin/social/manage/broadcasts/${encodeURIComponent(id)}`, {
-    method: "DELETE",
-  });
+  return await apiFetch(
+    `/api/admin/social/manage/broadcasts/${encodeURIComponent(id)}`,
+    {
+      method: "DELETE",
+    }
+  );
 }
 
 export async function apiRetryAllFailedBroadcasts(): Promise<{ retriedCount: number }> {
@@ -2484,10 +2619,29 @@ export async function apiListAdminUsers(params: {
 
 export async function apiGetAdminUserDetail(id: string): Promise<{
   user: AdminUserRecord & {
-    sessions: Array<{ id: string; ip: string | null; userAgent: string | null; expiresAt: string; createdAt: string }>;
-    authEvents: Array<{ id: string; type: string; status: string; ip: string | null; createdAt: string }>;
+    sessions: Array<{
+      id: string;
+      ip: string | null;
+      userAgent: string | null;
+      expiresAt: string;
+      createdAt: string;
+    }>;
+    authEvents: Array<{
+      id: string;
+      type: string;
+      status: string;
+      ip: string | null;
+      createdAt: string;
+    }>;
   };
-  auditLogs: Array<{ id: string; action: string; entity: string; entityId: string; meta: any; createdAt: string }>;
+  auditLogs: Array<{
+    id: string;
+    action: string;
+    entity: string;
+    entityId: string;
+    meta: Record<string, unknown> | null;
+    createdAt: string;
+  }>;
 }> {
   return await apiFetch(`/api/admin/users/${encodeURIComponent(id)}`);
 }
@@ -2497,14 +2651,17 @@ export async function apiInviteAdminUser(payload: {
   email: string;
   role: string;
   message?: string;
-}): Promise<{ invitation: any; emailDelivered: boolean }> {
+}): Promise<{ invitation: Record<string, unknown>; emailDelivered: boolean }> {
   return await apiFetch("/api/admin/users/invite", {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
-export async function apiChangeUserRole(id: string, role: string): Promise<{ user: any }> {
+export async function apiChangeUserRole(
+  id: string,
+  role: string
+): Promise<{ user: AdminUserRecord }> {
   return await apiFetch(`/api/admin/users/${encodeURIComponent(id)}/role`, {
     method: "PATCH",
     body: JSON.stringify({ role }),
@@ -2514,8 +2671,8 @@ export async function apiChangeUserRole(id: string, role: string): Promise<{ use
 export async function apiToggleUserActive(
   id: string,
   isActive: boolean,
-  reason?: string,
-): Promise<{ user: any }> {
+  reason?: string
+): Promise<{ user: AdminUserRecord }> {
   return await apiFetch(`/api/admin/users/${encodeURIComponent(id)}/status`, {
     method: "POST",
     body: JSON.stringify({ isActive, reason }),
@@ -2547,7 +2704,7 @@ export interface AuditLogRecord {
   action: string;
   entity: string;
   entityId: string;
-  meta: Record<string, any> | null;
+  meta: Record<string, unknown> | null;
   ip: string | null;
   createdAt: string;
 }
@@ -2603,11 +2760,15 @@ export function getAdminAuditExportUrl(): string {
 
 // ─── ADMIN SETTINGS ───────────────────────────────────────────────────────────
 
-export async function apiGetAdminSettings(): Promise<{ settings: any }> {
+export async function apiGetAdminSettings(): Promise<{
+  settings: Record<string, unknown>;
+}> {
   return await apiFetch("/api/admin/settings");
 }
 
-export async function apiUpdateAdminSettings(payload: Record<string, any>): Promise<{ settings: any }> {
+export async function apiUpdateAdminSettings(
+  payload: Record<string, unknown>
+): Promise<{ settings: Record<string, unknown> }> {
   return await apiFetch("/api/admin/settings", {
     method: "PUT",
     body: JSON.stringify(payload),
@@ -2630,6 +2791,11 @@ export async function apiRunSettingsHealthCheck(): Promise<{
 
 // ─── ADMIN MEDIA LIBRARY ──────────────────────────────────────────────────────
 
+export type MediaLibraryItem = SocialMediaAssetItem & {
+  tags: string[];
+  post?: { id: string; title: string | null; status: string } | null;
+};
+
 export async function apiListMediaLibrary(params: {
   page?: number;
   limit?: number;
@@ -2638,7 +2804,7 @@ export async function apiListMediaLibrary(params: {
   usage?: string;
   sort?: string;
 }): Promise<{
-  items: Array<SocialMediaAssetItem & { tags: string[]; post?: { id: string; title: string | null; status: string } | null }>;
+  items: MediaLibraryItem[];
   stats: { totalAssets: number; totalBytes: number; usedAssets: number; unusedAssets: number };
   pagination: { page: number; limit: number; total: number; totalPages: number };
 }> {
@@ -2654,8 +2820,8 @@ export async function apiListMediaLibrary(params: {
 
 export async function apiUpdateMediaLibraryAsset(
   id: string,
-  payload: { altText?: string; tags?: string[] },
-): Promise<{ asset: any }> {
+  payload: { altText?: string; tags?: string[] }
+): Promise<{ asset: MediaLibraryItem }> {
   return await apiFetch(`/api/admin/media/${encodeURIComponent(id)}`, {
     method: "PATCH",
     body: JSON.stringify(payload),
@@ -2694,13 +2860,29 @@ export async function apiGetContentOverview(): Promise<{
     pendingApplications: number;
   };
   recentTestimonials: AdminTestimonialItem[];
-  recentJobs: Array<{ id: string; title: string; department: string; location: string; status: string; _count: { applications: number } }>;
-  recentApplications: Array<{ id: string; name: string; email: string; status: string; createdAt: string; job: { id: string; title: string } }>;
+  recentJobs: Array<{
+    id: string;
+    title: string;
+    department: string;
+    location: string;
+    status: string;
+    _count: { applications: number };
+  }>;
+  recentApplications: Array<{
+    id: string;
+    name: string;
+    email: string;
+    status: string;
+    createdAt: string;
+    job: { id: string; title: string };
+  }>;
 }> {
   return await apiFetch("/api/admin/content/overview");
 }
 
-export async function apiListAdminTestimonials(): Promise<{ items: AdminTestimonialItem[] }> {
+export async function apiListAdminTestimonials(): Promise<{
+  items: AdminTestimonialItem[];
+}> {
   return await apiFetch("/api/admin/content/testimonials");
 }
 
@@ -2720,7 +2902,7 @@ export async function apiCreateAdminTestimonial(payload: {
 
 export async function apiUpdateAdminTestimonial(
   id: string,
-  payload: Partial<{ status: "PENDING" | "APPROVED" | "REJECTED"; featured: boolean; quote: string }>,
+  payload: Partial<{ status: "PENDING" | "APPROVED" | "REJECTED"; featured: boolean; quote: string }>
 ): Promise<{ testimonial: AdminTestimonialItem }> {
   return await apiFetch(`/api/admin/content/testimonials/${encodeURIComponent(id)}`, {
     method: "PATCH",
@@ -2740,19 +2922,28 @@ export function getContentCatalogExportUrl(): string {
 
 export async function apiGetManagedBroadcastDetail(id: string): Promise<{
   broadcast: SocialBroadcastPostItem;
-  auditLogs: Array<{ id: string; action: string; actorId: string; meta: any; createdAt: string }>;
+  auditLogs: Array<{
+    id: string;
+    action: string;
+    actorId: string;
+    meta: Record<string, unknown> | null;
+    createdAt: string;
+  }>;
 }> {
   return await apiFetch(`/api/admin/social/manage/broadcasts/${encodeURIComponent(id)}`);
 }
 
 export async function apiUpdateManagedBroadcast(
   id: string,
-  payload: { scheduledFor?: string; timezone?: string; baseContent?: string },
+  payload: { scheduledFor?: string; timezone?: string; baseContent?: string }
 ): Promise<{ broadcast: SocialBroadcastPostItem }> {
-  return await apiFetch(`/api/admin/social/manage/broadcasts/${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    body: JSON.stringify(payload),
-  });
+  return await apiFetch(
+    `/api/admin/social/manage/broadcasts/${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }
+  );
 }
 
 export async function apiBulkAdminUsers(payload: {
@@ -2768,8 +2959,8 @@ export async function apiBulkAdminUsers(payload: {
 
 export async function apiReplaceMediaLibraryAsset(
   id: string,
-  payload: { publicId: string; resourceType: "image" | "video"; fileName?: string },
-): Promise<{ asset: any }> {
+  payload: { publicId: string; resourceType: "image" | "video"; fileName?: string }
+): Promise<{ asset: MediaLibraryItem }> {
   return await apiFetch(`/api/admin/media/${encodeURIComponent(id)}/replace`, {
     method: "POST",
     body: JSON.stringify(payload),
@@ -2782,14 +2973,16 @@ export async function apiCreateAdminService(payload: {
   deliverables: string[];
   icon?: string;
   displayOrder?: number;
-}): Promise<{ service: any }> {
+}): Promise<{ service: RawBackendService }> {
   return await apiFetch("/api/admin/content/services", {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
-export async function apiDeleteAdminService(id: string): Promise<{ deleted: boolean; id: string }> {
+export async function apiDeleteAdminService(
+  id: string
+): Promise<{ deleted: boolean; id: string }> {
   return await apiFetch(`/api/admin/content/services/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
