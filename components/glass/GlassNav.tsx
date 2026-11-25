@@ -191,9 +191,9 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         className={cn(
-          "fixed inset-x-0 z-50 mx-auto transition-all duration-300",
+          "fixed inset-x-0 z-50 mx-auto transition-all duration-300 ease-in-out",
           scrolled
-            ? "top-2.5 px-3 sm:px-5 max-w-[1240px]"
+            ? "top-2.5 px-2.5 sm:px-4 max-w-[1440px]"
             : "top-4 px-4 sm:px-6 max-w-7xl"
         )}
         role="banner"
@@ -201,9 +201,9 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
         <nav
           className={cn(
             "relative overflow-visible devcore-glass-nav rounded-2xl flex items-center justify-between gap-2",
-            "transition-all duration-300",
+            "transition-all duration-300 ease-in-out",
             scrolled
-              ? "h-14 px-3.5 sm:px-5 shadow-xl border-[var(--border-strong)]/40"
+              ? "h-14 px-4 sm:px-7 shadow-xl border-[var(--border-strong)]/40"
               : "h-16 px-4 sm:px-6 shadow-md"
           )}
           aria-label="Main navigation"
@@ -267,9 +267,9 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
             </motion.div>
           </motion.div>
 
-          {/* Desktop Center Navigation Pill */}
+          {/* Desktop Center Navigation Links (borderless floating layout) */}
           <div
-            className="hidden lg:flex items-center gap-0.5 xl:gap-1 px-1.5 py-1 rounded-xl bg-[var(--bg-surface)]/55 border border-[var(--border-subtle)]/70"
+            className="relative isolate hidden lg:flex items-center gap-0.5 xl:gap-1"
             role="menubar"
             onMouseLeave={() => setHoveredHref(null)}
           >
@@ -289,11 +289,11 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
                     }
                   }}
                   className={cn(
-                    "relative px-2.5 xl:px-3 py-1.5 rounded-lg text-[13px] xl:text-sm font-medium transition-colors duration-150 select-none whitespace-nowrap",
+                    "relative px-2.5 xl:px-3 py-1.5 rounded-lg text-[13px] xl:text-sm transition-colors duration-150 select-none whitespace-nowrap",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]",
                     active
                       ? "text-[var(--brand-contrast)] font-semibold"
-                      : "text-[var(--text-primary)] hover:text-[var(--brand-primary)]"
+                      : "text-[var(--text-primary)] font-medium hover:text-[var(--brand-primary)]"
                   )}
                 >
                   {/* Sliding Hover Pill */}
@@ -301,7 +301,7 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
                     <motion.span
                       layoutId="devcore-nav-hover"
                       transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                      className="absolute inset-0 rounded-lg bg-[var(--bg-elevated)]/90 border border-[var(--border-subtle)]/60 -z-10"
+                      className="absolute inset-0 z-0 rounded-lg bg-[var(--bg-elevated)]/85"
                     />
                   )}
 
@@ -310,8 +310,13 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
                     <motion.span
                       layoutId="devcore-nav-active"
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                      className="absolute inset-0 rounded-lg bg-[var(--brand-primary)] shadow-sm -z-10"
-                    />
+                      className="absolute inset-0 z-0 rounded-lg bg-[var(--brand-primary)] shadow-md"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-x-2.5 bottom-0.5 h-[1.5px] rounded-full bg-[var(--brand-contrast)]/55"
+                      />
+                    </motion.span>
                   )}
 
                   <span className="relative z-10 flex items-center gap-1.5">
