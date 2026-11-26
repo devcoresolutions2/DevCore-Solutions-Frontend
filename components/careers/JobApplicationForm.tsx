@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   RotateCcw,
 } from "lucide-react";
-import { JobItem, submitJobApplication } from "@/lib/api";
+import { JobItem, submitJobApplication, uploadResumeFile } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 interface JobApplicationFormProps {
@@ -117,13 +117,16 @@ export function JobApplicationForm({
     try {
       setIsSubmitting(true);
 
+      const uploadedResume = await uploadResumeFile(resumeFile);
+
       const res = await submitJobApplication({
         jobId: activeRole ? activeRole.id : selectedJobId,
         jobTitle: activeRole ? activeRole.title : "Candidate Application",
         name: candidateName.trim(),
         email: candidateEmail.trim(),
         phone: candidatePhone.trim(),
-        resumeFileName: resumeFile.name,
+        resumeFileName: uploadedResume.fileName,
+        resumeUrl: uploadedResume.url,
         portfolioUrl: candidateUrl.trim(),
         message: candidateNote.trim(),
       });
