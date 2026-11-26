@@ -35,6 +35,7 @@ import {
   getServices,
   updateJobStatus,
   updateApplicationStatus,
+  deleteJobApplication,
   apiGetSession,
   apiSignOut,
   apiCreateAdminService,
@@ -88,8 +89,10 @@ function AdminDashboardContent() {
   const [deleteSvcTarget, setDeleteSvcTarget] = useState<ServiceItem | null>(null);
   const [deletingSvc, setDeletingSvc] = useState(false);
 
-  // Application details modal state
+  // Application details & delete modal state
   const [selectedApp, setSelectedApp] = useState<SubmittedApplicationItem | null>(null);
+  const [deleteAppTarget, setDeleteAppTarget] = useState<SubmittedApplicationItem | null>(null);
+  const [deletingApp, setDeletingApp] = useState(false);
 
   const loadData = async () => {
     try {
@@ -168,6 +171,22 @@ function AdminDashboardContent() {
       toast.error(err?.message || "Failed to delete service.");
     } finally {
       setDeletingSvc(false);
+    }
+  };
+
+  const confirmDeleteApplication = async () => {
+    if (!deleteAppTarget) return;
+    setDeletingApp(true);
+    try {
+      await deleteJobApplication(deleteAppTarget.id);
+      setApplications((prev) => prev.filter((a) => a.id !== deleteAppTarget.id));
+      if (selectedApp?.id === deleteAppTarget.id) setSelectedApp(null);
+      setDeleteAppTarget(null);
+      toast.success("Application deleted.");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to delete application.");
+    } finally {
+      setDeletingApp(false);
     }
   };
 
@@ -524,14 +543,25 @@ function AdminDashboardContent() {
                       </td>
 
                       <td className="py-3.5 px-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedApp(app)}
-                          className="h-8 px-3 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-contrast)] border border-[var(--border-subtle)] text-xs font-semibold text-[var(--text-primary)] transition-colors inline-flex items-center gap-1"
-                        >
-                          <Eye size={13} />
-                          <span>View Info</span>
-                        </button>
+                        <div className="inline-flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedApp(app)}
+                            className="h-8 px-3 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-contrast)] border border-[var(--border-subtle)] text-xs font-semibold text-[var(--text-primary)] transition-colors inline-flex items-center gap-1"
+                          >
+                            <Eye size={13} />
+                            <span>View Info</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeleteAppTarget(app)}
+                            className="h-8 w-8 rounded-lg inline-flex items-center justify-center bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-tertiary)] hover:text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/30 transition-colors"
+                            title="Delete Application"
+                            aria-label={`Delete application from ${app.name}`}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -994,6 +1024,23 @@ function AdminDashboardContent() {
         onConfirm={() => void confirmDeleteService()}
         onCancel={() => {
           if (!deletingSvc) setDeleteSvcTarget(null);
+        }}
+      />
+
+      <ConfirmDialog
+        open={Boolean(deleteAppTarget)}
+        title="Delete Application"
+        description={
+          deleteAppTarget
+            ? `Permanently delete the application from "${deleteAppTarget.name}" (${deleteAppTarget.email})? This will also remove any attached resume.`
+            : ""
+        }
+        confirmLabel="Delete Application"
+        destructive
+        loading={deletingApp}
+        onConfirm={() => void confirmDeleteApplication()}
+        onCancel={() => {
+          if (!deletingApp) setDeleteAppTarget(null);
         }}
       />
       </div>
