@@ -96,6 +96,10 @@
     --text-5xl--line-height: 1;
     --text-6xl: 3.75rem;
     --text-6xl--line-height: 1;
+    --text-7xl: 4.5rem;
+    --text-7xl--line-height: 1;
+    --text-8xl: 6rem;
+    --text-8xl--line-height: 1;
     --font-weight-normal: 400;
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
@@ -342,6 +346,9 @@
   }
   .inset-x-4 {
     inset-inline: calc(var(--spacing) * 4);
+  }
+  .inset-x-5 {
+    inset-inline: calc(var(--spacing) * 5);
   }
   .inset-x-6 {
     inset-inline: calc(var(--spacing) * 6);
@@ -1066,6 +1073,9 @@
   .min-h-\[80vh\] {
     min-height: 80vh;
   }
+  .min-h-\[82vh\] {
+    min-height: 82vh;
+  }
   .min-h-\[180px\] {
     min-height: 180px;
   }
@@ -1260,6 +1270,9 @@
   }
   .max-w-\[160px\] {
     max-width: 160px;
+  }
+  .max-w-\[190px\] {
+    max-width: 190px;
   }
   .max-w-\[200px\] {
     max-width: 200px;
@@ -3053,6 +3066,14 @@
     --tw-gradient-via-stops: var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-via) var(--tw-gradient-via-position), var(--tw-gradient-to) var(--tw-gradient-to-position);
     --tw-gradient-stops: var(--tw-gradient-via-stops);
   }
+  .via-\[var\(--success\)\]\/50 {
+    --tw-gradient-via: var(--success);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-gradient-via: color-mix(in oklab, var(--success) 50%, transparent);
+    }
+    --tw-gradient-via-stops: var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-via) var(--tw-gradient-via-position), var(--tw-gradient-to) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-via-stops);
+  }
   .via-\[var\(--success\)\]\/55 {
     --tw-gradient-via: var(--success);
     @supports (color: color-mix(in lab, red, red)) {
@@ -3389,6 +3410,9 @@
   .pb-6 {
     padding-bottom: calc(var(--spacing) * 6);
   }
+  .pb-7 {
+    padding-bottom: calc(var(--spacing) * 7);
+  }
   .pb-8 {
     padding-bottom: calc(var(--spacing) * 8);
   }
@@ -3469,6 +3493,10 @@
   .text-4xl {
     font-size: var(--text-4xl);
     line-height: var(--tw-leading, var(--text-4xl--line-height));
+  }
+  .text-6xl {
+    font-size: var(--text-6xl);
+    line-height: var(--tw-leading, var(--text-6xl--line-height));
   }
   .text-base {
     font-size: var(--text-base);
@@ -4293,6 +4321,26 @@
     }
     .group-hover\/dock\:text-\[var\(--success\)\]:is(:where(.group\/dock):hover *) {
       color: var(--success);
+    }
+    .group-hover\/item\:translate-x-0\.5:is(:where(.group\/item):hover *) {
+      --tw-translate-x: calc(var(--spacing) * 0.5);
+      translate: var(--tw-translate-x) var(--tw-translate-y);
+    }
+    .group-hover\/item\:-translate-y-0\.5:is(:where(.group\/item):hover *) {
+      --tw-translate-y: calc(var(--spacing) * -0.5);
+      translate: var(--tw-translate-x) var(--tw-translate-y);
+    }
+    .group-hover\/item\:scale-105:is(:where(.group\/item):hover *) {
+      --tw-scale-x: 105%;
+      --tw-scale-y: 105%;
+      --tw-scale-z: 105%;
+      scale: var(--tw-scale-x) var(--tw-scale-y);
+    }
+    .group-hover\/item\:text-\[var\(--success\)\]:is(:where(.group\/item):hover *) {
+      color: var(--success);
+    }
+    .group-hover\/item\:opacity-100:is(:where(.group\/item):hover *) {
+      opacity: 100%;
     }
     .group-hover\/link\:translate-x-0:is(:where(.group\/link):hover *) {
       --tw-translate-x: 0px;
@@ -5491,6 +5539,9 @@
     .sm\:w-auto {
       width: auto;
     }
+    .sm\:max-w-\[280px\] {
+      max-width: 280px;
+    }
     .sm\:max-w-\[320px\] {
       max-width: 320px;
     }
@@ -5651,6 +5702,10 @@
     .sm\:text-5xl {
       font-size: var(--text-5xl);
       line-height: var(--tw-leading, var(--text-5xl--line-height));
+    }
+    .sm\:text-7xl {
+      font-size: var(--text-7xl);
+      line-height: var(--tw-leading, var(--text-7xl--line-height));
     }
     .sm\:text-base {
       font-size: var(--text-base);
@@ -5977,6 +6032,10 @@
     .lg\:text-6xl {
       font-size: var(--text-6xl);
       line-height: var(--tw-leading, var(--text-6xl--line-height));
+    }
+    .lg\:text-8xl {
+      font-size: var(--text-8xl);
+      line-height: var(--tw-leading, var(--text-8xl--line-height));
     }
     .lg\:text-xl {
       font-size: var(--text-xl);
