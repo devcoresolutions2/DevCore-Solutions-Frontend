@@ -851,7 +851,7 @@ function AdminDashboardContent() {
                 </div>
                 {selectedApp.resumeUrl ? (
                   <a
-                    href={selectedApp.resumeUrl}
+                    href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/admin/applications/${encodeURIComponent(selectedApp.id)}/resume`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] font-mono text-[11px] font-semibold hover:bg-[var(--brand-hover)] transition-colors"
