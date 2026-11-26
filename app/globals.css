@@ -294,9 +294,6 @@
   .pointer-events-none {
     pointer-events: none;
   }
-  .visible {
-    visibility: visible;
-  }
   .sr-only {
     position: absolute;
     width: 1px;
@@ -581,8 +578,11 @@
   .z-50 {
     z-index: 50;
   }
-  .z-\[100\] {
-    z-index: 100;
+  .z-\[9999\] {
+    z-index: 9999;
+  }
+  .z-\[10000\] {
+    z-index: 10000;
   }
   .order-first {
     order: -9999;
@@ -956,6 +956,9 @@
   .h-28 {
     height: calc(var(--spacing) * 28);
   }
+  .h-52 {
+    height: calc(var(--spacing) * 52);
+  }
   .h-56 {
     height: calc(var(--spacing) * 56);
   }
@@ -1030,6 +1033,9 @@
   }
   .h-px {
     height: 1px;
+  }
+  .h-screen {
+    height: 100vh;
   }
   .max-h-\(--radix-dropdown-menu-content-available-height\) {
     max-height: var(--radix-dropdown-menu-content-available-height);
@@ -1163,6 +1169,9 @@
   .w-48 {
     width: calc(var(--spacing) * 48);
   }
+  .w-52 {
+    width: calc(var(--spacing) * 52);
+  }
   .w-60 {
     width: calc(var(--spacing) * 60);
   }
@@ -1240,6 +1249,9 @@
   }
   .w-px {
     width: 1px;
+  }
+  .w-screen {
+    width: 100vw;
   }
   .max-w-2xl {
     max-width: var(--container-2xl);
@@ -1820,6 +1832,9 @@
   .rounded-\[20px\] {
     border-radius: 20px;
   }
+  .rounded-\[22px\] {
+    border-radius: 22px;
+  }
   .rounded-\[calc\(var\(--radius\)-3px\)\] {
     border-radius: calc(var(--radius) - 3px);
   }
@@ -2204,6 +2219,18 @@
     border-right-color: var(--brand-primary);
     @supports (color: color-mix(in lab, red, red)) {
       border-right-color: color-mix(in oklab, var(--brand-primary) 30%, transparent);
+    }
+  }
+  .border-b-\[var\(--brand-primary\)\]\/25 {
+    border-bottom-color: var(--brand-primary);
+    @supports (color: color-mix(in lab, red, red)) {
+      border-bottom-color: color-mix(in oklab, var(--brand-primary) 25%, transparent);
+    }
+  }
+  .border-l-\[var\(--brand-primary\)\]\/15 {
+    border-left-color: var(--brand-primary);
+    @supports (color: color-mix(in lab, red, red)) {
+      border-left-color: color-mix(in oklab, var(--brand-primary) 15%, transparent);
     }
   }
   .bg-\[\#0A66C2\]\/10 {
@@ -4057,6 +4084,10 @@
   .outline {
     outline-style: var(--tw-outline-style);
     outline-width: 1px;
+  }
+  .blur-2xl {
+    --tw-blur: blur(var(--blur-2xl));
+    filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
   }
   .blur-3xl {
     --tw-blur: blur(var(--blur-3xl));
