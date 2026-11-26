@@ -9,7 +9,13 @@ export type ShowcaseItem = {
   slug: string;
   name: string;
   tagline: string;
-  category: "SaaS" | "Enterprise Web" | "E-Commerce" | "AI Automation" | "Mobile" | "Other";
+  category:
+  | "SaaS"
+  | "Enterprise Web"
+  | "E-Commerce"
+  | "AI Automation"
+  | "Mobile"
+  | "Other";
   badge: string; // e.g. "NEW", "FLAGSHIP"
   launchedAt: string; // ISO date string
   version: string;
@@ -167,7 +173,8 @@ export const MOCK_SHOWCASE: ShowcaseItem[] = [
     id: "1",
     slug: "dinedesk",
     name: "DineDesk",
-    tagline: "Multi-Vendor Restaurant Ordering & Table Reservation SaaS Platform",
+    tagline:
+      "Multi-Vendor Restaurant Ordering & Table Reservation SaaS Platform",
     category: "SaaS",
     badge: "FLAGSHIP",
     launchedAt: "2026-10-15",
@@ -208,7 +215,8 @@ export const MOCK_PROJECTS: ProjectItem[] = [
     id: "1",
     slug: "dinedesk",
     name: "DineDesk",
-    tagline: "Enterprise Multi-Vendor Restaurant Ordering & Table Reservation SaaS",
+    tagline:
+      "Enterprise Multi-Vendor Restaurant Ordering & Table Reservation SaaS",
     category: "SaaS",
     coverImage: "/images/dinedesk-cover.jpg",
     challenge:
@@ -527,7 +535,8 @@ export const MOCK_BENTO_PROOF: BentoProofItem[] = [
     id: "1",
     value: "99.998%",
     label: "Global Fleet Availability",
-    description: "Calculated across production deployments across multiple availability zones. Includes automated failover triggers.",
+    description:
+      "Calculated across production deployments across multiple availability zones. Includes automated failover triggers.",
     badge: "SLA TIED",
     badgeColor: "success",
     icon: "Activity",
@@ -539,7 +548,8 @@ export const MOCK_BENTO_PROOF: BentoProofItem[] = [
     id: "2",
     value: "Zero Breach",
     label: "Continuous Security Posture",
-    description: "Automated continuous posture checks with HIPAA & GDPR compliance enforcement on every deployment pipeline.",
+    description:
+      "Automated continuous posture checks with HIPAA & GDPR compliance enforcement on every deployment pipeline.",
     badge: "ZERO BREACH",
     badgeColor: "brand",
     icon: "Shield",
@@ -551,7 +561,8 @@ export const MOCK_BENTO_PROOF: BentoProofItem[] = [
     id: "3",
     value: "100% Trace",
     label: "Distributed Observability",
-    description: "Full OpenTelemetry pipeline with real-time span sampling, distributed tracing, and kernel network monitoring.",
+    description:
+      "Full OpenTelemetry pipeline with real-time span sampling, distributed tracing, and kernel network monitoring.",
     badge: "OTel NATIVE",
     badgeColor: "brand",
     icon: "Cpu",
@@ -590,7 +601,14 @@ export const MOCK_JOBS: JobItem[] = [
     workplaceType: "Remote",
     description:
       "Design, build, and deploy high-performance web platforms and full-lifecycle SaaS applications using TypeScript, React, Next.js, and Node.js. You will collaborate directly with software architects on multi-tenant backends, database models, and resilient client-side architectures.",
-    skills: ["TypeScript", "Next.js", "React", "Node.js", "PostgreSQL", "Tailwind CSS"],
+    skills: [
+      "TypeScript",
+      "Next.js",
+      "React",
+      "Node.js",
+      "PostgreSQL",
+      "Tailwind CSS",
+    ],
     responsibilities: [
       "Develop responsive, accessible, and performant web applications using Next.js App Router and TypeScript",
       "Build modular RESTful/GraphQL APIs and optimize SQL queries using PostgreSQL and Prisma ORM",
@@ -617,7 +635,14 @@ export const MOCK_JOBS: JobItem[] = [
     workplaceType: "Remote",
     description:
       "Craft comprehensive design systems, high-density data visualizations, user workflows, and pixel-precise interactive states for mission-critical software. You will bridge design and code with tokenized Figma architectures and accessible WCAG AA standards.",
-    skills: ["Figma", "Design Systems", "Design Tokens", "Wireframing", "Prototyping", "WCAG AA"],
+    skills: [
+      "Figma",
+      "Design Systems",
+      "Design Tokens",
+      "Wireframing",
+      "Prototyping",
+      "WCAG AA",
+    ],
     responsibilities: [
       "Design and maintain scalable Figma design systems with strict 1:1 token alignment with Tailwind CSS",
       "Translate complex technical requirements into elegant user journeys, dashboards, and wireframes",
@@ -644,7 +669,14 @@ export const MOCK_JOBS: JobItem[] = [
     workplaceType: "Remote",
     description:
       "Architect and integrate production-grade LLM applications, retrieval-augmented generation (RAG) pipelines, autonomous agent workflows, and vector embeddings. You will implement deterministic guardrails, optimize inference latency, and build scalable background orchestration.",
-    skills: ["Python", "LangChain", "LLM Orchestration", "pgvector", "PyTorch", "FastAPI"],
+    skills: [
+      "Python",
+      "LangChain",
+      "LLM Orchestration",
+      "pgvector",
+      "PyTorch",
+      "FastAPI",
+    ],
     responsibilities: [
       "Build and maintain custom LLM agent pipelines, tool-calling systems, and RAG architectures",
       "Implement semantic indexing, hybrid vector retrieval, and prompt drift observability",
@@ -724,31 +756,33 @@ export const DEFAULT_ABOUT_CONTENT: AboutGeneralContent = {
   heroBadge: "ARCHITECTURAL DOSSIER",
   heroTitle: "Building the Digital Core for a Smarter Tomorrow",
   heroSubtitle:
-    "DevCore Solutions is an elite software engineering and systems architecture firm. We reject software bloat and shallow wrappers in favor of rigorous, deterministic engineering and provable fault tolerance.",
-  foundingTag: "FOUNDED 2019 • DISTRIBUTED CORE",
+    "DevCore Solutions is a founder-led software engineering and systems architecture studio. We reject software bloat and shallow wrappers in favor of rigorous, deterministic engineering and provable fault tolerance.",
+  foundingTag: "FOUNDED 2026 • DISTRIBUTED CORE",
   visionTitle: "Our Vision",
   visionText:
     "To set the global benchmark for enterprise software reliability, where downtime is obsolete and system state is mathematically provable across high-throughput distributed boundaries.",
   missionTitle: "Our Mission",
   missionText:
-    "To empower ambitious enterprises with custom-tailored, resilient digital platforms engineered with zero bloat, uncompromising type safety, and predictable execution.",
+    "To empower ambitious businesses with custom-tailored, resilient digital platforms engineered with zero bloat, uncompromising type safety, and predictable execution.",
   philosophyTitle: "The Core Philosophy",
   philosophyText:
-    "We eliminate organizational friction by embedding verified systems architects and senior engineers directly on the operational frontlines. Every line of code is held to strict verification standards.",
+    "We eliminate organizational friction by building directly with our clients on the operational frontlines. Every line of code is held to strict verification standards.",
   philosophyStats: [
-    { label: "Direct Senior Engineering", value: "100%" },
+    { label: "Direct Founder Engineering", value: "100%" },
     { label: "Deterministic SLA Bound", value: "99.9%" },
+    { label: "Zero Outsourcing", value: "100%" },
+    { label: "Production Uptime", value: "99.99%" },
   ],
   ctaTitle: "Let's Build Something Meaningful",
   ctaSubtitle:
     "Have an idea, a challenge, or a project in mind? Let's discuss how we can turn it into a reliable digital solution.",
   ctaPrimaryText: "Start System Scoping",
   ctaPrimaryUrl: "/contact",
-  ctaSecondaryText: "View Open Guild Seats",
-  ctaSecondaryUrl: "/careers",
+  ctaSecondaryText: "Explore Production Builds",
+  ctaSecondaryUrl: "/projects",
   locationEnabled: true,
   locationName: "Chattogram Engineering Hub",
-  locationAddress: "North Agrabad, Chattogram, Bangladesh",
+  locationAddress: "Chittagong, Bangladesh",
   locationTimezone: "Asia/Dhaka",
   locationStatus: "ONLINE • UTC+6",
 };
@@ -784,7 +818,7 @@ export const INITIAL_ENGINEERING_PRINCIPLES: EngineeringPrincipleItem[] = [
     number: "03",
     title: "Radical Transparency",
     description:
-      "Complete client visibility into git commit histories, benchmark logs, and live telemetry. Direct architect collaboration without proxy gatekeepers.",
+      "Complete client visibility into git commit histories, benchmark logs, and live telemetry. Direct founder collaboration without proxy gatekeepers.",
     icon: "eye",
     supportingLabel: "Pipeline:",
     supportingText: "git log --unredacted",
@@ -807,75 +841,46 @@ export const INITIAL_ENGINEERING_PRINCIPLES: EngineeringPrincipleItem[] = [
 export const INITIAL_TEAM_MEMBERS: TeamMemberItem[] = [
   {
     id: "team-1",
-    name: "Kazi Mahedi Hasan",
-    role: "Founder & Full Stack Developer",
-    bio: "Co-founder leading core distributed architecture, scalable cloud systems, and modern full-stack web platforms.",
-    initials: "KM",
-    badge: "FOUNDER",
-    githubUrl: "https://github.com/kazi-Samin",
-    linkedinUrl: "https://www.linkedin.com/in/kazi-mahedi-hasan",
+    name: "Fourkan Bin Ilias",
+    role: "Founder & CEO • Junior Software Engineer & Full Stack Developer",
+    bio: "Founder & CEO leading end-to-end full-stack architecture, TypeScript & Next.js product systems, PostgreSQL database design, and direct client delivery at DevCore Solutions.",
+    avatarUrl: "/images/team/fourkan-bin-ilias.jpg",
+    initials: "FI",
+    badge: "FOUNDER & CEO",
+    githubUrl: "https://github.com/Pinon1345",
+    linkedinUrl: "https://www.linkedin.com/in/fourkan-bin-ilias/",
+    portfolioUrl: "https://fourkan-bin-ilias-portfolio-dev.vercel.app/",
     isFeatured: true,
     isPublished: true,
     displayOrder: 1,
   },
   {
     id: "team-2",
-    name: "Fourkan Bin Ilias",
-    role: "Founder & Full Stack Developer",
-    bio: "Co-founder focusing on distributed backend infrastructure, microservices reliability, and deterministic database design.",
-    initials: "FI",
-    badge: "FOUNDER",
-    githubUrl: "https://github.com/Pinon1345",
-    linkedinUrl: "https://www.linkedin.com/in/fourkan-bin-ilias/",
+    name: "Kazi Mehedi Hasan Samin",
+    role: "Co-Founder & CEO • Junior Software Engineer & Full Stack Developer",
+    bio: "Co-Founder & CEO driving scalable full-stack web platforms, React & Node.js engineering workflows, API infrastructure, and collaborative product execution across DevCore Solutions.",
+    avatarUrl: "/images/team/kazi-mehedi-hasan-samin.jpg",
+    initials: "KM",
+    badge: "CO-FOUNDER & CEO",
+    githubUrl: "https://github.com/kazi-Samin",
+    linkedinUrl: "https://www.linkedin.com/in/kazi-mahedi-hasan",
+    portfolioUrl: "https://kazi-mahedi-hasan-portfolio.vercel.app/",
     isFeatured: true,
     isPublished: true,
     displayOrder: 2,
   },
-  {
-    id: "team-3",
-    name: "Senior Systems Engineer",
-    role: "Senior Systems & Cloud Architect",
-    bio: "Focuses on event-driven architectures, container mesh reliability, and low-latency API performance.",
-    initials: "SE",
-    badge: "ENGINEERING",
-    githubUrl: "https://github.com/devcoresolutions2",
-    linkedinUrl: "https://www.linkedin.com/company/devcoresolutions2",
-    isFeatured: false,
-    isPublished: true,
-    displayOrder: 3,
-  },
-  {
-    id: "team-4",
-    name: "Lead Product Designer",
-    role: "UI/UX Design Specialist",
-    bio: "Directs accessible design systems, user workflow ergonomics, and high-fidelity interactive digital experiences.",
-    initials: "PD",
-    badge: "PRODUCT",
-    githubUrl: "https://github.com/devcoresolutions2",
-    linkedinUrl: "https://www.linkedin.com/company/devcoresolutions2",
-    isFeatured: false,
-    isPublished: true,
-    displayOrder: 4,
-  },
-  {
-    id: "team-5",
-    name: "Applied AI Engineer",
-    role: "Applied AI & Machine Learning Specialist",
-    bio: "Specializes in deterministic prompt architectures, retrieval-augmented systems, and intelligent workflow automation.",
-    initials: "AI",
-    badge: "AI LAB",
-    githubUrl: "https://github.com/devcoresolutions2",
-    linkedinUrl: "https://www.linkedin.com/company/devcoresolutions2",
-    isFeatured: false,
-    isPublished: true,
-    displayOrder: 5,
-  },
 ];
 
 // Global in-memory mutable stores for runtime admin mutations
-export let IN_MEMORY_ABOUT_CONTENT: AboutGeneralContent = { ...DEFAULT_ABOUT_CONTENT };
-export let IN_MEMORY_ENGINEERING_PRINCIPLES: EngineeringPrincipleItem[] = [...INITIAL_ENGINEERING_PRINCIPLES];
-export let IN_MEMORY_TEAM_MEMBERS: TeamMemberItem[] = [...INITIAL_TEAM_MEMBERS];
+export const IN_MEMORY_ABOUT_CONTENT: AboutGeneralContent = {
+  ...DEFAULT_ABOUT_CONTENT,
+};
+export const IN_MEMORY_ENGINEERING_PRINCIPLES: EngineeringPrincipleItem[] = [
+  ...INITIAL_ENGINEERING_PRINCIPLES,
+];
+export const IN_MEMORY_TEAM_MEMBERS: TeamMemberItem[] = [
+  ...INITIAL_TEAM_MEMBERS,
+];
 
 // ─── BLOG TYPES & MOCK DATA ───────────────────────────────────────────────────
 export type BlogArticleItem = {
@@ -962,17 +967,41 @@ export const DEFAULT_BLOG_HERO_CONFIG: BlogHeroConfig = {
 
 export const INITIAL_BLOG_CATEGORIES: BlogCategoryItem[] = [
   { id: "cat-1", name: "All Articles", slug: "all", count: 5, isActive: true },
-  { id: "cat-2", name: "Distributed Systems", slug: "distributed-systems", count: 2, isActive: true },
-  { id: "cat-3", name: "Kernel & eBPF", slug: "kernel-ebpf", count: 1, isActive: true },
-  { id: "cat-4", name: "AI & Automation", slug: "ai-automation", count: 1, isActive: true },
-  { id: "cat-5", name: "Cloud & DevOps", slug: "cloud-devops", count: 1, isActive: true },
+  {
+    id: "cat-2",
+    name: "Distributed Systems",
+    slug: "distributed-systems",
+    count: 2,
+    isActive: true,
+  },
+  {
+    id: "cat-3",
+    name: "Kernel & eBPF",
+    slug: "kernel-ebpf",
+    count: 1,
+    isActive: true,
+  },
+  {
+    id: "cat-4",
+    name: "AI & Automation",
+    slug: "ai-automation",
+    count: 1,
+    isActive: true,
+  },
+  {
+    id: "cat-5",
+    name: "Cloud & DevOps",
+    slug: "cloud-devops",
+    count: 1,
+    isActive: true,
+  },
 ];
 
 export const INITIAL_BLOG_AUTHORS: BlogAuthorItem[] = [
   {
     id: "auth-1",
     name: "Kazi Mahedi Hasan",
-    role: "Founder & Full Stack Developer",
+    role: "Co-Founder & Full Stack Developer",
     bio: "Directs full-stack architecture, high-concurrency API gateways, and distributed database reliability.",
     initials: "KM",
     githubUrl: "https://github.com/kazi-Samin",
@@ -1005,15 +1034,17 @@ export const INITIAL_BLOG_ARTICLES: BlogArticleItem[] = [
   {
     id: "article-1",
     slug: "eliminating-cloud-drift-sqlite-wal-crdt",
-    title: "Eliminating Cloud Drift: Implementing Offline-First SQLite WAL & CRDT Gossiping at Scale",
-    subtitle: "How DevCore removed cloud uptime dependencies for local nodes with embedded Go and WAL sync.",
+    title:
+      "Eliminating Cloud Drift: Implementing Offline-First SQLite WAL & CRDT Gossiping at Scale",
+    subtitle:
+      "How DevCore removed cloud uptime dependencies for local nodes with embedded Go and WAL sync.",
     excerpt:
       "How DevCore removed cloud uptime dependencies for distributed physical nodes by packaging a lightweight Go daemon with SQLite Write-Ahead Logging (WAL) and peer-to-peer state vector gossip.",
     category: "Distributed Systems",
     categorySlug: "distributed-systems",
     authorId: "auth-1",
     authorName: "Kazi Mahedi Hasan",
-    authorRole: "Founder & Full Stack Developer",
+    authorRole: "Co-Founder & Full Stack Developer",
     authorInitials: "KM",
     readingMinutes: 14,
     readTime: "14 min read",
@@ -1089,8 +1120,10 @@ If the venue's internet uplink fails, nodes on the local Wi-Fi or Ethernet switc
   {
     id: "article-2",
     slug: "achieving-high-throughput-ebpf-socket-filters",
-    title: "Achieving High-Throughput Edge Performance with Linux Kernel eBPF Socket Filters",
-    subtitle: "Bypassing standard socket buffer copies directly at the network interface layer.",
+    title:
+      "Achieving High-Throughput Edge Performance with Linux Kernel eBPF Socket Filters",
+    subtitle:
+      "Bypassing standard socket buffer copies directly at the network interface layer.",
     excerpt:
       "Bypassing standard socket buffer copies directly at the network interface layer to accelerate distributed consensus messaging on commodity server clusters.",
     category: "Kernel & eBPF",
@@ -1106,7 +1139,8 @@ If the venue's internet uplink fails, nodes on the local Wi-Fi or Ethernet switc
     publishedAt: "2026-02-10T00:00:00Z",
     tags: ["Kernel", "eBPF", "Linux", "Networking", "Performance"],
     rfcCode: "RFC-0711-REV1",
-    seoTitle: "Linux eBPF Socket Filters for High-Throughput Edge Nodes — DevCore",
+    seoTitle:
+      "Linux eBPF Socket Filters for High-Throughput Edge Nodes — DevCore",
     seoDescription:
       "How to use eBPF socket filters and XDP programs to bypass kernel memory overhead in high-throughput microservices.",
     content: `## Motivation: Kernel Network Stack Overhead
@@ -1142,7 +1176,8 @@ int bpf_sockmap_forward(struct bpf_sock_ops *skops) {
   {
     id: "article-3",
     slug: "deterministic-guardrails-enterprise-llm-schemas",
-    title: "Deterministic Guardrails for Enterprise LLMs: Mitigating Semantic Drift under Strict Schemas",
+    title:
+      "Deterministic Guardrails for Enterprise LLMs: Mitigating Semantic Drift under Strict Schemas",
     subtitle: "Context-free grammar constraints and embedding projection fences.",
     excerpt:
       "Employing context-free grammar constraints and embedding projection fences to guarantee deterministic, zero-hallucination JSON schema output.",
@@ -1150,7 +1185,7 @@ int bpf_sockmap_forward(struct bpf_sock_ops *skops) {
     categorySlug: "ai-automation",
     authorId: "auth-1",
     authorName: "Kazi Mahedi Hasan",
-    authorRole: "Founder & Full Stack Developer",
+    authorRole: "Co-Founder & Full Stack Developer",
     authorInitials: "KM",
     readingMinutes: 10,
     readTime: "10 min read",
@@ -1197,8 +1232,10 @@ export const EnterpriseDispatchSchema = z.object({
   {
     id: "article-4",
     slug: "multi-tenant-postgres-isolation-benchmarks",
-    title: "Multi-Tenant PostgreSQL Isolation: Row-Level Security vs Schema-per-Tenant Tradeoffs",
-    subtitle: "Empirical memory consumption, cache hit ratios, and connection pool thresholds.",
+    title:
+      "Multi-Tenant PostgreSQL Isolation: Row-Level Security vs Schema-per-Tenant Tradeoffs",
+    subtitle:
+      "Empirical memory consumption, cache hit ratios, and connection pool thresholds.",
     excerpt:
       "Empirical memory consumption, cache hit ratios, and connection pool exhaustion thresholds measured across multi-tenant database clusters.",
     category: "Distributed Systems",
@@ -1244,7 +1281,8 @@ For most modern multi-tenant cloud platforms, **PostgreSQL Row-Level Security pa
     id: "article-5",
     slug: "zero-copy-cloud-microservices-topologies",
     title: "Zero-Copy Networking Topologies in Modern Cloud Microservices",
-    subtitle: "Streamlining inter-service communication overhead using shared memory and gRPC.",
+    subtitle:
+      "Streamlining inter-service communication overhead using shared memory and gRPC.",
     excerpt:
       "Streamlining inter-service communication overhead using shared memory ring buffers and gRPC streaming protocols.",
     category: "Cloud & DevOps",
@@ -1289,10 +1327,18 @@ export const INITIAL_SUBSCRIBERS: NewsletterSubscriberItem[] = [
 ];
 
 // Global in-memory mutable stores for Blog CMS runtime
-export let IN_MEMORY_BLOG_HERO_CONFIG: BlogHeroConfig = { ...DEFAULT_BLOG_HERO_CONFIG };
-export let IN_MEMORY_BLOG_CATEGORIES: BlogCategoryItem[] = [...INITIAL_BLOG_CATEGORIES];
-export let IN_MEMORY_BLOG_AUTHORS: BlogAuthorItem[] = [...INITIAL_BLOG_AUTHORS];
-export let IN_MEMORY_BLOG_ARTICLES: BlogArticleItem[] = [...INITIAL_BLOG_ARTICLES];
-export let IN_MEMORY_SUBSCRIBERS: NewsletterSubscriberItem[] = [...INITIAL_SUBSCRIBERS];
-
-
+export const IN_MEMORY_BLOG_HERO_CONFIG: BlogHeroConfig = {
+  ...DEFAULT_BLOG_HERO_CONFIG,
+};
+export const IN_MEMORY_BLOG_CATEGORIES: BlogCategoryItem[] = [
+  ...INITIAL_BLOG_CATEGORIES,
+];
+export const IN_MEMORY_BLOG_AUTHORS: BlogAuthorItem[] = [
+  ...INITIAL_BLOG_AUTHORS,
+];
+export const IN_MEMORY_BLOG_ARTICLES: BlogArticleItem[] = [
+  ...INITIAL_BLOG_ARTICLES,
+];
+export const IN_MEMORY_SUBSCRIBERS: NewsletterSubscriberItem[] = [
+  ...INITIAL_SUBSCRIBERS,
+];
