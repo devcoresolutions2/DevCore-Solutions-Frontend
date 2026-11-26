@@ -70,9 +70,13 @@ interface RawBackendContactSettings {
   publicEmail?: string;
   email?: string;
   businessHours?: { start?: number; end?: number };
+  businessHoursStart?: number;
+  businessHoursEnd?: number;
   timezone?: string;
   callbackPromise?: string;
   bookingUrl?: string;
+  settings?: RawBackendContactSettings;
+  contact?: RawBackendContactSettings;
 }
 
 interface RawBackendJob {
@@ -92,8 +96,17 @@ interface RawBackendJob {
   createdAt?: string;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+const BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/+$/, "");
 const USE_MOCK = !BASE_URL;
+
+function formatFallbackWarning(context: string, err: unknown): void {
+  const message = err instanceof Error ? err.message : String(err);
+  if (message.includes("404")) {
+    console.warn(`[api] ${context} endpoint returned 404 — using local fallback data.`);
+    return;
+  }
+  console.warn(`[api] Failed to fetch ${context} from backend, using fallback data: ${message}`);
+}
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${BASE_URL}${path}`;
@@ -174,9 +187,10 @@ export async function getShowcaseList(
     if (params.limit) q.set("limit", String(params.limit));
     if (params.cursor) q.set("cursor", params.cursor);
     if (params.category) q.set("category", params.category);
-    return await apiFetch<ShowcaseListResult>(`/api/public/showcase?${q}`);
+    const qs = q.toString();
+    return await apiFetch<ShowcaseListResult>(`/api/public/showcase${qs ? `?${qs}` : ""}`);
   } catch (err) {
-    console.warn("[api] Failed to fetch showcase list from backend, using fallback data:", err);
+    formatFallbackWarning("showcase list", err);
     return { items: MOCK_SHOWCASE.slice(0, params.limit || 6), total: MOCK_SHOWCASE.length };
   }
 }
@@ -184,9 +198,9 @@ export async function getShowcaseList(
 export async function getShowcaseBySlug(slug: string): Promise<ShowcaseItem | null> {
   if (USE_MOCK) return MOCK_SHOWCASE.find((s) => s.slug === slug) ?? null;
   try {
-    return await apiFetch<ShowcaseItem>(`/api/public/showcase/${slug}`);
+    return await apiFetch<ShowcaseItem>(`/api/public/showcase/${encodeURIComponent(slug)}`);
   } catch (err) {
-    console.warn(`[api] Failed to fetch showcase ${slug} from backend:`, err);
+    formatFallbackWarning(`showcase (${slug})`, err);
     return MOCK_SHOWCASE.find((s) => s.slug === slug) ?? null;
   }
 }
@@ -222,9 +236,10 @@ export async function getProjectList(
     if (params.cursor) q.set("cursor", params.cursor);
     if (params.category) q.set("category", params.category);
     if (params.tech) q.set("tech", params.tech);
-    return await apiFetch<ProjectListResult>(`/api/public/projects?${q}`);
+    const qs = q.toString();
+    return await apiFetch<ProjectListResult>(`/api/public/projects${qs ? `?${qs}` : ""}`);
   } catch (err) {
-    console.warn("[api] Failed to fetch project list from backend, using fallback data:", err);
+    formatFallbackWarning("project list", err);
     return { items: MOCK_PROJECTS.slice(0, params.limit || 6), total: MOCK_PROJECTS.length };
   }
 }
@@ -232,9 +247,9 @@ export async function getProjectList(
 export async function getProjectBySlug(slug: string): Promise<ProjectItem | null> {
   if (USE_MOCK) return MOCK_PROJECTS.find((p) => p.slug === slug) ?? null;
   try {
-    return await apiFetch<ProjectItem>(`/api/public/projects/${slug}`);
+    return await apiFetch<ProjectItem>(`/api/public/projects/${encodeURIComponent(slug)}`);
   } catch (err) {
-    console.warn(`[api] Failed to fetch project ${slug} from backend:`, err);
+    formatFallbackWarning(`project (${slug})`, err);
     return MOCK_PROJECTS.find((p) => p.slug === slug) ?? null;
   }
 }
@@ -274,7 +289,7 @@ export async function getServices(): Promise<ServiceItem[]> {
     }
     return MOCK_SERVICES;
   } catch (err) {
-    console.warn("[api] Failed to fetch services from backend, using fallback data:", err);
+    formatFallbackWarning("services", err);
     return MOCK_SERVICES;
   }
 }
@@ -307,7 +322,7 @@ export async function getTestimonials(): Promise<TestimonialItem[]> {
   try {
     return await apiFetch<TestimonialItem[]>("/api/public/testimonials");
   } catch (err) {
-    console.warn("[api] Failed to fetch testimonials from backend, using fallback data:", err);
+    formatFallbackWarning("testimonials", err);
     return MOCK_TESTIMONIALS;
   }
 }
@@ -316,27 +331,41 @@ export async function getTestimonials(): Promise<TestimonialItem[]> {
 export async function getContactSettings(): Promise<ContactSettings> {
   if (USE_MOCK) return MOCK_CONTACT_SETTINGS;
   try {
-    const raw = await apiFetch<RawBackendContactSettings>("/api/public/contact-settings");
+    // Matches backend route: app.use("/api/public/settings", publicSettingsRouter)
+    const response = await apiFetch<RawBackendContactSettings>("/api/public/settings");
+    const raw = response?.settings || response?.contact || response;
     if (raw) {
+      const startHour = raw.businessHours?.start ?? raw.businessHoursStart ?? 9;
+      const endHour = raw.businessHours?.end ?? raw.businessHoursEnd ?? 18;
       return {
-        whatsappNumber: raw.whatsappNumber || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "",
-        phone: raw.phone || process.env.NEXT_PUBLIC_PHONE || "",
-        email: raw.publicEmail || raw.email || process.env.NEXT_PUBLIC_EMAIL || "",
-        businessHoursStart: raw.businessHours?.start ?? 9,
-        businessHoursEnd: raw.businessHours?.end ?? 18,
+        whatsappNumber:
+          raw.whatsappNumber ||
+          process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ||
+          MOCK_CONTACT_SETTINGS.whatsappNumber,
+        phone: raw.phone || process.env.NEXT_PUBLIC_PHONE || MOCK_CONTACT_SETTINGS.phone,
+        email:
+          raw.publicEmail ||
+          raw.email ||
+          process.env.NEXT_PUBLIC_EMAIL ||
+          MOCK_CONTACT_SETTINGS.email,
+        businessHoursStart: startHour,
+        businessHoursEnd: endHour,
         timezone: raw.timezone || "Asia/Dhaka",
         callbackPromise: raw.callbackPromise || "We reply within 1 business hour",
-        bookingUrl: raw.bookingUrl || process.env.NEXT_PUBLIC_BOOKING_URL || "",
+        bookingUrl:
+          raw.bookingUrl ||
+          process.env.NEXT_PUBLIC_BOOKING_URL ||
+          MOCK_CONTACT_SETTINGS.bookingUrl,
         isOpenNow: (() => {
           const now = new Date();
           const h = now.getHours();
-          return h >= (raw.businessHours?.start ?? 9) && h < (raw.businessHours?.end ?? 18);
+          return h >= startHour && h < endHour;
         })(),
       };
     }
     return MOCK_CONTACT_SETTINGS;
   } catch (err) {
-    console.warn("[api] Failed to fetch contact settings from backend, using fallback:", err);
+    formatFallbackWarning("contact settings", err);
     return MOCK_CONTACT_SETTINGS;
   }
 }
@@ -482,7 +511,7 @@ export async function getJobs(params?: {
     if (filterStatus === "ALL") return MOCK_JOBS;
     return MOCK_JOBS.filter((j) => j.status === filterStatus);
   } catch (err) {
-    console.warn("[api] Failed to fetch jobs from backend, using default active roles:", err);
+    formatFallbackWarning("jobs", err);
     if (filterStatus === "ALL") return MOCK_JOBS;
     return MOCK_JOBS.filter((j) => j.status === filterStatus);
   }
@@ -493,7 +522,7 @@ export async function getJobById(id: string): Promise<JobItem | null> {
     return MOCK_JOBS.find((j) => j.id === id || j.slug === id) ?? null;
   }
   try {
-    const j = await apiFetch<RawBackendJob | null>(`/api/public/jobs/${id}`);
+    const j = await apiFetch<RawBackendJob | null>(`/api/public/jobs/${encodeURIComponent(id)}`);
     if (j) {
       return {
         id: j.id,
@@ -592,7 +621,7 @@ export async function updateJobStatus(
   if (target) target.status = status;
   if (!USE_MOCK) {
     try {
-      await apiFetch(`/api/admin/jobs/${jobId}/status`, {
+      await apiFetch(`/api/admin/jobs/${encodeURIComponent(jobId)}/status`, {
         method: "PATCH",
         body: JSON.stringify({ status }),
       });
@@ -611,7 +640,7 @@ export async function updateApplicationStatus(
   if (target) target.status = status;
   if (!USE_MOCK) {
     try {
-      await apiFetch(`/api/admin/applications/${appId}/status`, {
+      await apiFetch(`/api/admin/applications/${encodeURIComponent(appId)}/status`, {
         method: "PATCH",
         body: JSON.stringify({ status }),
       });
@@ -629,7 +658,7 @@ export async function getAboutContent(): Promise<AboutGeneralContent> {
   try {
     return await apiFetch<AboutGeneralContent>("/api/public/about");
   } catch (err) {
-    console.warn("[api] Failed to fetch about content from backend, using fallback data:", err);
+    formatFallbackWarning("about content", err);
     return IN_MEMORY_ABOUT_CONTENT;
   }
 }
@@ -705,10 +734,13 @@ export async function updateEngineeringPrinciple(
   }
   if (!USE_MOCK) {
     try {
-      return await apiFetch<EngineeringPrincipleItem>(`/api/admin/about/principles/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify(payload),
-      });
+      return await apiFetch<EngineeringPrincipleItem>(
+        `/api/admin/about/principles/${encodeURIComponent(id)}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        }
+      );
     } catch {
       // ignore
     }
@@ -725,7 +757,9 @@ export async function deleteEngineeringPrinciple(id: string): Promise<boolean> {
   }
   if (!USE_MOCK) {
     try {
-      await apiFetch(`/api/admin/about/principles/${id}`, { method: "DELETE" });
+      await apiFetch(`/api/admin/about/principles/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
     } catch {
       // ignore
     }
@@ -803,7 +837,7 @@ export async function updateTeamMember(
   }
   if (!USE_MOCK) {
     try {
-      return await apiFetch<TeamMemberItem>(`/api/admin/about/team/${id}`, {
+      return await apiFetch<TeamMemberItem>(`/api/admin/about/team/${encodeURIComponent(id)}`, {
         method: "PATCH",
         body: JSON.stringify(payload),
       });
@@ -821,7 +855,7 @@ export async function deleteTeamMember(id: string): Promise<boolean> {
   }
   if (!USE_MOCK) {
     try {
-      await apiFetch(`/api/admin/about/team/${id}`, { method: "DELETE" });
+      await apiFetch(`/api/admin/about/team/${encodeURIComponent(id)}`, { method: "DELETE" });
     } catch {
       // ignore
     }
@@ -968,10 +1002,13 @@ export async function updateBlogCategory(
   }
   if (!USE_MOCK) {
     try {
-      const res = await apiFetch<BlogCategoryItem>(`/api/admin/blog/categories/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(data),
-      });
+      const res = await apiFetch<BlogCategoryItem>(
+        `/api/admin/blog/categories/${encodeURIComponent(id)}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(data),
+        }
+      );
       if (res) return res;
     } catch {
       // ignore
@@ -985,7 +1022,7 @@ export async function deleteBlogCategory(id: string): Promise<boolean> {
   if (idx !== -1) IN_MEMORY_BLOG_CATEGORIES.splice(idx, 1);
   if (!USE_MOCK) {
     try {
-      await apiFetch(`/api/admin/blog/categories/${id}`, { method: "DELETE" });
+      await apiFetch(`/api/admin/blog/categories/${encodeURIComponent(id)}`, { method: "DELETE" });
     } catch {
       // ignore
     }
@@ -1037,10 +1074,13 @@ export async function updateBlogAuthor(
   }
   if (!USE_MOCK) {
     try {
-      const res = await apiFetch<BlogAuthorItem>(`/api/admin/blog/authors/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(data),
-      });
+      const res = await apiFetch<BlogAuthorItem>(
+        `/api/admin/blog/authors/${encodeURIComponent(id)}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(data),
+        }
+      );
       if (res) return res;
     } catch {
       // ignore
@@ -1054,7 +1094,7 @@ export async function deleteBlogAuthor(id: string): Promise<boolean> {
   if (idx !== -1) IN_MEMORY_BLOG_AUTHORS.splice(idx, 1);
   if (!USE_MOCK) {
     try {
-      await apiFetch(`/api/admin/blog/authors/${id}`, { method: "DELETE" });
+      await apiFetch(`/api/admin/blog/authors/${encodeURIComponent(id)}`, { method: "DELETE" });
     } catch {
       // ignore
     }
@@ -1077,7 +1117,8 @@ export async function getBlogArticles(params?: {
       if (params?.search) query.set("search", params.search);
       if (params?.sort) query.set("sort", params.sort);
       if (params?.status) query.set("status", params.status);
-      const res = await apiFetch<BlogArticleItem[]>(`/api/public/blog?${query.toString()}`);
+      const qs = query.toString();
+      const res = await apiFetch<BlogArticleItem[]>(`/api/public/blog${qs ? `?${qs}` : ""}`);
       if (res) return res;
     } catch {
       // fallback
@@ -1136,7 +1177,7 @@ export async function getFeaturedArticle(): Promise<BlogArticleItem | null> {
 export async function getArticleBySlug(slug: string): Promise<BlogArticleItem | null> {
   if (!USE_MOCK) {
     try {
-      const res = await apiFetch<BlogArticleItem>(`/api/public/blog/${slug}`);
+      const res = await apiFetch<BlogArticleItem>(`/api/public/blog/${encodeURIComponent(slug)}`);
       if (res) return res;
     } catch {
       // fallback
@@ -1193,10 +1234,13 @@ export async function updateBlogArticle(
   }
   if (!USE_MOCK) {
     try {
-      const res = await apiFetch<BlogArticleItem>(`/api/admin/blog/articles/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(data),
-      });
+      const res = await apiFetch<BlogArticleItem>(
+        `/api/admin/blog/articles/${encodeURIComponent(id)}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(data),
+        }
+      );
       if (res) return res;
     } catch {
       // ignore
@@ -1210,7 +1254,7 @@ export async function deleteBlogArticle(id: string): Promise<boolean> {
   if (idx !== -1) IN_MEMORY_BLOG_ARTICLES.splice(idx, 1);
   if (!USE_MOCK) {
     try {
-      await apiFetch(`/api/admin/blog/articles/${id}`, { method: "DELETE" });
+      await apiFetch(`/api/admin/blog/articles/${encodeURIComponent(id)}`, { method: "DELETE" });
     } catch {
       // ignore
     }
@@ -1317,7 +1361,9 @@ export async function deleteNewsletterSubscriber(id: string): Promise<boolean> {
   if (idx !== -1) IN_MEMORY_SUBSCRIBERS.splice(idx, 1);
   if (!USE_MOCK) {
     try {
-      await apiFetch(`/api/admin/newsletter/subscribers/${id}`, { method: "DELETE" });
+      await apiFetch(`/api/admin/newsletter/subscribers/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
     } catch {
       // ignore
     }
@@ -1334,7 +1380,7 @@ export async function updateNewsletterSubscriberStatus(
   if (!USE_MOCK) {
     try {
       const res = await apiFetch<NewsletterSubscriberItem>(
-        `/api/admin/newsletter/subscribers/${id}`,
+        `/api/admin/newsletter/subscribers/${encodeURIComponent(id)}`,
         {
           method: "PUT",
           body: JSON.stringify({ status }),

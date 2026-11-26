@@ -136,7 +136,7 @@ const CLUSTER_REGIONS: ClusterRegion[] = [
   },
 ];
 
-// ─── 18-LAYER RISING BOTTOM-TO-TOP FLAME / AURORA 3D WAVE ────────────────────
+// ─── 18-LAYER RISING BOTTOM-TO-TOP FLAME / AURORA 3D WAVE (BUILD-SAFE) ───────
 function Smoky3DWaveCanvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -148,23 +148,30 @@ function Smoky3DWaveCanvas() {
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let rafId = 0;
-    let width = 0;
-    let height = 0;
+    let width = window.innerWidth;
+    let height = 780;
     let pointerX = 0;
     let targetPointerX = 0;
 
     const resize = () => {
       const parent = canvas.parentElement;
-      if (!parent) return;
+      const rect = parent?.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      width = parent.clientWidth || window.innerWidth;
-      height = parent.clientHeight || 780;
+      width = Math.max(1, Math.floor(rect?.width || window.innerWidth));
+      height = Math.max(1, Math.floor(rect?.height || 780));
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
     resize();
+
+    const resizeObserver = new ResizeObserver(() => {
+      resize();
+    });
+    if (canvas.parentElement) {
+      resizeObserver.observe(canvas.parentElement);
+    }
 
     const onPointerMove = (e: MouseEvent) => {
       targetPointerX = (e.clientX / Math.max(window.innerWidth, 1) - 0.5) * 0.9;
@@ -194,12 +201,12 @@ function Smoky3DWaveCanvas() {
         Math.max(width, height) * 0.55
       );
       if (isDark) {
-        baseGlow.addColorStop(0, "rgba(79, 181, 138, 0.16)");
-        baseGlow.addColorStop(0.5, "rgba(143, 180, 201, 0.08)");
+        baseGlow.addColorStop(0, "rgba(79, 181, 138, 0.2)");
+        baseGlow.addColorStop(0.5, "rgba(143, 180, 201, 0.1)");
         baseGlow.addColorStop(1, "rgba(6, 20, 27, 0)");
       } else {
-        baseGlow.addColorStop(0, "rgba(37, 55, 69, 0.09)");
-        baseGlow.addColorStop(0.5, "rgba(84, 101, 113, 0.045)");
+        baseGlow.addColorStop(0, "rgba(37, 55, 69, 0.12)");
+        baseGlow.addColorStop(0.5, "rgba(84, 101, 113, 0.06)");
         baseGlow.addColorStop(1, "rgba(244, 246, 247, 0)");
       }
       ctx.fillStyle = baseGlow;
@@ -250,8 +257,8 @@ function Smoky3DWaveCanvas() {
 
         if (isDark) {
           const variant = i % 3;
-          const peakAlpha = (envelope * 0.12).toFixed(3);
-          const bodyAlpha = (envelope * 0.17).toFixed(3);
+          const peakAlpha = (envelope * 0.15).toFixed(3);
+          const bodyAlpha = (envelope * 0.21).toFixed(3);
           const crestRgb =
             variant === 0
               ? "79, 181, 138"
@@ -265,8 +272,8 @@ function Smoky3DWaveCanvas() {
           grad.addColorStop(0.58, `rgba(${midRgb}, ${bodyAlpha})`);
           grad.addColorStop(1, "rgba(6, 20, 27, 0)");
         } else {
-          const peakAlpha = (envelope * 0.058).toFixed(3);
-          const bodyAlpha = (envelope * 0.078).toFixed(3);
+          const peakAlpha = (envelope * 0.075).toFixed(3);
+          const bodyAlpha = (envelope * 0.105).toFixed(3);
 
           grad.addColorStop(0, "rgba(244, 246, 247, 0)");
           grad.addColorStop(0.24, `rgba(37, 55, 69, ${peakAlpha})`);
@@ -285,6 +292,7 @@ function Smoky3DWaveCanvas() {
 
     return () => {
       cancelAnimationFrame(rafId);
+      resizeObserver.disconnect();
       window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", onPointerMove);
     };
@@ -294,13 +302,18 @@ function Smoky3DWaveCanvas() {
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
       <canvas
         ref={canvasRef}
-        className="h-full w-full blur-[16px] sm:blur-[22px] scale-105 will-change-transform"
+        className="block h-full w-full"
+        style={{
+          filter: "blur(20px)",
+          transform: "scale(1.06)",
+          willChange: "transform",
+        }}
       />
       <div
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 65% 70% at 26% 48%, color-mix(in oklab, var(--bg-canvas) 56%, transparent) 0%, transparent 100%)",
+            "radial-gradient(ellipse 65% 70% at 26% 48%, color-mix(in oklab, var(--bg-canvas) 54%, transparent) 0%, transparent 100%)",
         }}
       />
     </div>
@@ -345,8 +358,8 @@ function ArchitectureMeshCanvas() {
     const initScene = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const rect = canvas.getBoundingClientRect();
-      width = rect.width;
-      height = rect.height;
+      width = Math.max(1, Math.floor(rect.width || window.innerWidth));
+      height = Math.max(1, Math.floor(rect.height || 780));
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -719,7 +732,7 @@ export function Hero({ newestRelease }: HeroProps) {
             scale: [1, 1.08, 0.96, 1],
           }}
           transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-12 left-1/4 h-80 w-80 rounded-full bg-[var(--brand-primary)]/10 blur-[120px]"
+          className="absolute top-12 left-1/4 h-80 w-80 rounded-full bg-[var(--brand-primary)]/10 blur-3xl"
         />
         <motion.div
           animate={{
@@ -728,7 +741,7 @@ export function Hero({ newestRelease }: HeroProps) {
             scale: [1, 0.94, 1.06, 1],
           }}
           transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-12 right-1/5 h-96 w-96 rounded-full bg-[var(--border-strong)]/18 blur-[130px]"
+          className="absolute bottom-12 right-1/4 h-96 w-96 rounded-full bg-[var(--border-strong)]/18 blur-3xl"
         />
       </motion.div>
 
