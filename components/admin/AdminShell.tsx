@@ -1,0 +1,654 @@
+"use client";
+
+import React, { Suspense, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTheme } from "next-themes";
+import {
+  LayoutDashboard,
+  Inbox,
+  Share2,
+  Send,
+  Activity,
+  Users,
+  ShieldCheck,
+  Settings,
+  Home,
+  LogOut,
+  Image as ImageIcon,
+  ChevronRight,
+  Plus,
+  ChevronDown,
+  Sun,
+  Moon,
+  BookOpen,
+  Briefcase,
+  Layers,
+  Compass,
+  Menu,
+  X,
+  PanelLeftClose,
+  PanelLeftOpen,
+  FileText,
+  Search,
+  Mail,
+  Shield,
+  KeyRound,
+  MonitorSmartphone,
+} from "lucide-react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { UserAvatar } from "@/components/shared/UserAvatar";
+import { BrandLogo } from "@/components/shared/BrandLogo";
+import { GlobalLoader } from "@/components/shared/GlobalLoader";
+
+interface AdminShellProps {
+  children: React.ReactNode;
+  requiredRoles?: Array<"SUPER_ADMIN" | "EDITOR">;
+}
+
+const NAV_GROUPS = [
+  {
+    label: "Overview",
+    items: [
+      { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: "Content & CMS",
+    items: [
+      { href: "/admin/content", label: "Content Manager", icon: FileText },
+      { href: "/admin/dashboard?tab=blog", label: "Blog Articles", icon: BookOpen },
+      { href: "/admin/dashboard?tab=jobs", label: "Job Postings", icon: Briefcase },
+      { href: "/admin/dashboard?tab=applications", label: "Applications", icon: Users },
+      { href: "/admin/dashboard?tab=services", label: "Services", icon: Layers },
+      { href: "/admin/dashboard?tab=about", label: "About Page", icon: Compass },
+      { href: "/admin/media", label: "Media Library", icon: ImageIcon },
+    ],
+  },
+  {
+    label: "Growth & Social",
+    items: [
+      { href: "/admin/leads", label: "Leads", icon: Inbox },
+      { href: "/admin/social/manage", label: "Social Posts", icon: Activity },
+      { href: "/admin/social/broadcast", label: "Create Post", icon: Send },
+      { href: "/admin/social", label: "Connected Channels", icon: Share2 },
+    ],
+  },
+  {
+    label: "Team & Security",
+    items: [
+      { href: "/admin/users", label: "Team Members", icon: Users },
+      { href: "/admin/users?tab=invitations", label: "Invitations", icon: Mail },
+      { href: "/admin/users?tab=roles", label: "Roles & Permissions", icon: Shield },
+      { href: "/admin/audit-log", label: "Audit Log", icon: ShieldCheck },
+      { href: "/admin/settings", label: "Platform Settings", icon: Settings },
+    ],
+  },
+];
+
+function getBreadcrumbLabel(pathname: string | null, tab?: string): { section: string; page: string } {
+  if (!pathname) return { section: "Overview", page: "Dashboard" };
+  if (pathname === "/admin/dashboard" && tab) {
+    if (tab === "blog") return { section: "Content & CMS", page: "Blog Articles" };
+    if (tab === "jobs") return { section: "Content & CMS", page: "Job Postings" };
+    if (tab === "applications") return { section: "Content & CMS", page: "Applications" };
+    if (tab === "services") return { section: "Content & CMS", page: "Services" };
+    if (tab === "about") return { section: "Content & CMS", page: "About Page" };
+    if (tab === "leads") return { section: "Growth & Social", page: "Leads" };
+  }
+  if (pathname.startsWith("/admin/social/broadcast"))
+    return { section: "Growth & Social", page: "Create Post" };
+  if (pathname.startsWith("/admin/social/manage"))
+    return { section: "Growth & Social", page: "Social Posts" };
+  if (pathname.startsWith("/admin/social"))
+    return { section: "Growth & Social", page: "Connected Channels" };
+  if (pathname.startsWith("/admin/leads"))
+    return { section: "Growth & Social", page: "Leads" };
+  if (pathname.startsWith("/admin/users")) {
+    if (tab === "invitations") return { section: "Team & Security", page: "Invitations" };
+    if (tab === "roles") return { section: "Team & Security", page: "Roles & Permissions" };
+    return { section: "Team & Security", page: "Team Members" };
+  }
+  if (pathname.startsWith("/admin/audit-log"))
+    return { section: "Team & Security", page: "Audit Log" };
+  if (pathname.startsWith("/admin/settings"))
+    return { section: "Team & Security", page: "Platform Settings" };
+  if (pathname.startsWith("/admin/media"))
+    return { section: "Content & CMS", page: "Media Library" };
+  if (pathname.startsWith("/admin/content"))
+    return { section: "Content & CMS", page: "Content Manager" };
+  return { section: "Overview", page: "Dashboard" };
+}
+
+function AdminShellInner({
+  children,
+  requiredRoles = ["SUPER_ADMIN", "EDITOR"],
+}: AdminShellProps) {
+  const { user, loading, signOut } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeTab = searchParams.get("tab") || "";
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const [newMenuOpen, setNewMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const [cmdQuery, setCmdQuery] = useState("");
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const onClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCmdOpen((v) => !v);
+      } else if (e.key === "Escape") {
+        setCmdOpen(false);
+        setUserMenuOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace(
+        `/admin/session-expired?next=${encodeURIComponent(pathname || "/admin/dashboard")}`,
+      );
+    } else if (!loading && user && !requiredRoles.includes(user.role as any)) {
+      router.replace("/admin/403");
+    }
+  }, [user, loading, router, pathname, requiredRoles]);
+
+  if (loading || !user) {
+    return <GlobalLoader variant="fullscreen" label="Loading admin workspace" />;
+  }
+
+  const breadcrumb = getBreadcrumbLabel(pathname, activeTab);
+
+  return (
+    <div className="min-h-screen flex bg-[var(--bg-canvas)] text-[var(--text-primary)]">
+      {/* Desktop Fixed Left Sidebar */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 bg-[var(--bg-surface)] border-r border-[var(--border-subtle)] flex flex-col transition-all duration-200 lg:translate-x-0 ${
+          sidebarCollapsed ? "lg:w-[76px]" : "lg:w-[260px]"
+        } w-[260px] ${mobileNavOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        {/* Pinned Sidebar Brand Header (never scrolls) */}
+        <div className="h-16 px-4 border-b border-[var(--border-subtle)] flex items-center justify-between gap-2 shrink-0 bg-[var(--bg-surface)]">
+          {!sidebarCollapsed && (
+            <div className="flex items-center min-w-0">
+              <BrandLogo size="md" href="/admin/dashboard" />
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => setSidebarCollapsed((c) => !c)}
+            className={`hidden lg:inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-canvas)]/60 text-[var(--text-secondary)] hover:bg-[var(--bg-canvas)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors shrink-0 ${
+              sidebarCollapsed ? "mx-auto" : "ml-auto"
+            }`}
+            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {sidebarCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(false)}
+            className="lg:hidden h-8 w-8 inline-flex items-center justify-center rounded-lg border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-canvas)]"
+            aria-label="Close navigation"
+          >
+            <X size={17} />
+          </button>
+        </div>
+
+        {/* Independently Scrollable Navigation Groups */}
+        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+          {NAV_GROUPS.map((group, idx) => (
+            <div
+              key={group.label}
+              className={`space-y-1 ${idx > 0 ? "pt-3 border-t border-[var(--border-subtle)]/60" : ""}`}
+            >
+              {!sidebarCollapsed && (
+                <div className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+                  {group.label}
+                </div>
+              )}
+              <nav className="space-y-0.5">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const [baseHref, queryPart] = item.href.split("?");
+                  const itemTab = queryPart?.startsWith("tab=") ? queryPart.slice(4) : "";
+                  const active = itemTab
+                    ? pathname === baseHref && activeTab === itemTab
+                    : item.href === "/admin/dashboard" || item.href === "/admin/users"
+                      ? pathname === baseHref && !activeTab
+                      : pathname === baseHref;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      title={item.label}
+                      onClick={() => setMobileNavOpen(false)}
+                      className={`flex items-center ${
+                        sidebarCollapsed ? "justify-center px-2" : "gap-3 px-3"
+                      } py-2.5 rounded-xl text-[13.5px] transition-all duration-150 ${
+                        active
+                          ? "font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-sm"
+                          : "font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-canvas)] hover:text-[var(--text-primary)]"
+                      }`}
+                    >
+                      <Icon size={17} className="shrink-0" />
+                      {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+          ))}
+        </div>
+
+        {/* Sidebar Bottom Account & Public Link */}
+        <div className="p-3 border-t border-[var(--border-subtle)] space-y-2 shrink-0 bg-[var(--bg-surface)]">
+          <Link
+            href="/"
+            title="Public Website"
+            className={`flex items-center ${
+              sidebarCollapsed ? "justify-center px-2" : "justify-between px-3"
+            } py-2 rounded-xl text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-canvas)] hover:text-[var(--text-primary)] transition-colors`}
+          >
+            <span className="flex items-center gap-2.5">
+              <Home size={16} />
+              {!sidebarCollapsed && "Public Website"}
+            </span>
+            {!sidebarCollapsed && (
+              <span className="text-xs text-[var(--text-tertiary)]">↗</span>
+            )}
+          </Link>
+          <div
+            className={`p-2.5 rounded-xl bg-[var(--bg-canvas)] border border-[var(--border-subtle)] flex items-center ${
+              sidebarCollapsed ? "justify-center" : "justify-between gap-2"
+            }`}
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <UserAvatar
+                name={user.name}
+                avatarUrl={user.avatarUrl}
+                size={64}
+                className="w-8 h-8"
+                textClassName="text-[11px]"
+              />
+              {!sidebarCollapsed && (
+                <div className="min-w-0">
+                  <div className="text-[13px] font-semibold truncate text-[var(--text-primary)]">{user.name}</div>
+                  <div className="text-[11px] font-medium text-[var(--brand-primary)] truncate">
+                    {user.role}
+                  </div>
+                </div>
+              )}
+            </div>
+            {!sidebarCollapsed && (
+              <button
+                type="button"
+                onClick={() => signOut()}
+                title="Sign Out"
+                className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/10 transition-colors shrink-0"
+              >
+                <LogOut size={15} />
+              </button>
+            )}
+          </div>
+        </div>
+      </aside>
+
+      {/* Mobile Backdrop */}
+      {mobileNavOpen && (
+        <div
+          onClick={() => setMobileNavOpen(false)}
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+        />
+      )}
+
+      {/* Main Column (Top Navbar + Content + Footer) */}
+      <div
+        className={`flex-1 flex flex-col min-h-screen min-w-0 transition-all duration-200 ${
+          sidebarCollapsed ? "lg:pl-[76px]" : "lg:pl-[260px]"
+        }`}
+      >
+        {/* Top Fixed/Sticky Navbar */}
+        <header className="sticky top-0 z-30 h-16 bg-[var(--bg-surface)]/90 backdrop-blur-xl border-b border-[var(--border-subtle)] px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(true)}
+              className="lg:hidden h-9 w-9 inline-flex items-center justify-center rounded-lg border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] transition-colors shrink-0"
+              aria-label="Open navigation"
+            >
+              <Menu size={18} />
+            </button>
+            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[13px] text-[var(--text-secondary)] truncate">
+              <span className="hidden md:inline font-medium text-[var(--text-tertiary)]">Admin</span>
+              <ChevronRight size={13} className="hidden md:inline text-[var(--text-tertiary)] shrink-0" />
+              <span className="hidden sm:inline truncate text-[var(--text-secondary)]">{breadcrumb.section}</span>
+              <ChevronRight size={13} className="hidden sm:inline text-[var(--text-tertiary)] shrink-0" />
+              <span className="font-semibold text-[var(--text-primary)] truncate">
+                {breadcrumb.page}
+              </span>
+            </nav>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setCmdQuery("");
+                setCmdOpen(true);
+              }}
+              className="sm:hidden h-9 w-9 inline-flex items-center justify-center rounded-lg text-[var(--text-secondary)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors"
+              title="Search (Ctrl+K)"
+              aria-label="Open search"
+            >
+              <Search size={15} />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCmdQuery("");
+                setCmdOpen(true);
+              }}
+              className="hidden sm:inline-flex items-center justify-between w-44 md:w-56 h-9 px-3 rounded-lg text-xs text-[var(--text-secondary)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors"
+              title="Command Palette (Ctrl+K)"
+            >
+              <span className="flex items-center gap-2">
+                <Search size={13} className="text-[var(--text-tertiary)]" />
+                <span>Search...</span>
+              </span>
+              <kbd className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-[var(--text-tertiary)]">
+                Ctrl+K
+              </kbd>
+            </button>
+            {/* Quick + New Action Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setNewMenuOpen((v) => !v)}
+                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:opacity-90 transition-all"
+              >
+                <Plus size={14} />
+                <span className="hidden xs:inline sm:inline">New</span>
+                <ChevronDown size={13} />
+              </button>
+              {newMenuOpen && (
+                <div
+                  onMouseLeave={() => setNewMenuOpen(false)}
+                  className="absolute right-0 mt-1.5 w-48 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-xl p-1.5 z-40 text-xs space-y-0.5"
+                >
+                  <Link
+                    href="/admin/social/broadcast"
+                    onClick={() => setNewMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--bg-elevated)] text-[var(--text-primary)]"
+                  >
+                    <Send size={13} /> New Social Broadcast
+                  </Link>
+                  <Link
+                    href="/admin/dashboard?tab=blog"
+                    onClick={() => setNewMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--bg-elevated)] text-[var(--text-primary)]"
+                  >
+                    <BookOpen size={13} /> New Blog Article
+                  </Link>
+                  <Link
+                    href="/admin/users"
+                    onClick={() => setNewMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--bg-elevated)] text-[var(--text-primary)]"
+                  >
+                    <Users size={13} /> Manage / Invite Users
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Theme Toggle */}
+            {mounted && (
+              <button
+                type="button"
+                onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+                className="h-9 w-9 inline-flex items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors"
+                title={resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                aria-label={resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {resolvedTheme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+              </button>
+            )}
+
+            <div className="relative" ref={userMenuRef}>
+              <button
+                type="button"
+                onClick={() => setUserMenuOpen((v) => !v)}
+                aria-expanded={userMenuOpen}
+                aria-haspopup="menu"
+                className="h-9 flex items-center gap-2 pl-1.5 pr-2.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] transition-colors"
+              >
+                <UserAvatar
+                  name={user.name}
+                  avatarUrl={user.avatarUrl}
+                  size={64}
+                  className="w-6 h-6"
+                  textClassName="text-[10px]"
+                />
+                <span className="hidden sm:inline text-xs font-medium text-[var(--text-primary)] max-w-[130px] truncate">
+                  {user.name}
+                </span>
+                <ChevronDown
+                  size={13}
+                  className={`text-[var(--text-tertiary)] transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {userMenuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 mt-2 w-60 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-2xl p-2 z-50 text-xs"
+                >
+                  <div className="px-3 py-2.5 border-b border-[var(--border-subtle)] mb-1">
+                    <div className="font-semibold text-[var(--text-primary)] truncate">
+                      {user.name}
+                    </div>
+                    <div className="text-[11px] font-mono text-[var(--text-tertiary)] truncate">
+                      {user.email}
+                    </div>
+                    <span className="inline-block mt-1.5 px-2 py-0.5 rounded bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] font-mono text-[10px] font-semibold uppercase">
+                      {user.role}
+                    </span>
+                  </div>
+
+                  <Link
+                    href="/account/settings"
+                    onClick={() => setUserMenuOpen(false)}
+                    role="menuitem"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors"
+                  >
+                    <Settings size={14} className="text-[var(--text-tertiary)]" />
+                    <span>Account Settings</span>
+                  </Link>
+                  <Link
+                    href="/account/settings?tab=security"
+                    onClick={() => setUserMenuOpen(false)}
+                    role="menuitem"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors"
+                  >
+                    <KeyRound size={14} className="text-[var(--text-tertiary)]" />
+                    <span>Security &amp; Password</span>
+                  </Link>
+                  <Link
+                    href="/account/settings?tab=sessions"
+                    onClick={() => setUserMenuOpen(false)}
+                    role="menuitem"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors"
+                  >
+                    <MonitorSmartphone size={14} className="text-[var(--text-tertiary)]" />
+                    <span>Active Sessions</span>
+                  </Link>
+
+                  <div className="my-1 border-t border-[var(--border-subtle)]" />
+
+                  <Link
+                    href="/"
+                    onClick={() => setUserMenuOpen(false)}
+                    role="menuitem"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors"
+                  >
+                    <Home size={14} className="text-[var(--text-tertiary)]" />
+                    <span>Back to Home</span>
+                  </Link>
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={async () => {
+                      setUserMenuOpen(false);
+                      await signOut();
+                      router.push("/auth/signin");
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors mt-1 font-medium"
+                  >
+                    <LogOut size={14} />
+                    <span>Sign Out Securely</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Main Workspace */}
+        <main className="flex-1 p-5 sm:p-8 max-w-[1440px] w-full mx-auto min-w-0">
+          {children}
+        </main>
+
+        {/* Admin Footer */}
+        <footer className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]/60 px-6 py-4 text-xs text-[var(--text-tertiary)] flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="font-medium text-[var(--text-secondary)]">
+            DevCore Solutions
+          </div>
+          <div className="flex items-center gap-4">
+            <Link href="/admin/audit-log" className="hover:text-[var(--text-primary)]">
+              Audit Log
+            </Link>
+            <Link href="/admin/settings" className="hover:text-[var(--text-primary)]">
+              Platform Settings
+            </Link>
+            <Link href="/account/settings" className="hover:text-[var(--text-primary)]">
+              Account Settings
+            </Link>
+            <Link href="/" className="hover:text-[var(--text-primary)]">
+              Public Site
+            </Link>
+          </div>
+        </footer>
+      </div>
+
+      {/* Ctrl+K Command Palette */}
+      {cmdOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/45 backdrop-blur-xs flex items-start justify-center pt-20 px-4"
+          onClick={() => setCmdOpen(false)}
+        >
+          <div
+            className="w-full max-w-lg rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2.5 px-4 py-3 border-b border-[var(--border-subtle)]">
+              <Search size={16} className="text-[var(--text-tertiary)] shrink-0" />
+              <input
+                type="text"
+                autoFocus
+                value={cmdQuery}
+                onChange={(e) => setCmdQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const allItems = NAV_GROUPS.flatMap((g) =>
+                      g.items.map((i) => ({ ...i, group: g.label }))
+                    ).filter((i) =>
+                      `${i.label} ${i.group}`.toLowerCase().includes(cmdQuery.trim().toLowerCase())
+                    );
+                    if (allItems[0]) {
+                      setCmdOpen(false);
+                      router.push(allItems[0].href);
+                    }
+                  }
+                }}
+                placeholder="Jump to admin page or section..."
+                className="flex-1 bg-transparent text-sm outline-none text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
+              />
+              <button
+                type="button"
+                onClick={() => setCmdOpen(false)}
+                className="text-[10px] font-mono px-1.5 py-0.5 rounded border border-[var(--border-subtle)] text-[var(--text-tertiary)]"
+              >
+                ESC
+              </button>
+            </div>
+            <div className="max-h-72 overflow-y-auto p-2 space-y-1">
+              {NAV_GROUPS.flatMap((g) =>
+                g.items.map((i) => ({ ...i, group: g.label }))
+              )
+                .filter((i) =>
+                  `${i.label} ${i.group}`.toLowerCase().includes(cmdQuery.trim().toLowerCase())
+                )
+                .map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.href}
+                      type="button"
+                      onClick={() => {
+                        setCmdOpen(false);
+                        router.push(item.href);
+                      }}
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs hover:bg-[var(--bg-elevated)] transition-colors"
+                    >
+                      <span className="flex items-center gap-2.5 font-medium text-[var(--text-primary)]">
+                        <Icon size={15} className="text-[var(--brand-primary)]" />
+                        {item.label}
+                      </span>
+                      <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
+                        {item.group}
+                      </span>
+                    </button>
+                  );
+                })}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function AdminShell(props: AdminShellProps) {
+  return (
+    <Suspense
+      fallback={<GlobalLoader variant="fullscreen" label="Loading admin workspace" />}
+    >
+      <AdminShellInner {...props} />
+    </Suspense>
+  );
+}
