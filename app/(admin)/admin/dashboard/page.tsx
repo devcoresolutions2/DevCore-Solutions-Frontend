@@ -840,18 +840,30 @@ function AdminDashboardContent() {
                 </div>
               )}
 
-              <div className="p-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] flex items-center justify-between">
-                <div>
+              <div className="p-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] flex items-center justify-between gap-3">
+                <div className="min-w-0">
                   <span className="block text-[var(--text-muted)] text-[10px] font-mono uppercase">
                     Attached Resume
                   </span>
-                  <span className="font-mono text-xs font-semibold text-[var(--text-primary)]">
+                  <span className="block truncate font-mono text-xs font-semibold text-[var(--text-primary)]">
                     {selectedApp.resumeFileName || "resume.pdf"}
                   </span>
                 </div>
-                <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[var(--brand-primary)]/15 text-[var(--brand-primary)] font-bold">
-                  Uploaded
-                </span>
+                {selectedApp.resumeUrl ? (
+                  <a
+                    href={selectedApp.resumeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] font-mono text-[11px] font-semibold hover:bg-[var(--brand-hover)] transition-colors"
+                  >
+                    <span>Open PDF</span>
+                    <ExternalLink size={12} />
+                  </a>
+                ) : (
+                  <span className="shrink-0 font-mono text-[10px] px-2 py-0.5 rounded bg-[var(--bg-muted)] text-[var(--text-muted)] font-semibold">
+                    No File URL
+                  </span>
+                )}
               </div>
             </div>
 
