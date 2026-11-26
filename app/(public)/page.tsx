@@ -17,6 +17,7 @@ import {
 } from "@/lib/api";
 import { SloganManifestoSection } from "@/components/landing/SloganManifestoSection";
 import { CuratedTechVideosSection } from "@/components/landing/CuratedTechVideosSection";
+import { EcosystemMarqueeSection } from "@/components/landing/EcosystemMarqueeSection";
 
 export const metadata: Metadata = {
   title: "DevCore Solutions — Building the Digital Core for a Smarter Tomorrow",
@@ -46,6 +47,7 @@ export default async function HomePage() {
       <Hero newestRelease={newestRelease} />
       <SloganManifestoSection></SloganManifestoSection>
       <CuratedTechVideosSection></CuratedTechVideosSection>
+      <EcosystemMarqueeSection></EcosystemMarqueeSection>
       <NewLaunches items={showcaseItems} />
       <BentoProof items={bentoProof} />
       <ServicesGrid services={services} />
