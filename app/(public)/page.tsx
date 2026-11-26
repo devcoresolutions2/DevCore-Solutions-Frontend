@@ -15,6 +15,7 @@ import {
   getContactSettings,
   getBentoProof,
 } from "@/lib/api";
+import { SloganManifestoSection } from "@/components/landing/SloganManifestoSection";
 
 export const metadata: Metadata = {
   title: "DevCore Solutions — Building the Digital Core for a Smarter Tomorrow",
@@ -42,6 +43,7 @@ export default async function HomePage() {
   return (
     <>
       <Hero newestRelease={newestRelease} />
+      <SloganManifestoSection></SloganManifestoSection>
       <NewLaunches items={showcaseItems} />
       <BentoProof items={bentoProof} />
       <ServicesGrid services={services} />
