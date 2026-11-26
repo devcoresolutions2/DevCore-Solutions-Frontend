@@ -547,6 +547,52 @@ export async function getJobById(id: string): Promise<JobItem | null> {
   }
 }
 
+export async function uploadResumeFile(
+  file: File
+): Promise<{ url: string; fileName: string }> {
+  if (USE_MOCK) {
+    return { url: "", fileName: file.name };
+  }
+
+  const sig = await apiFetch<{
+    signature: string;
+    timestamp: number;
+    apiKey: string;
+    cloudName: string;
+    folder: string;
+    publicId: string;
+    uploadUrl: string;
+  }>("/api/public/jobs/resume-signature", {
+    method: "POST",
+    body: JSON.stringify({ fileName: file.name }),
+  });
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("api_key", sig.apiKey);
+  formData.append("timestamp", String(sig.timestamp));
+  formData.append("signature", sig.signature);
+  formData.append("folder", sig.folder);
+  formData.append("public_id", sig.publicId);
+
+  const uploadRes = await fetch(sig.uploadUrl, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!uploadRes.ok) {
+    const errText = await uploadRes.text().catch(() => "");
+    throw new Error(errText || "Failed to upload resume file to storage.");
+  }
+
+  const uploaded = (await uploadRes.json()) as { secure_url?: string };
+  if (!uploaded.secure_url) {
+    throw new Error("Resume upload succeeded without a file URL.");
+  }
+
+  return { url: uploaded.secure_url, fileName: file.name };
+}
+
 export async function submitJobApplication(
   payload: JobApplicationPayload
 ): Promise<{ success: boolean; id: string; message: string }> {
@@ -577,10 +623,13 @@ export async function submitJobApplication(
 
   const backendBody = {
     jobId: payload.jobId,
+    jobTitle: payload.jobTitle,
     name: payload.name,
     email: payload.email,
     phone: payload.phone,
-    resumePublicId: payload.resumeFileName || payload.resumeUrl || "resume_uploaded",
+    resumeUrl: payload.resumeUrl,
+    resumeFileName: payload.resumeFileName,
+    resumePublicId: payload.resumeUrl || payload.resumeFileName || "resume_uploaded",
     portfolioUrl: payload.portfolioUrl || payload.githubUrl,
     message: payload.message,
   };
