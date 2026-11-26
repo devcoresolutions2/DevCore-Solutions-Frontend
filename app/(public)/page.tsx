@@ -18,6 +18,7 @@ import {
 import { SloganManifestoSection } from "@/components/landing/SloganManifestoSection";
 import { CuratedTechVideosSection } from "@/components/landing/CuratedTechVideosSection";
 import { EcosystemMarqueeSection } from "@/components/landing/EcosystemMarqueeSection";
+import { ProjectScopeSimulatorSection } from "@/components/landing/ProjectScopeSimulatorSection";
 
 export const metadata: Metadata = {
   title: "DevCore Solutions — Building the Digital Core for a Smarter Tomorrow",
@@ -49,6 +50,7 @@ export default async function HomePage() {
       <CuratedTechVideosSection></CuratedTechVideosSection>
       <EcosystemMarqueeSection></EcosystemMarqueeSection>
       <NewLaunches items={showcaseItems} />
+      <ProjectScopeSimulatorSection></ProjectScopeSimulatorSection>
       <BentoProof items={bentoProof} />
       <ServicesGrid services={services} />
       <FlagshipSpotlight items={flagshipItems.length > 0 ? flagshipItems : showcaseItems.slice(0, 2)} />
