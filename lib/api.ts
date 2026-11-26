@@ -662,6 +662,17 @@ export async function getSubmittedApplications(): Promise<SubmittedApplicationIt
   }
 }
 
+export async function deleteJobApplication(appId: string): Promise<boolean> {
+  const idx = IN_MEMORY_APPLICATIONS.findIndex((a) => a.id === appId);
+  if (idx !== -1) IN_MEMORY_APPLICATIONS.splice(idx, 1);
+  if (!USE_MOCK) {
+    await apiFetch(`/api/admin/applications/${encodeURIComponent(appId)}`, {
+      method: "DELETE",
+    });
+  }
+  return true;
+}
+
 export async function updateJobStatus(
   jobId: string,
   status: "OPEN" | "CLOSED"
