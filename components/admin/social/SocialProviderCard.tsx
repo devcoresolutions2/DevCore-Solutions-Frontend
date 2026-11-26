@@ -80,38 +80,50 @@ function ProviderBrandIcon({ channelKey }: { channelKey: SocialChannelItem["key"
   switch (channelKey) {
     case "linkedin":
       return (
-        <div className="w-10 h-10 rounded-xl bg-[#0A66C2]/10 text-[#0A66C2] flex items-center justify-center font-bold text-sm border border-[#0A66C2]/20">
-          in
+        <div className="w-11 h-11 rounded-xl bg-[#0A66C2]/12 dark:bg-[#0A66C2]/20 text-[#0A66C2] dark:text-[#3B82F6] flex items-center justify-center border border-[#0A66C2]/20 shrink-0 shadow-xs">
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
+          </svg>
         </div>
       );
     case "x":
       return (
-        <div className="w-10 h-10 rounded-xl bg-[var(--bg-elevated)] text-[var(--text-primary)] flex items-center justify-center font-bold text-base border border-[var(--border-subtle)]">
-          𝕏
+        <div className="w-11 h-11 rounded-xl bg-[var(--bg-elevated)] text-[var(--text-primary)] flex items-center justify-center border border-[var(--border-subtle)] shrink-0 shadow-xs">
+          <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+          </svg>
         </div>
       );
     case "meta":
       return (
-        <div className="w-10 h-10 rounded-xl bg-[#0668E1]/10 text-[#0668E1] flex items-center justify-center font-bold text-sm border border-[#0668E1]/20">
-          ∞
+        <div className="w-11 h-11 rounded-xl bg-[#0668E1]/12 dark:bg-[#0668E1]/20 text-[#0668E1] dark:text-[#60A5FA] flex items-center justify-center border border-[#0668E1]/20 shrink-0 shadow-xs">
+          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z" />
+          </svg>
         </div>
       );
     case "youtube":
       return (
-        <div className="w-10 h-10 rounded-xl bg-[#FF0000]/10 text-[#FF0000] flex items-center justify-center font-bold text-xs border border-[#FF0000]/20">
-          ▶
+        <div className="w-11 h-11 rounded-xl bg-[#FF0000]/10 dark:bg-[#FF0000]/18 text-[#FF0000] dark:text-[#F87171] flex items-center justify-center border border-[#FF0000]/20 shrink-0 shadow-xs">
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+          </svg>
         </div>
       );
     case "reddit":
       return (
-        <div className="w-10 h-10 rounded-xl bg-[#FF4500]/10 text-[#FF4500] flex items-center justify-center font-bold text-sm border border-[#FF4500]/20">
-          r/
+        <div className="w-11 h-11 rounded-xl bg-[#FF4500]/10 dark:bg-[#FF4500]/18 text-[#FF4500] dark:text-[#FB923C] flex items-center justify-center border border-[#FF4500]/20 shrink-0 shadow-xs">
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5.8 11.33c.02.16.03.33.03.5 0 2.55-2.97 4.62-6.63 4.62-3.66 0-6.63-2.07-6.63-4.62 0-.17.01-.34.03-.5a1.42 1.42 0 0 1-.57-1.14c0-.79.64-1.43 1.43-1.43.38 0 .73.15.99.4.98-.71 2.33-1.16 3.83-1.22l.72-3.39a.34.34 0 0 1 .4-.26l2.38.5a1.01 1.01 0 0 1 1.93.42c0 .56-.45 1.01-1.01 1.01-.55 0-.99-.44-1.01-.98l-2.12-.45-.64 3.04c1.46.07 2.78.52 3.74 1.21.26-.24.6-.39.98-.39.79 0 1.43.64 1.43 1.43 0 .46-.22.87-.55 1.15zM9.22 12.6a1.01 1.01 0 1 0 0 2.02 1.01 1.01 0 0 0 0-2.02zm5.56 0a1.01 1.01 0 1 0 0 2.02 1.01 1.01 0 0 0 0-2.02zm-5.22 3.45c-.12-.12-.12-.32 0-.44.12-.12.31-.12.43 0 .56.56 1.45.84 2.01.84s1.45-.28 2.01-.84c.12-.12.31-.12.43 0 .12.12.12.32 0 .44-.71.71-1.76 1.02-2.44 1.02-.68 0-1.73-.31-2.44-1.02z" />
+          </svg>
         </div>
       );
     case "glassdoor":
       return (
-        <div className="w-10 h-10 rounded-xl bg-[#0CAA41]/10 text-[#0CAA41] flex items-center justify-center font-bold text-sm border border-[#0CAA41]/20">
-          gd
+        <div className="w-11 h-11 rounded-xl bg-[#0CAA41]/12 dark:bg-[#0CAA41]/20 text-[#0CAA41] dark:text-[#34D399] flex items-center justify-center border border-[#0CAA41]/20 shrink-0 shadow-xs">
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M17.144 20.572H6.857A3.429 3.429 0 0 1 3.43 17.144V6.857a3.429 3.429 0 0 1 3.428-3.428h10.287v3.428H6.857v10.287h10.287v-5.143h3.428v5.143a3.429 3.429 0 0 1-3.428 3.428zm3.428-13.715h-3.428V3.429h3.428v3.428z" />
+          </svg>
         </div>
       );
   }
@@ -137,21 +149,21 @@ export default function SocialProviderCard({
     channel.status === "DISABLED";
 
   return (
-    <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5 flex flex-col justify-between transition-all hover:border-[var(--border-strong)]">
+    <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5 flex flex-col justify-between transition-all hover:border-[var(--border-strong)] hover:shadow-sm">
       <div>
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3.5 min-w-0">
             <ProviderBrandIcon channelKey={channel.key} />
             <div className="min-w-0">
-              <h3 className="font-semibold text-[var(--text-primary)] truncate">
+              <h3 className="text-[15px] font-semibold text-[var(--text-primary)] truncate leading-tight">
                 {channel.displayName}
               </h3>
-              <p className="text-xs text-[var(--text-secondary)] truncate">{channel.subtitle}</p>
+              <p className="text-xs text-[var(--text-secondary)] truncate mt-0.5">{channel.subtitle}</p>
             </div>
           </div>
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border shrink-0 ${badge.classes}`}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border shrink-0 whitespace-nowrap ${badge.classes}`}
           >
             <span className={`w-1.5 h-1.5 rounded-full ${badge.dotClass}`} />
             {badge.label}
@@ -270,15 +282,26 @@ export default function SocialProviderCard({
             No OAuth integration available
           </span>
         ) : !hasToken ? (
-          <button
-            type="button"
-            disabled={!channel.configured || isBusy}
-            onClick={() => onConnect(channel.key)}
-            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-          >
-            <Link2 className="w-3.5 h-3.5" />
-            {isBusy ? "Redirecting..." : channel.configured ? "Connect OAuth" : "Configure Env First"}
-          </button>
+          channel.configured ? (
+            <button
+              type="button"
+              disabled={isBusy}
+              onClick={() => onConnect(channel.key)}
+              className="w-full h-9 inline-flex items-center justify-center gap-1.5 px-3 rounded-xl text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)] hover:bg-[var(--brand-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              <Link2 className="w-3.5 h-3.5" />
+              {isBusy ? "Redirecting..." : `Connect ${channel.displayName}`}
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled
+              className="w-full h-9 inline-flex items-center justify-center gap-1.5 px-3 rounded-xl text-xs font-medium bg-[var(--bg-elevated)] text-[var(--text-tertiary)] border border-[var(--border-subtle)] cursor-not-allowed"
+            >
+              <KeyRound className="w-3.5 h-3.5" />
+              Configure Env First
+            </button>
+          )
         ) : (
           <>
             <button

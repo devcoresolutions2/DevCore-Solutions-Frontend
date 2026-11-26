@@ -477,7 +477,7 @@ export default function SocialChannelsManager() {
       </div>
 
       {/* Social Channel Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {filteredChannels.map((ch) => (
           <SocialProviderCard
             key={ch.key}
