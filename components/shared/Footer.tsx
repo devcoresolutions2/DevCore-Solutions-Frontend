@@ -2,231 +2,553 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Cpu } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  ArrowUp,
+  ArrowUpRight,
+  Check,
+  Copy,
+  Globe,
+  Mail,
+  MapPin,
+  Sparkles,
+} from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { cn } from "@/lib/utils";
 
 const CAPABILITIES = [
-  { label: "Custom Web & SaaS", href: "/services" },
-  { label: "Cloud & API Architecture", href: "/services" },
-  { label: "AI & Workflow Automation", href: "/services" },
-  { label: "UI/UX Design Systems", href: "/services" },
-  { label: "IT Technical Consultation", href: "/services" },
+  { label: "Custom Web & SaaS", href: "/services#web-saas" },
+  { label: "Cloud & API Architecture", href: "/services#cloud-api" },
+  { label: "AI & Workflow Automation", href: "/services#ai-automation" },
+  { label: "UI/UX Design Systems", href: "/services#design-systems" },
+  { label: "IT Technical Consultation", href: "/services#consultation" },
 ];
 
 const PRODUCTS = [
-  { label: "DineDesk Hospitality SaaS", href: "/projects/dinedesk" },
+  { label: "DineDesk Hospitality SaaS", href: "/projects/dinedesk", badge: "FLAGSHIP" },
   { label: "Product Launches", href: "/launches" },
   { label: "Engineering Stack", href: "/#tech-matrix" },
+  { label: "Scope Simulator", href: "/#scope-simulator" },
+];
+
+const COMPANY = [
+  { label: "About DevCore", href: "/about" },
+  { label: "4-Stage Process", href: "/#process" },
+  { label: "Engineering Blog", href: "/blog" },
+  { label: "Careers", href: "/careers", badge: "HIRING" },
+  { label: "Contact Architects", href: "/contact" },
 ];
 
 const LEGAL = [
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms of Service", href: "/terms" },
   { label: "Vulnerability Disclosure", href: "/security" },
-  { label: "Contact", href: "/contact" },
 ];
 
-function LinkedInIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
-    </svg>
-  );
+interface SocialItem {
+  key: string;
+  label: string;
+  handle: string;
+  href: string;
+  iconUrl: string;
+  fallbackIconUrl?: string;
 }
 
-function GitHubIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/>
-    </svg>
-  );
+interface ApiSocialLink {
+  platform?: string;
+  label?: string;
+  handle?: string;
+  url?: string;
+  isEnabled?: boolean;
 }
 
-function TwitterIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-    </svg>
-  );
+interface PublicSettingsPayload {
+  publicEmail?: string;
+  socialLinks?: ApiSocialLink[];
 }
 
-function FacebookIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2.04c-5.5 0-10 4.49-10 10.02 0 5 3.66 9.15 8.44 9.9v-7H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7a10 10 0 0 0 8.44-9.9c0-5.53-4.5-10.02-10-10.02z"/>
-    </svg>
-  );
+function resolveBrandIconUrls(key: string): {
+  primary: string;
+  fallback?: string;
+} {
+  const normalized = key.toLowerCase();
+  if (normalized.includes("linkedin")) {
+    return {
+      primary: "https://static.licdn.com/sc/h/1bt1u54cgv5gp7zo5g8167y83",
+      fallback: "https://www.google.com/s2/favicons?domain=linkedin.com&sz=64",
+    };
+  }
+  if (normalized.includes("github")) {
+    return {
+      primary: "https://cdn.simpleicons.org/github/181717/ffffff",
+      fallback: "https://www.google.com/s2/favicons?domain=github.com&sz=64",
+    };
+  }
+  if (normalized.includes("facebook")) {
+    return {
+      primary: "https://cdn.simpleicons.org/facebook/0866FF",
+      fallback: "https://www.google.com/s2/favicons?domain=facebook.com&sz=64",
+    };
+  }
+  if (normalized.includes("instagram")) {
+    return {
+      primary: "https://cdn.simpleicons.org/instagram/E4405F",
+      fallback: "https://www.google.com/s2/favicons?domain=instagram.com&sz=64",
+    };
+  }
+  if (normalized.includes("youtube")) {
+    return {
+      primary: "https://cdn.simpleicons.org/youtube/FF0000",
+      fallback: "https://www.google.com/s2/favicons?domain=youtube.com&sz=64",
+    };
+  }
+  if (normalized.includes("reddit")) {
+    return {
+      primary: "https://cdn.simpleicons.org/reddit/FF4500",
+      fallback: "https://www.google.com/s2/favicons?domain=reddit.com&sz=64",
+    };
+  }
+  return {
+    primary: "https://cdn.simpleicons.org/x/000000/ffffff",
+    fallback: "https://www.google.com/s2/favicons?domain=x.com&sz=64",
+  };
 }
 
-function YouTubeIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M21.58 7.19a2.5 2.5 0 0 0-1.76-1.77C18.26 5 12 5 12 5s-6.26 0-7.82.42a2.5 2.5 0 0 0-1.76 1.77C2 8.75 2 12 2 12s0 3.25.42 4.81a2.5 2.5 0 0 0 1.76 1.77C5.74 19 12 19 12 19s6.26 0 7.82-.42a2.5 2.5 0 0 0 1.76-1.77C22 15.25 22 12 22 12s0-3.25-.42-4.81zM9.75 15.02V8.98L15 12l-5.25 3.02z"/>
-    </svg>
-  );
-}
-
-const SOCIALS = [
-  { icon: LinkedInIcon, label: "LinkedIn", href: "https://www.linkedin.com/company/devcoresolutions2" },
-  { icon: GitHubIcon, label: "GitHub", href: "https://github.com/devcoresolutions2" },
-  { icon: TwitterIcon, label: "X / Twitter", href: "https://x.com/DevCoreSolution" },
-  { icon: FacebookIcon, label: "Facebook", href: "https://www.facebook.com/devcoresolutionsofficial" },
-  { icon: YouTubeIcon, label: "YouTube", href: "https://www.youtube.com/@DevCoreSolutionsOfficial" },
+const DEFAULT_SOCIALS: SocialItem[] = [
+  {
+    key: "linkedin",
+    label: "LinkedIn",
+    handle: "company/devcoresolutions2",
+    href: "https://www.linkedin.com/company/devcoresolutions2",
+    iconUrl: resolveBrandIconUrls("linkedin").primary,
+    fallbackIconUrl: resolveBrandIconUrls("linkedin").fallback,
+  },
+  {
+    key: "github",
+    label: "GitHub",
+    handle: "@devcoresolutions2",
+    href: "https://github.com/devcoresolutions2",
+    iconUrl: resolveBrandIconUrls("github").primary,
+    fallbackIconUrl: resolveBrandIconUrls("github").fallback,
+  },
+  {
+    key: "twitter",
+    label: "X / Twitter",
+    handle: "@DevCoreSolution",
+    href: "https://x.com/DevCoreSolution",
+    iconUrl: resolveBrandIconUrls("x").primary,
+    fallbackIconUrl: resolveBrandIconUrls("x").fallback,
+  },
+  {
+    key: "facebook",
+    label: "Facebook",
+    handle: "devcoresolutionsofficial",
+    href: "https://www.facebook.com/devcoresolutionsofficial",
+    iconUrl: resolveBrandIconUrls("facebook").primary,
+    fallbackIconUrl: resolveBrandIconUrls("facebook").fallback,
+  },
+  {
+    key: "instagram",
+    label: "Instagram",
+    handle: "@devcoresolutionsofficial",
+    href: "https://www.instagram.com/devcoresolutionsofficial/",
+    iconUrl: resolveBrandIconUrls("instagram").primary,
+    fallbackIconUrl: resolveBrandIconUrls("instagram").fallback,
+  },
+  {
+    key: "youtube",
+    label: "YouTube",
+    handle: "@DevCoreSolutionsOfficial",
+    href: "https://www.youtube.com/@DevCoreSolutionsOfficial",
+    iconUrl: resolveBrandIconUrls("youtube").primary,
+    fallbackIconUrl: resolveBrandIconUrls("youtube").fallback,
+  },
+  {
+    key: "reddit",
+    label: "Reddit",
+    handle: "u/DevCoreSolutions2",
+    href: "https://www.reddit.com/user/DevCoreSolutions2/",
+    iconUrl: resolveBrandIconUrls("reddit").primary,
+    fallbackIconUrl: resolveBrandIconUrls("reddit").fallback,
+  },
 ];
+
+function SocialBrandBadge({ item }: { item: SocialItem }) {
+  const [src, setSrc] = useState(item.iconUrl);
+  const [failedAll, setFailedAll] = useState(false);
+
+  if (failedAll) {
+    return (
+      <Globe
+        size={15}
+        className="text-[var(--brand-primary)] shrink-0"
+        aria-hidden="true"
+      />
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={`${item.label} logo`}
+      width={16}
+      height={16}
+      loading="lazy"
+      onError={() => {
+        if (item.fallbackIconUrl && src !== item.fallbackIconUrl) {
+          setSrc(item.fallbackIconUrl);
+        } else {
+          setFailedAll(true);
+        }
+      }}
+      className="w-4 h-4 object-contain shrink-0 transition-transform duration-200 group-hover/soc:scale-110"
+    />
+  );
+}
 
 export function Footer() {
-  const [publicEmail, setPublicEmail] = useState("solutions@devcoresolutions.com");
-  const [socials, setSocials] = useState(SOCIALS);
+  const [publicEmail, setPublicEmail] = useState("dev.core.solution2@gmail.com");
+  const [socials, setSocials] = useState<SocialItem[]>(DEFAULT_SOCIALS);
+  const [copiedEmail, setCopiedEmail] = useState(false);
 
   useEffect(() => {
     const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
     fetch(`${base}/api/public/settings`)
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => (r.ok ? (r.json() as Promise<PublicSettingsPayload>) : null))
       .then((data) => {
         if (!data) return;
         if (typeof data.publicEmail === "string" && data.publicEmail.trim()) {
           setPublicEmail(data.publicEmail.trim());
         }
         if (Array.isArray(data.socialLinks) && data.socialLinks.length > 0) {
-          const mapped = data.socialLinks
-            .filter((l: any) => l && l.url && l.isEnabled !== false)
-            .map((l: any) => {
-              const key = `${l.platform || ""} ${l.label || ""} ${l.url || ""}`.toLowerCase();
-              const icon = key.includes("linkedin")
-                ? LinkedInIcon
-                : key.includes("github")
-                  ? GitHubIcon
-                  : key.includes("facebook")
-                    ? FacebookIcon
-                    : key.includes("youtube")
-                      ? YouTubeIcon
-                      : TwitterIcon;
+          const apiMapped: SocialItem[] = data.socialLinks
+            .filter(
+              (l): l is ApiSocialLink & { url: string } =>
+                Boolean(
+                  l &&
+                  typeof l.url === "string" &&
+                  l.url.trim() &&
+                  l.isEnabled !== false
+                )
+            )
+            .map((l) => {
+              const key = `${l.platform || ""} ${l.label || ""} ${l.url}`.toLowerCase();
+              const icons = resolveBrandIconUrls(key);
               return {
-                icon,
+                key,
                 label: l.label || l.platform || "Social",
+                handle: l.handle || l.label || "DevCore Solutions",
                 href: l.url,
+                iconUrl: icons.primary,
+                fallbackIconUrl: icons.fallback,
               };
             });
-          if (mapped.length > 0) setSocials(mapped);
+
+          const merged = [...apiMapped];
+          for (const def of DEFAULT_SOCIALS) {
+            const exists = merged.some(
+              (m) =>
+                m.label.toLowerCase() === def.label.toLowerCase() ||
+                m.href === def.href
+            );
+            if (!exists) merged.push(def);
+          }
+          if (merged.length > 0) setSocials(merged);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
+
+  const handleCopyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(publicEmail);
+      setCopiedEmail(true);
+      setTimeout(() => setCopiedEmail(false), 2000);
+    } catch {
+      // ignore restricted clipboard environments
+    }
+  };
+
+  const scrollToTop = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const currentYear = new Date().getFullYear();
 
   return (
     <footer
       id="footer"
-      className="bg-[var(--bg-surface)] border-t border-[var(--border-subtle)] pt-16 pb-10 px-4 sm:px-6"
       role="contentinfo"
       aria-label="Site footer"
+      style={{
+        paddingTop: "4.5rem",
+        paddingBottom: "2.5rem",
+        borderTop: "1px solid color-mix(in oklab, var(--border-strong) 65%, transparent)",
+        backgroundColor: "color-mix(in oklab, var(--bg-elevated) 92%, var(--bg-surface))",
+      }}
+      className="relative isolate overflow-hidden backdrop-blur-2xl px-4 sm:px-6"
     >
+      {/* Crisp Centered Accent Rule Along Top Border */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-8 sm:inset-x-24 top-0 h-[2px] bg-gradient-to-r from-transparent via-[var(--brand-primary)]/50 to-transparent"
+      />
+
+      {/* Subtle Architectural Blueprint Grid Texture */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.28]"
+        style={{
+          backgroundImage:
+            "radial-gradient(color-mix(in oklab, var(--brand-primary) 18%, transparent) 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+          maskImage:
+            "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.08) 100%)",
+          WebkitMaskImage:
+            "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.08) 100%)",
+        }}
+      />
+
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[var(--border-subtle)]">
-          {/* Brand col */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center">
-              <BrandLogo size="lg" />
+        {/* Main 12-Column Footer Grid */}
+        <div
+          style={{ paddingBottom: "3.25rem" }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 border-b border-[var(--border-subtle)]/85"
+        >
+          {/* Brand Column with Moving & Reflective Animated Logo (5 Cols) */}
+          <div className="lg:col-span-5 space-y-5 pr-0 lg:pr-6">
+            <div className="inline-flex items-center">
+              <motion.div
+                animate={{ y: [0, -3.5, 0] }}
+                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+                whileHover={{ scale: 1.03 }}
+                className="relative inline-flex items-center rounded-2xl p-1.5 overflow-hidden"
+              >
+                <BrandLogo size="lg" />
+
+                {/* Moving Light Reflection Sweep Across Logo */}
+                <motion.span
+                  aria-hidden="true"
+                  animate={{ x: ["-140%", "240%"] }}
+                  transition={{
+                    duration: 3.2,
+                    repeat: Infinity,
+                    repeatDelay: 3.5,
+                    ease: "easeInOut",
+                  }}
+                  className="pointer-events-none absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-transparent via-white/35 dark:via-teal-300/20 to-transparent skew-x-12"
+                />
+              </motion.div>
             </div>
 
-            <p className="text-xs text-[var(--text-secondary)] max-w-sm leading-relaxed">
-              "Building the Digital Core for a Smarter Tomorrow." Premium software engineering studio focused on
-              resilient SaaS platforms, cloud infrastructure, and AI-powered digital products.
+            <p className="text-sm text-[var(--text-secondary)] max-w-md leading-relaxed">
+              <strong className="text-[var(--text-primary)] font-semibold">
+                &ldquo;Building the Digital Core for a Smarter Tomorrow.&rdquo;
+              </strong>{" "}
+              Full-stack software engineering studio architecting resilient SaaS platforms, cloud infrastructure, and AI-powered digital products.
             </p>
 
-            <div className="font-mono text-xs text-[var(--text-muted)] space-y-1">
-              <div>Dhaka & Chattogram, Bangladesh</div>
-              <div>{publicEmail}</div>
+            {/* Studio Location & Copyable Email */}
+            <div className="space-y-2 font-mono text-xs">
+              <div className="flex items-center gap-2 text-[var(--text-muted)]">
+                <MapPin size={13} className="text-[var(--brand-primary)] shrink-0" />
+                <span>Dhaka &amp; Chattogram, Bangladesh · Global Remote</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Mail size={13} className="text-[var(--success)] shrink-0" />
+                <a
+                  href={`mailto:${publicEmail}`}
+                  className="text-[var(--text-primary)] font-semibold hover:text-[var(--brand-primary)] transition-colors"
+                >
+                  {publicEmail}
+                </a>
+                <button
+                  type="button"
+                  onClick={handleCopyEmail}
+                  title="Copy official email"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[10px] text-[var(--text-muted)] hover:text-[var(--brand-primary)] transition-colors cursor-pointer"
+                >
+                  {copiedEmail ? (
+                    <>
+                      <Check size={10} className="text-[var(--success)]" />
+                      <span className="text-[var(--success)]">Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={10} />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
-            {/* Social icons */}
-            <div className="flex items-center gap-2.5 pt-1">
-              {socials.map(({ icon: Icon, label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`DevCore on ${label}`}
-                  className="w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-200 shadow-xs bg-white text-[#4A5C6A] border border-[#CCD0CF] hover:bg-[#253745] hover:text-white hover:border-[#253745] hover:-translate-y-0.5 dark:bg-white/[0.08] dark:text-[#CCD0CF] dark:border-white/15 dark:hover:bg-[#8FB4C9] dark:hover:text-[#06141B] dark:hover:border-[#8FB4C9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#253745] focus-visible:ring-offset-2"
-                >
-                  <Icon className="w-4 h-4 shrink-0 fill-current" />
-                </a>
-              ))}
+            {/* Official Social Links with Real External Brand Icons */}
+            <div className="pt-1 space-y-2.5">
+              <div className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                <Sparkles size={11} className="text-[var(--brand-primary)]" />
+                <span>OFFICIAL DEVCORE CHANNELS</span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {socials.map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`DevCore Solutions on ${item.label} (${item.handle})`}
+                    title={`${item.label} · ${item.handle}`}
+                    className={cn(
+                      "group/soc w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 shadow-2xs",
+                      "bg-[var(--bg-surface)] border border-[var(--border-subtle)]",
+                      "hover:bg-[var(--bg-elevated)] hover:border-[var(--brand-primary)]/50 hover:-translate-y-0.5 hover:shadow-sm",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
+                    )}
+                  >
+                    <SocialBrandBadge item={item} />
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Capabilities */}
-          <nav aria-label="Capabilities links">
-            <div className="font-display font-bold text-xs uppercase tracking-wider text-[var(--text-primary)] mb-3">
-              Capabilities
-            </div>
-            <ul className="space-y-2">
-              {CAPABILITIES.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:underline"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          {/* Navigation Columns (7 Cols split into 3 structured columns) */}
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-8">
+            {/* Column 1: Capabilities */}
+            <nav aria-label="Capabilities links">
+              <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-[var(--brand-primary)] mb-4">
+                Capabilities
+              </div>
+              <ul className="space-y-2.5">
+                {CAPABILITIES.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="group/link inline-flex items-center gap-1 text-xs sm:text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium transition-colors"
+                    >
+                      <span>{link.label}</span>
+                      <ArrowUpRight
+                        size={11}
+                        className="opacity-0 -translate-x-1 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all text-[var(--brand-primary)]"
+                      />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
 
-          {/* Products & Proof */}
-          <nav aria-label="Products and proof links">
-            <div className="font-display font-bold text-xs uppercase tracking-wider text-[var(--text-primary)] mb-3">
-              Products & Proof
-            </div>
-            <ul className="space-y-2">
-              {PRODUCTS.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:underline"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+            {/* Column 2: Products & Proof */}
+            <nav aria-label="Products and proof links">
+              <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-[var(--brand-primary)] mb-4">
+                Products &amp; Proof
+              </div>
+              <ul className="space-y-2.5">
+                {PRODUCTS.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="group/link inline-flex items-center gap-1.5 text-xs sm:text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium transition-colors"
+                    >
+                      <span>{link.label}</span>
+                      {link.badge && (
+                        <span className="px-1.5 py-0.5 rounded bg-[var(--success)]/12 text-[var(--success)] font-mono text-[9px] font-bold">
+                          {link.badge}
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
 
-          {/* Legal */}
-          <nav aria-label="Legal links">
-            <div className="font-display font-bold text-xs uppercase tracking-wider text-[var(--text-primary)] mb-3">
-              Legal & Links
+            {/* Column 3: Company & Legal */}
+            <div className="space-y-6">
+              <nav aria-label="Company links">
+                <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-[var(--brand-primary)] mb-4">
+                  Company
+                </div>
+                <ul className="space-y-2.5">
+                  {COMPANY.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
+                        className="group/link inline-flex items-center gap-1.5 text-xs sm:text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium transition-colors"
+                      >
+                        <span>{link.label}</span>
+                        {link.badge && (
+                          <span className="px-1.5 py-0.5 rounded bg-[var(--brand-primary)]/12 text-[var(--brand-primary)] font-mono text-[9px] font-bold">
+                            {link.badge}
+                          </span>
+                        )}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+
+              <nav aria-label="Legal links">
+                <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] mb-3">
+                  Legal &amp; Security
+                </div>
+                <ul className="space-y-2">
+                  {LEGAL.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
+                        className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
             </div>
-            <ul className="space-y-2">
-              {LEGAL.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:underline"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
-          <div>
-            <span>&copy; {new Date().getFullYear()} DevCore Solutions. All rights reserved.</span>
-          </div>
-          <div className="text-xs font-medium flex items-center gap-4">
-            <span className="flex items-center gap-1.5 text-[var(--success)]">
-              <span
-                className="w-1.5 h-1.5 rounded-full bg-[var(--success)]"
-                aria-hidden="true"
-              />
-              All Systems Operational
+        {/* Bottom Copyright, Operational Status & Single Back-to-Top Arrow */}
+        <div
+          style={{ paddingTop: "2rem" }}
+          className="flex flex-col sm:flex-row items-center justify-between gap-4"
+        >
+          <div className="text-xs text-[var(--text-secondary)] font-medium text-center sm:text-left">
+            <span>
+              &copy; {currentYear}{" "}
+              <strong className="font-semibold text-[var(--text-primary)]">
+                DevCore Solutions
+              </strong>
+              . All rights reserved.
             </span>
+            <span className="hidden sm:inline text-[var(--text-muted)] font-mono text-[11px] ml-2">
+              · Engineered in Bangladesh
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--success)]/10 border border-[var(--success)]/25 font-mono text-[11px] font-semibold text-[var(--success)]">
+              <span className="relative flex size-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--success)] opacity-75" />
+                <span className="relative inline-flex rounded-full size-1.5 bg-[var(--success)]" />
+              </span>
+              <span>All Systems Operational</span>
+            </div>
+
+            <motion.button
+              type="button"
+              onClick={scrollToTop}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="Scroll back to top"
+              title="Back to top"
+              className="w-9 h-9 rounded-xl bg-[var(--brand-primary)] hover:bg-[var(--brand-hover)] text-[var(--brand-contrast)] flex items-center justify-center shadow-sm transition-colors cursor-pointer"
+            >
+              <ArrowUp size={15} />
+            </motion.button>
           </div>
         </div>
       </div>
