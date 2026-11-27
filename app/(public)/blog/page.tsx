@@ -34,12 +34,12 @@ export default async function BlogPage() {
   ]);
 
   return (
-    <main className="min-h-screen bg-[var(--bg-canvas)]">
-      {/* Editorial Hero */}
+    <main className="relative min-h-screen overflow-x-clip">
+      {/* Editorial Hero (Matches /careers 1:1) */}
       <BlogHero config={heroConfig} />
 
       {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 sm:pt-10 sm:pb-12">
         {/* Client Interactive View (Search, Category Filters, Sorting, Featured & Grid) */}
         <BlogClientView
           initialArticles={articles}
@@ -47,8 +47,10 @@ export default async function BlogPage() {
           featuredArticle={featuredArticle}
         />
 
-        {/* Newsletter Subscription Box */}
-        <NewsletterSection />
+        {/* Balanced Gap Separating Article Cards from Newsletter Card */}
+        <div className="mt-8 sm:mt-10">
+          <NewsletterSection />
+        </div>
       </div>
 
       {/* Floating Technical Support Hub */}

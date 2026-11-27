@@ -3,12 +3,15 @@ import { notFound } from "next/navigation";
 import { getArticleBySlug, getBlogArticles } from "@/lib/api";
 import { ArticleReader } from "./ArticleReader";
 import { NewsletterSection } from "@/components/blog/NewsletterSection";
+import { TechnicalSupportHub } from "@/components/blog/TechnicalSupportHub";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
 
@@ -27,8 +30,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: article.seoDescription || article.excerpt,
       type: "article",
       publishedTime: article.publishedAt,
-      authors: [article.authorName],
-      tags: article.tags,
+      authors: article.authorName ? [article.authorName] : ["DevCore Engineering"],
+      tags: article.tags || [],
     },
     twitter: {
       card: "summary_large_image",
@@ -55,16 +58,20 @@ export default async function BlogPostPage({ params }: PageProps) {
       : null;
 
   return (
-    <main className="min-h-screen bg-[var(--bg-canvas)]">
-      <ArticleReader
-        article={article}
-        prevArticle={prevArticle}
-        nextArticle={nextArticle}
-      />
+    <main className="relative min-h-screen overflow-x-clip">
+      <div className="relative z-10">
+        <ArticleReader
+          article={article}
+          prevArticle={prevArticle}
+          nextArticle={nextArticle}
+        />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <NewsletterSection />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-10 pb-8 sm:pb-12">
+          <NewsletterSection />
+        </div>
       </div>
+
+      <TechnicalSupportHub />
     </main>
   );
 }
