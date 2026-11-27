@@ -21,7 +21,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
 
         <main
           id="main-content"
-          className="flex-1 w-full max-w-full min-w-0 overflow-x-hidden pt-24 outline-none"
+          className="flex-1 w-full max-w-full min-w-0 overflow-x-hidden pt-24 sm:pt-28 outline-none"
           tabIndex={-1}
         >
           {children}

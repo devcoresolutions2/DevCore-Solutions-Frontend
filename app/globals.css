@@ -3778,6 +3778,9 @@
   .text-\[11px\] {
     font-size: 11px;
   }
+  .text-\[12\.5px\] {
+    font-size: 12.5px;
+  }
   .text-\[13\.5px\] {
     font-size: 13.5px;
   }
@@ -6644,6 +6647,9 @@
     }
     .xl\:col-span-8 {
       grid-column: span 8 / span 8;
+    }
+    .xl\:flex {
+      display: flex;
     }
     .xl\:inline {
       display: inline;
