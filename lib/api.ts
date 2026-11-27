@@ -96,8 +96,10 @@ interface RawBackendJob {
   createdAt?: string;
 }
 
-const BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/+$/, "");
-const USE_MOCK = !BASE_URL;
+const SERVER_BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/+$/, "");
+const BASE_URL =
+  typeof window !== "undefined" && SERVER_BASE_URL ? "/api/backend" : SERVER_BASE_URL;
+const USE_MOCK = !SERVER_BASE_URL;
 
 function formatFallbackWarning(context: string, err: unknown): void {
   const message = err instanceof Error ? err.message : String(err);
@@ -3220,6 +3222,12 @@ export async function apiDeleteAdminProject(id: string): Promise<{ deleted: bool
 
 export async function apiDeleteAdminLead(id: string): Promise<{ deleted: boolean; id: string }> {
   return await apiFetch(`/api/admin/leads/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+export async function apiDeleteAdminUser(id: string): Promise<{ deleted: boolean; id: string }> {
+  return await apiFetch(`/api/admin/users/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
 }
