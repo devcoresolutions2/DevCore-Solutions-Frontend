@@ -12,7 +12,8 @@ async function proxyRequest(
   const { path } = await context.params;
   const targetPath = path.join("/");
   const search = request.nextUrl.search;
-  const targetUrl = `${BACKEND_URL}/api/${targetPath}${search}`;
+  const normalizedPath = targetPath.startsWith("api/") ? targetPath : `api/${targetPath}`;
+  const targetUrl = `${BACKEND_URL}/${normalizedPath}${search}`;
 
   const headers = new Headers();
   const forwardHeaders = [
