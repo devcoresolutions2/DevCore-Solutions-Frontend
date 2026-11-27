@@ -249,8 +249,8 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#F4F6F7] dark:bg-[#06141B] text-[#253745] dark:text-[#CCD0CF] selection:bg-[#253745] selection:text-white dark:selection:bg-[#8FB4C9] dark:selection:text-[#06141B]">
-      {/* ─── LEFT PANEL: DARK DEVCORE BRANDING (45%) ─────────────────────── */}
-      <div className="relative w-full lg:w-[45%] bg-[#0B151C] text-white p-8 sm:p-12 lg:p-16 flex flex-col justify-between overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10">
+      {/* ─── LEFT PANEL: DARK DEVCORE BRANDING (45%, desktop only) ───────── */}
+      <div className="hidden lg:flex relative w-full lg:w-[45%] bg-[#0B151C] text-white p-8 sm:p-12 lg:p-16 flex-col justify-between overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10">
         {/* Subtle mesh illumination */}
         <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#253745]/30 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#8FB4C9]/15 rounded-full blur-[100px] pointer-events-none" />
@@ -349,7 +349,7 @@ export default function ForgotPasswordPage() {
       </div>
 
       {/* ─── RIGHT PANEL: RECOVERY INTERACTION (55%) ─────────────────────── */}
-      <div className="w-full lg:w-[55%] flex flex-col justify-between p-6 sm:p-12 lg:p-16">
+      <div className="w-full lg:w-[55%] min-h-screen flex flex-col justify-between p-4 sm:p-12 lg:p-16">
         {/* Top Bar: Back to Sign In */}
         <div className="flex items-center justify-between max-w-xl mx-auto w-full mb-8">
           <Link

@@ -305,7 +305,7 @@ export function VerifyEmailView() {
       {/* ────────────────────────────────────────────────────────────────────────
           LEFT BRAND PANEL (45% Width on Desktop) — Stitch Exact Specification
          ──────────────────────────────────────────────────────────────────────── */}
-      <div className="w-full lg:w-[45%] bg-[#131619] text-[#FAF8F5] relative overflow-hidden flex flex-col justify-between p-8 sm:p-12 lg:p-16 select-none border-b lg:border-b-0 lg:border-r border-white/10">
+      <div className="hidden lg:flex w-full lg:w-[45%] bg-[#131619] text-[#FAF8F5] relative overflow-hidden flex-col justify-between p-8 sm:p-12 lg:p-16 select-none border-b lg:border-b-0 lg:border-r border-white/10">
         {/* Subsurface Ambient Radial Glows */}
         <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#546571]/25 blur-[120px] pointer-events-none" />
         <div className="absolute top-1/2 -right-24 w-80 h-80 rounded-full bg-[#F5E9CC]/10 blur-[130px] pointer-events-none" />
@@ -416,7 +416,7 @@ export function VerifyEmailView() {
       {/* ────────────────────────────────────────────────────────────────────────
           RIGHT INTERACTION PANEL (55% Width on Desktop)
          ──────────────────────────────────────────────────────────────────────── */}
-      <div className="w-full lg:w-[55%] bg-[var(--bg-canvas)] flex flex-col justify-between p-6 sm:p-10 lg:p-14 relative">
+      <div className="w-full lg:w-[55%] min-h-screen bg-[var(--bg-canvas)] flex flex-col justify-between p-4 sm:p-10 lg:p-14 relative">
         {/* Top Operational Bar */}
         <div className="flex items-center justify-between pb-6 border-b border-[var(--border-subtle)]">
           <Link
