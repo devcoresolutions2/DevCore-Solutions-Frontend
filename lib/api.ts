@@ -258,8 +258,10 @@ export async function getProjectBySlug(slug: string): Promise<ProjectItem | null
 export async function getServices(): Promise<ServiceItem[]> {
   if (USE_MOCK) return MOCK_SERVICES;
   try {
-    const raw = await apiFetch<RawBackendService[]>("/api/public/services");
-    if (Array.isArray(raw) && raw.length > 0) {
+    const raw = await apiFetch<RawBackendService[]>("/api/public/services", {
+      cache: "no-store",
+    });
+    if (Array.isArray(raw)) {
       return raw.map((item, idx) => ({
         id: item.id || String(idx + 1),
         title: item.title,
@@ -287,10 +289,10 @@ export async function getServices(): Promise<ServiceItem[]> {
         gridSpan: item.gridSpan || (idx === 0 ? "large" : idx === 1 ? "medium" : "small"),
       }));
     }
-    return MOCK_SERVICES;
+    return [];
   } catch (err) {
-    formatFallbackWarning("services", err);
-    return MOCK_SERVICES;
+    console.error("[api] Failed to fetch services from backend:", err);
+    return [];
   }
 }
 
@@ -486,8 +488,10 @@ export async function getJobs(params?: {
   }
 
   try {
-    const raw = await apiFetch<RawBackendJob[]>("/api/public/jobs");
-    if (Array.isArray(raw) && raw.length > 0) {
+    const raw = await apiFetch<RawBackendJob[]>("/api/public/jobs", {
+      cache: "no-store",
+    });
+    if (Array.isArray(raw)) {
       const mapped: JobItem[] = raw.map((j) => ({
         id: j.id,
         slug: j.slug || j.id,
@@ -495,7 +499,10 @@ export async function getJobs(params?: {
         department: j.department || "Engineering",
         location: j.location || "Dhaka / Remote",
         type: j.type || "Full-time",
-        workplaceType: j.workplaceType || "Remote",
+        workplaceType:
+          j.workplaceType === "Hybrid" || j.workplaceType === "On-site"
+            ? j.workplaceType
+            : "Remote",
         description: j.description || "",
         skills: Array.isArray(j.skills) ? j.skills : [],
         responsibilities: Array.isArray(j.responsibilities) ? j.responsibilities : [],
@@ -507,12 +514,10 @@ export async function getJobs(params?: {
       if (filterStatus === "ALL") return mapped;
       return mapped.filter((j) => j.status === filterStatus);
     }
-    if (filterStatus === "ALL") return MOCK_JOBS;
-    return MOCK_JOBS.filter((j) => j.status === filterStatus);
+    return [];
   } catch (err) {
-    formatFallbackWarning("jobs", err);
-    if (filterStatus === "ALL") return MOCK_JOBS;
-    return MOCK_JOBS.filter((j) => j.status === filterStatus);
+    console.error("[api] Failed to fetch jobs from backend:", err);
+    return [];
   }
 }
 
@@ -521,7 +526,10 @@ export async function getJobById(id: string): Promise<JobItem | null> {
     return MOCK_JOBS.find((j) => j.id === id || j.slug === id) ?? null;
   }
   try {
-    const j = await apiFetch<RawBackendJob | null>(`/api/public/jobs/${encodeURIComponent(id)}`);
+    const j = await apiFetch<RawBackendJob | null>(
+      `/api/public/jobs/${encodeURIComponent(id)}`,
+      { cache: "no-store" }
+    );
     if (j) {
       return {
         id: j.id,
@@ -530,7 +538,10 @@ export async function getJobById(id: string): Promise<JobItem | null> {
         department: j.department || "Engineering",
         location: j.location || "Dhaka / Remote",
         type: j.type || "Full-time",
-        workplaceType: j.workplaceType || "Remote",
+        workplaceType:
+          j.workplaceType === "Hybrid" || j.workplaceType === "On-site"
+            ? j.workplaceType
+            : "Remote",
         description: j.description || "",
         skills: Array.isArray(j.skills) ? j.skills : [],
         responsibilities: Array.isArray(j.responsibilities) ? j.responsibilities : [],
@@ -540,10 +551,56 @@ export async function getJobById(id: string): Promise<JobItem | null> {
         createdAt: j.createdAt,
       };
     }
-    return MOCK_JOBS.find((m) => m.id === id || m.slug === id) ?? null;
+    return null;
   } catch {
-    return MOCK_JOBS.find((m) => m.id === id || m.slug === id) ?? null;
+    return null;
   }
+}
+
+export async function uploadResumeFile(
+  file: File
+): Promise<{ url: string; fileName: string }> {
+  if (USE_MOCK) {
+    return { url: "", fileName: file.name };
+  }
+
+  const sig = await apiFetch<{
+    signature: string;
+    timestamp: number;
+    apiKey: string;
+    cloudName: string;
+    folder: string;
+    publicId: string;
+    uploadUrl: string;
+  }>("/api/public/jobs/resume-signature", {
+    method: "POST",
+    body: JSON.stringify({ fileName: file.name }),
+  });
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("api_key", sig.apiKey);
+  formData.append("timestamp", String(sig.timestamp));
+  formData.append("signature", sig.signature);
+  formData.append("folder", sig.folder);
+  formData.append("public_id", sig.publicId);
+
+  const uploadRes = await fetch(sig.uploadUrl, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!uploadRes.ok) {
+    const errText = await uploadRes.text().catch(() => "");
+    throw new Error(errText || "Failed to upload resume file to storage.");
+  }
+
+  const uploaded = (await uploadRes.json()) as { secure_url?: string };
+  if (!uploaded.secure_url) {
+    throw new Error("Resume upload succeeded without a file URL.");
+  }
+
+  return { url: uploaded.secure_url, fileName: file.name };
 }
 
 export async function submitJobApplication(
@@ -576,10 +633,13 @@ export async function submitJobApplication(
 
   const backendBody = {
     jobId: payload.jobId,
+    jobTitle: payload.jobTitle,
     name: payload.name,
     email: payload.email,
     phone: payload.phone,
-    resumePublicId: payload.resumeFileName || payload.resumeUrl || "resume_uploaded",
+    resumeUrl: payload.resumeUrl,
+    resumeFileName: payload.resumeFileName,
+    resumePublicId: payload.resumeUrl || payload.resumeFileName || "resume_uploaded",
     portfolioUrl: payload.portfolioUrl || payload.githubUrl,
     message: payload.message,
   };
@@ -606,27 +666,100 @@ export async function submitJobApplication(
 export async function getSubmittedApplications(): Promise<SubmittedApplicationItem[]> {
   if (USE_MOCK) return IN_MEMORY_APPLICATIONS;
   try {
-    return await apiFetch<SubmittedApplicationItem[]>("/api/admin/applications");
-  } catch {
-    return IN_MEMORY_APPLICATIONS;
+    return await apiFetch<SubmittedApplicationItem[]>("/api/admin/applications", {
+      cache: "no-store",
+    });
+  } catch (err) {
+    console.error("[api] Failed to fetch applications from backend:", err);
+    return [];
   }
+}
+
+export async function deleteJobApplication(appId: string): Promise<boolean> {
+  const idx = IN_MEMORY_APPLICATIONS.findIndex((a) => a.id === appId);
+  if (idx !== -1) IN_MEMORY_APPLICATIONS.splice(idx, 1);
+  if (!USE_MOCK) {
+    await apiFetch(`/api/admin/applications/${encodeURIComponent(appId)}`, {
+      method: "DELETE",
+    });
+  }
+  return true;
 }
 
 export async function updateJobStatus(
   jobId: string,
   status: "OPEN" | "CLOSED"
 ): Promise<boolean> {
-  const target = MOCK_JOBS.find((j) => j.id === jobId);
-  if (target) target.status = status;
   if (!USE_MOCK) {
-    try {
-      await apiFetch(`/api/admin/jobs/${encodeURIComponent(jobId)}/status`, {
-        method: "PATCH",
-        body: JSON.stringify({ status }),
-      });
-    } catch {
-      // ignore
-    }
+    await apiFetch(`/api/admin/jobs/${encodeURIComponent(jobId)}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
+  }
+  return true;
+}
+
+export async function createJob(payload: {
+  title: string;
+  department: string;
+  location?: string;
+  type?: string;
+  workplaceType?: "Remote" | "Hybrid" | "On-site";
+  description: string;
+  skills?: string[];
+  responsibilities?: string[];
+  requirements?: string[];
+  salary?: string;
+}): Promise<JobItem> {
+  const normalizeWorkplace = (val?: string): "Remote" | "Hybrid" | "On-site" =>
+    val === "Hybrid" || val === "On-site" ? val : "Remote";
+
+  if (USE_MOCK) {
+    const mockJob: JobItem = {
+      id: `job-${Date.now()}`,
+      slug: payload.title.toLowerCase().replace(/\s+/g, "-"),
+      title: payload.title,
+      department: payload.department,
+      location: payload.location || "Remote",
+      type: payload.type || "Full-time",
+      workplaceType: normalizeWorkplace(payload.workplaceType),
+      description: payload.description,
+      skills: payload.skills || [],
+      status: "OPEN",
+      createdAt: new Date().toISOString(),
+    };
+    MOCK_JOBS.unshift(mockJob);
+    return mockJob;
+  }
+
+  const raw = await apiFetch<RawBackendJob>("/api/admin/jobs", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+  return {
+    id: raw.id,
+    slug: raw.slug || raw.id,
+    title: raw.title,
+    department: raw.department || "Engineering",
+    location: raw.location || "Remote",
+    type: raw.type || "Full-time",
+    workplaceType: normalizeWorkplace(raw.workplaceType),
+    description: raw.description || "",
+    skills: Array.isArray(raw.skills) ? raw.skills : [],
+    responsibilities: Array.isArray(raw.responsibilities) ? raw.responsibilities : [],
+    requirements: Array.isArray(raw.requirements) ? raw.requirements : [],
+    salary: raw.salary,
+    status: raw.status || "OPEN",
+    createdAt: raw.createdAt,
+  };
+}
+
+export async function deleteJob(jobId: string): Promise<boolean> {
+  if (!USE_MOCK) {
+    await apiFetch(`/api/admin/jobs/${encodeURIComponent(jobId)}`, {
+      method: "DELETE",
+    });
   }
   return true;
 }
@@ -655,7 +788,9 @@ export async function updateApplicationStatus(
 export async function getAboutContent(): Promise<AboutGeneralContent> {
   if (USE_MOCK) return IN_MEMORY_ABOUT_CONTENT;
   try {
-    return await apiFetch<AboutGeneralContent>("/api/public/about");
+    return await apiFetch<AboutGeneralContent>("/api/public/about", {
+      cache: "no-store",
+    });
   } catch (err) {
     formatFallbackWarning("about content", err);
     return IN_MEMORY_ABOUT_CONTENT;
@@ -665,17 +800,13 @@ export async function getAboutContent(): Promise<AboutGeneralContent> {
 export async function updateAboutContent(
   payload: Partial<AboutGeneralContent>
 ): Promise<AboutGeneralContent> {
-  Object.assign(IN_MEMORY_ABOUT_CONTENT, payload);
   if (!USE_MOCK) {
-    try {
-      return await apiFetch<AboutGeneralContent>("/api/admin/about", {
-        method: "PATCH",
-        body: JSON.stringify(payload),
-      });
-    } catch {
-      // ignore
-    }
+    return await apiFetch<AboutGeneralContent>("/api/admin/about", {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
   }
+  Object.assign(IN_MEMORY_ABOUT_CONTENT, payload);
   return IN_MEMORY_ABOUT_CONTENT;
 }
 
@@ -691,13 +822,12 @@ export async function getEngineeringPrinciples(params?: {
   }
   try {
     const q = params?.publishedOnly ? "?publishedOnly=true" : "";
-    return await apiFetch<EngineeringPrincipleItem[]>(`/api/public/about/principles${q}`);
-  } catch {
-    let items = [...IN_MEMORY_ENGINEERING_PRINCIPLES];
-    if (params?.publishedOnly) {
-      items = items.filter((p) => p.isPublished);
-    }
-    return items.sort((a, b) => a.orderIndex - b.orderIndex);
+    return await apiFetch<EngineeringPrincipleItem[]>(`/api/public/about/principles${q}`, {
+      cache: "no-store",
+    });
+  } catch (err) {
+    console.error("[api] Failed to fetch engineering principles:", err);
+    return [];
   }
 }
 
@@ -797,32 +927,27 @@ export async function getTeamMembers(params?: {
   }
   try {
     const q = params?.publishedOnly ? "?publishedOnly=true" : "";
-    return await apiFetch<TeamMemberItem[]>(`/api/public/about/team${q}`);
-  } catch {
-    let items = [...IN_MEMORY_TEAM_MEMBERS];
-    if (params?.publishedOnly) {
-      items = items.filter((m) => m.isPublished);
-    }
-    return items.sort((a, b) => a.displayOrder - b.displayOrder);
+    return await apiFetch<TeamMemberItem[]>(`/api/public/about/team${q}`, {
+      cache: "no-store",
+    });
+  } catch (err) {
+    console.error("[api] Failed to fetch team members:", err);
+    return [];
   }
 }
 
 export async function createTeamMember(
   payload: Omit<TeamMemberItem, "id">
 ): Promise<TeamMemberItem> {
+  if (!USE_MOCK) {
+    return await apiFetch<TeamMemberItem>("/api/admin/about/team", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
   const newId = `team-${Date.now()}`;
   const newItem: TeamMemberItem = { id: newId, ...payload };
   IN_MEMORY_TEAM_MEMBERS.push(newItem);
-  if (!USE_MOCK) {
-    try {
-      return await apiFetch<TeamMemberItem>("/api/admin/about/team", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
-    } catch {
-      // ignore
-    }
-  }
   return newItem;
 }
 
@@ -830,54 +955,44 @@ export async function updateTeamMember(
   id: string,
   payload: Partial<TeamMemberItem>
 ): Promise<TeamMemberItem> {
+  if (!USE_MOCK) {
+    return await apiFetch<TeamMemberItem>(`/api/admin/about/team/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+  }
   const idx = IN_MEMORY_TEAM_MEMBERS.findIndex((m) => m.id === id);
   if (idx !== -1) {
     IN_MEMORY_TEAM_MEMBERS[idx] = { ...IN_MEMORY_TEAM_MEMBERS[idx], ...payload };
-  }
-  if (!USE_MOCK) {
-    try {
-      return await apiFetch<TeamMemberItem>(`/api/admin/about/team/${encodeURIComponent(id)}`, {
-        method: "PATCH",
-        body: JSON.stringify(payload),
-      });
-    } catch {
-      // ignore
-    }
   }
   return idx !== -1 ? IN_MEMORY_TEAM_MEMBERS[idx] : (payload as TeamMemberItem);
 }
 
 export async function deleteTeamMember(id: string): Promise<boolean> {
+  if (!USE_MOCK) {
+    await apiFetch(`/api/admin/about/team/${encodeURIComponent(id)}`, { method: "DELETE" });
+    return true;
+  }
   const idx = IN_MEMORY_TEAM_MEMBERS.findIndex((m) => m.id === id);
   if (idx !== -1) {
     IN_MEMORY_TEAM_MEMBERS.splice(idx, 1);
-  }
-  if (!USE_MOCK) {
-    try {
-      await apiFetch(`/api/admin/about/team/${encodeURIComponent(id)}`, { method: "DELETE" });
-    } catch {
-      // ignore
-    }
   }
   return true;
 }
 
 export async function reorderTeamMembers(ids: string[]): Promise<boolean> {
+  if (!USE_MOCK) {
+    await apiFetch("/api/admin/about/team/reorder", {
+      method: "POST",
+      body: JSON.stringify({ ids }),
+    });
+    return true;
+  }
   ids.forEach((id, index) => {
     const item = IN_MEMORY_TEAM_MEMBERS.find((m) => m.id === id);
     if (item) item.displayOrder = index + 1;
   });
   IN_MEMORY_TEAM_MEMBERS.sort((a, b) => a.displayOrder - b.displayOrder);
-  if (!USE_MOCK) {
-    try {
-      await apiFetch("/api/admin/about/team/reorder", {
-        method: "POST",
-        body: JSON.stringify({ ids }),
-      });
-    } catch {
-      // ignore
-    }
-  }
   return true;
 }
 
@@ -1206,7 +1321,7 @@ export async function createBlogArticle(
   data: Omit<BlogArticleItem, "id" | "updatedAt">
 ): Promise<BlogArticleItem> {
   const now = new Date().toISOString();
-  const newArticle: BlogArticleItem = {
+  const payload: BlogArticleItem = {
     ...data,
     id: `post-${Date.now()}`,
     readTime: data.readTime || `${data.readingMinutes || 5} min read`,
@@ -1216,26 +1331,32 @@ export async function createBlogArticle(
     tags: data.tags || [],
     categorySlug: data.categorySlug || data.category.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
   };
-  IN_MEMORY_BLOG_ARTICLES.unshift(newArticle);
 
   if (!USE_MOCK) {
-    try {
-      const res = await apiFetch<BlogArticleItem>("/api/admin/blog/articles", {
-        method: "POST",
-        body: JSON.stringify(newArticle),
-      });
-      if (res) return res;
-    } catch {
-      // ignore
-    }
+    return await apiFetch<BlogArticleItem>("/api/admin/blog/articles", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
   }
-  return newArticle;
+
+  IN_MEMORY_BLOG_ARTICLES.unshift(payload);
+  return payload;
 }
 
 export async function updateBlogArticle(
   id: string,
   data: Partial<BlogArticleItem>
 ): Promise<BlogArticleItem> {
+  if (!USE_MOCK) {
+    return await apiFetch<BlogArticleItem>(
+      `/api/admin/blog/articles/${encodeURIComponent(id)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    );
+  }
+
   const idx = IN_MEMORY_BLOG_ARTICLES.findIndex((a) => a.id === id);
   if (idx !== -1) {
     const existing = IN_MEMORY_BLOG_ARTICLES[idx];
@@ -1246,34 +1367,21 @@ export async function updateBlogArticle(
       publishedAt: data.publishedAt || existing.publishedAt,
     };
     IN_MEMORY_BLOG_ARTICLES[idx] = updated;
+    return updated;
   }
-  if (!USE_MOCK) {
-    try {
-      const res = await apiFetch<BlogArticleItem>(
-        `/api/admin/blog/articles/${encodeURIComponent(id)}`,
-        {
-          method: "PUT",
-          body: JSON.stringify(data),
-        }
-      );
-      if (res) return res;
-    } catch {
-      // ignore
-    }
-  }
-  return IN_MEMORY_BLOG_ARTICLES[idx] || (data as BlogArticleItem);
+  return data as BlogArticleItem;
 }
 
 export async function deleteBlogArticle(id: string): Promise<boolean> {
+  if (!USE_MOCK) {
+    await apiFetch(`/api/admin/blog/articles/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    return true;
+  }
+
   const idx = IN_MEMORY_BLOG_ARTICLES.findIndex((a) => a.id === id);
   if (idx !== -1) IN_MEMORY_BLOG_ARTICLES.splice(idx, 1);
-  if (!USE_MOCK) {
-    try {
-      await apiFetch(`/api/admin/blog/articles/${encodeURIComponent(id)}`, { method: "DELETE" });
-    } catch {
-      // ignore
-    }
-  }
   return true;
 }
 

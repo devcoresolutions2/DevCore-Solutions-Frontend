@@ -289,7 +289,7 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
                     }
                   }}
                   className={cn(
-                    "relative px-2.5 xl:px-3 py-1.5 rounded-lg text-[13px] xl:text-sm transition-colors duration-150 select-none whitespace-nowrap",
+                    "relative px-2 xl:px-3 py-1.5 rounded-lg text-[12.5px] xl:text-sm transition-colors duration-150 select-none whitespace-nowrap",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]",
                     active
                       ? "text-[var(--brand-contrast)] font-semibold"
@@ -364,7 +364,7 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
                 rel="noopener noreferrer"
                 className={cn(
                   "w-9 h-9 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)]/75",
-                  "flex items-center justify-center text-[var(--success)]",
+                  "hidden sm:flex items-center justify-center text-[var(--success)]",
                   "hover:bg-[var(--bg-elevated)] hover:border-[var(--success)]/60 hover:shadow-sm transition-colors duration-150",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
                 )}
@@ -383,7 +383,7 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
                 href={`tel:${phone}`}
                 className={cn(
                   "w-9 h-9 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)]/75",
-                  "hidden md:flex items-center justify-center text-[var(--text-primary)]",
+                  "hidden sm:flex items-center justify-center text-[var(--text-primary)]",
                   "hover:bg-[var(--bg-elevated)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors duration-150",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
                 )}
@@ -505,28 +505,8 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
               </Link>
             )}
 
-            {/* Primary CTA Button */}
-            {isAdmin ? (
-              <Link
-                href="/admin/dashboard"
-                className={cn(
-                  "hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold group",
-                  "h-9 px-3.5 xl:px-4 rounded-xl",
-                  "bg-[var(--brand-primary)] text-[var(--brand-contrast)]",
-                  "hover:bg-[var(--brand-hover)] transition-all duration-200",
-                  "shadow-sm btn-liquid-hover whitespace-nowrap",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2"
-                )}
-              >
-                <Shield size={13} aria-hidden="true" />
-                <span>Admin Dashboard</span>
-                <ArrowRight
-                  size={13}
-                  aria-hidden="true"
-                  className="transition-transform duration-200 group-hover:translate-x-0.5"
-                />
-              </Link>
-            ) : (
+            {/* Primary CTA Button (hidden when admin is signed in, since Admin Dashboard is in the user menu) */}
+            {!isAdmin && (
               <Link
                 href="/contact"
                 className={cn(

@@ -5,6 +5,8 @@ import { ArticleReader } from "./ArticleReader";
 import { NewsletterSection } from "@/components/blog/NewsletterSection";
 import { TechnicalSupportHub } from "@/components/blog/TechnicalSupportHub";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }

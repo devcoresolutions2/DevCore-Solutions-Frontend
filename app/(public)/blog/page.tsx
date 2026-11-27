@@ -22,8 +22,7 @@ export const metadata: Metadata = {
   },
 };
 
-// Revalidate every 60s
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function BlogPage() {
   const [heroConfig, categories, articles, featuredArticle] = await Promise.all([

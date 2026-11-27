@@ -6,6 +6,8 @@ import {
 } from "@/lib/api";
 import { AboutClientCoordinator } from "@/components/about/AboutClientCoordinator";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "About DevCore Solutions — Engineering Craftsmanship & Principles",
   description:

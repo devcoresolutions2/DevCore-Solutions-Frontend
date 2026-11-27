@@ -35,6 +35,9 @@ import {
   getServices,
   updateJobStatus,
   updateApplicationStatus,
+  deleteJobApplication,
+  createJob,
+  deleteJob,
   apiGetSession,
   apiSignOut,
   apiCreateAdminService,
@@ -88,8 +91,14 @@ function AdminDashboardContent() {
   const [deleteSvcTarget, setDeleteSvcTarget] = useState<ServiceItem | null>(null);
   const [deletingSvc, setDeletingSvc] = useState(false);
 
-  // Application details modal state
+  // Application details & delete modal state
   const [selectedApp, setSelectedApp] = useState<SubmittedApplicationItem | null>(null);
+  const [deleteAppTarget, setDeleteAppTarget] = useState<SubmittedApplicationItem | null>(null);
+  const [deletingApp, setDeletingApp] = useState(false);
+
+  // Job delete modal state
+  const [deleteJobTarget, setDeleteJobTarget] = useState<JobItem | null>(null);
+  const [deletingJob, setDeletingJob] = useState(false);
 
   const loadData = async () => {
     try {
@@ -171,6 +180,37 @@ function AdminDashboardContent() {
     }
   };
 
+  const confirmDeleteApplication = async () => {
+    if (!deleteAppTarget) return;
+    setDeletingApp(true);
+    try {
+      await deleteJobApplication(deleteAppTarget.id);
+      setApplications((prev) => prev.filter((a) => a.id !== deleteAppTarget.id));
+      if (selectedApp?.id === deleteAppTarget.id) setSelectedApp(null);
+      setDeleteAppTarget(null);
+      toast.success("Application deleted.");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to delete application.");
+    } finally {
+      setDeletingApp(false);
+    }
+  };
+
+  const confirmDeleteJob = async () => {
+    if (!deleteJobTarget) return;
+    setDeletingJob(true);
+    try {
+      await deleteJob(deleteJobTarget.id);
+      setJobs((prev) => prev.filter((j) => j.id !== deleteJobTarget.id));
+      setDeleteJobTarget(null);
+      toast.success("Job position deleted.");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to delete job position.");
+    } finally {
+      setDeletingJob(false);
+    }
+  };
+
   const handleToggleJobStatus = async (job: JobItem) => {
     const nextStatus = job.status === "OPEN" ? "CLOSED" : "OPEN";
     await updateJobStatus(job.id, nextStatus);
@@ -188,33 +228,33 @@ function AdminDashboardContent() {
     toast.success(`Application status updated to ${status}`);
   };
 
-  const handleCreateJob = (e: React.FormEvent) => {
+  const handleCreateJob = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newDescription.trim()) {
       toast.error("Please fill in title and description.");
       return;
     }
 
-    const created: JobItem = {
-      id: `job-${Date.now()}`,
-      slug: newTitle.toLowerCase().replace(/\s+/g, "-"),
-      title: newTitle.trim(),
-      department: newDepartment,
-      location: "Dhaka / Remote",
-      type: newType,
-      workplaceType: newWorkplace,
-      description: newDescription.trim(),
-      skills: newSkills.split(",").map((s) => s.trim()).filter(Boolean),
-      status: "OPEN",
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      await createJob({
+        title: newTitle.trim(),
+        department: newDepartment,
+        location: "Dhaka / Remote",
+        type: newType,
+        workplaceType: newWorkplace,
+        description: newDescription.trim(),
+        skills: newSkills.split(",").map((s) => s.trim()).filter(Boolean),
+      });
 
-    setJobs((prev) => [created, ...prev]);
-    setShowAddJobModal(false);
-    setNewTitle("");
-    setNewDescription("");
-    setNewSkills("");
-    toast.success(`Job position "${created.title}" published!`);
+      setShowAddJobModal(false);
+      setNewTitle("");
+      setNewDescription("");
+      setNewSkills("");
+      await loadData();
+      toast.success(`Job position "${newTitle.trim()}" published!`);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to create job position.");
+    }
   };
 
   return (
@@ -353,7 +393,7 @@ function AdminDashboardContent() {
       {/* TAB 1: JOB POSTINGS */}
       {activeTab === "jobs" && (
         <section className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="font-display font-bold text-lg text-[var(--text-primary)]">
                 Active & Configured Openings
@@ -366,45 +406,42 @@ function AdminDashboardContent() {
             <button
               type="button"
               onClick={() => setShowAddJobModal(true)}
-              className="h-9 px-4 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors inline-flex items-center gap-1.5 shadow-sm"
+              className="h-9 px-4 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] text-xs font-semibold hover:bg-[var(--brand-hover)] transition-colors inline-flex items-center justify-center gap-1.5 shadow-sm shrink-0 self-start sm:self-auto"
             >
               <Plus size={14} />
               <span>Create Position</span>
             </button>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-sm">
-            <table className="w-full text-left border-collapse text-xs min-w-[700px]">
-              <thead>
-                <tr className="bg-[var(--bg-surface)] text-[var(--text-secondary)] font-mono uppercase tracking-wider border-b border-[var(--border-subtle)]">
-                  <th className="py-3 px-4 font-bold">Role Title</th>
-                  <th className="py-3 px-4 font-bold">Department</th>
-                  <th className="py-3 px-4 font-bold">Workplace / Type</th>
-                  <th className="py-3 px-4 font-bold">Status</th>
-                  <th className="py-3 px-4 text-right font-bold">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--border-subtle)]">
+          {jobs.length === 0 ? (
+            <div className="p-10 text-center rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] space-y-2">
+              <Briefcase size={26} className="text-[var(--text-muted)] mx-auto" />
+              <h3 className="font-bold text-sm text-[var(--text-primary)]">No job postings yet</h3>
+              <p className="text-xs text-[var(--text-secondary)] max-w-sm mx-auto">
+                Click &ldquo;Create Position&rdquo; to publish an open role to the Careers page.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Mobile Cards (< md) */}
+              <div className="md:hidden flex flex-col gap-3">
                 {jobs.map((job) => (
-                  <tr key={job.id} className="hover:bg-[var(--bg-surface)]/60 transition-colors">
-                    <td className="py-3.5 px-4">
-                      <span className="font-bold text-[var(--text-primary)] block">
-                        {job.title}
-                      </span>
-                      <span className="text-[11px] text-[var(--text-muted)] font-mono">
-                        {job.slug}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 font-mono text-[11px] text-[var(--text-secondary)]">
-                      {job.department}
-                    </td>
-                    <td className="py-3.5 px-4 text-[11px] text-[var(--text-secondary)]">
-                      {job.workplaceType} &bull; {job.type}
-                    </td>
-                    <td className="py-3.5 px-4">
+                  <div
+                    key={job.id}
+                    className="p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-sm space-y-3"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-sm text-[var(--text-primary)] truncate">
+                          {job.title}
+                        </h3>
+                        <p className="text-[11px] font-mono text-[var(--text-muted)] truncate">
+                          {job.slug}
+                        </p>
+                      </div>
                       <span
                         className={cn(
-                          "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold",
+                          "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold shrink-0",
                           job.status === "OPEN"
                             ? "bg-[var(--success)]/15 text-[var(--success)]"
                             : "bg-[var(--text-muted)]/15 text-[var(--text-muted)]"
@@ -418,13 +455,23 @@ function AdminDashboardContent() {
                         />
                         {job.status}
                       </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 text-[11px] text-[var(--text-secondary)]">
+                      <span className="px-2 py-0.5 rounded bg-[var(--bg-surface)] border border-[var(--border-subtle)] font-mono">
+                        {job.department}
+                      </span>
+                      <span>
+                        {job.workplaceType} &bull; {job.type}
+                      </span>
+                    </div>
+
+                    <div className="pt-2 border-t border-[var(--border-subtle)] flex items-center justify-end gap-2">
                       <button
                         type="button"
                         onClick={() => handleToggleJobStatus(job)}
                         className={cn(
-                          "px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors",
+                          "flex-1 h-8 px-3 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap",
                           job.status === "OPEN"
                             ? "bg-[var(--bg-surface)] hover:bg-[var(--error)]/15 hover:text-[var(--error)] text-[var(--text-secondary)] border border-[var(--border-subtle)]"
                             : "bg-[var(--success)]/15 text-[var(--success)] hover:bg-[var(--success)]/25"
@@ -432,12 +479,97 @@ function AdminDashboardContent() {
                       >
                         {job.status === "OPEN" ? "Close Role" : "Re-Open Role"}
                       </button>
-                    </td>
-                  </tr>
+                      <button
+                        type="button"
+                        onClick={() => setDeleteJobTarget(job)}
+                        aria-label={`Delete ${job.title}`}
+                        className="h-8 w-8 rounded-lg inline-flex items-center justify-center bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-[var(--error)] hover:border-[var(--error)]/40 transition-colors shrink-0"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </div>
+
+              {/* Desktop Table (>= md) */}
+              <div className="hidden md:block overflow-x-auto rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-sm">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-[var(--bg-surface)] text-[var(--text-secondary)] font-mono uppercase tracking-wider border-b border-[var(--border-subtle)]">
+                      <th className="py-3 px-4 font-bold">Role Title</th>
+                      <th className="py-3 px-4 font-bold">Department</th>
+                      <th className="py-3 px-4 font-bold">Workplace / Type</th>
+                      <th className="py-3 px-4 font-bold">Status</th>
+                      <th className="py-3 px-4 text-right font-bold">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border-subtle)]">
+                    {jobs.map((job) => (
+                      <tr key={job.id} className="hover:bg-[var(--bg-surface)]/60 transition-colors">
+                        <td className="py-3.5 px-4 max-w-[240px]">
+                          <span className="font-bold text-[var(--text-primary)] block truncate">
+                            {job.title}
+                          </span>
+                          <span className="text-[11px] text-[var(--text-muted)] font-mono block truncate">
+                            {job.slug}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 font-mono text-[11px] text-[var(--text-secondary)] whitespace-nowrap">
+                          {job.department}
+                        </td>
+                        <td className="py-3.5 px-4 text-[11px] text-[var(--text-secondary)] whitespace-nowrap">
+                          {job.workplaceType} &bull; {job.type}
+                        </td>
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <span
+                            className={cn(
+                              "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold",
+                              job.status === "OPEN"
+                                ? "bg-[var(--success)]/15 text-[var(--success)]"
+                                : "bg-[var(--text-muted)]/15 text-[var(--text-muted)]"
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                "w-1.5 h-1.5 rounded-full",
+                                job.status === "OPEN" ? "bg-[var(--success)]" : "bg-[var(--text-muted)]"
+                              )}
+                            />
+                            {job.status}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                          <div className="inline-flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleJobStatus(job)}
+                              className={cn(
+                                "px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap",
+                                job.status === "OPEN"
+                                  ? "bg-[var(--bg-surface)] hover:bg-[var(--error)]/15 hover:text-[var(--error)] text-[var(--text-secondary)] border border-[var(--border-subtle)]"
+                                  : "bg-[var(--success)]/15 text-[var(--success)] hover:bg-[var(--success)]/25"
+                              )}
+                            >
+                              {job.status === "OPEN" ? "Close Role" : "Re-Open Role"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDeleteJobTarget(job)}
+                              aria-label={`Delete ${job.title}`}
+                              className="p-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-[var(--error)] hover:border-[var(--error)]/40 transition-colors"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </section>
       )}
 
@@ -464,80 +596,177 @@ function AdminDashboardContent() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-sm">
-              <table className="w-full text-left border-collapse text-xs min-w-[780px]">
-                <thead>
-                  <tr className="bg-[var(--bg-surface)] text-[var(--text-secondary)] font-mono uppercase tracking-wider border-b border-[var(--border-subtle)]">
-                    <th className="py-3 px-4 font-bold">Candidate</th>
-                    <th className="py-3 px-4 font-bold">Target Position</th>
-                    <th className="py-3 px-4 font-bold">Resume / Files</th>
-                    <th className="py-3 px-4 font-bold">Status</th>
-                    <th className="py-3 px-4 text-right font-bold">Review</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[var(--border-subtle)]">
-                  {applications.map((app) => (
-                    <tr key={app.id} className="hover:bg-[var(--bg-surface)]/60 transition-colors">
-                      <td className="py-3.5 px-4">
-                        <span className="font-bold text-[var(--text-primary)] block">
+            <>
+              {/* Mobile Cards (< md) */}
+              <div className="md:hidden flex flex-col gap-3">
+                {applications.map((app) => (
+                  <div
+                    key={app.id}
+                    className="p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-sm space-y-3"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-sm text-[var(--text-primary)] truncate">
                           {app.name}
-                        </span>
-                        <div className="flex items-center gap-2 text-[11px] text-[var(--text-muted)]">
-                          <span>{app.email}</span>
-                          {app.phone && <span>&bull; {app.phone}</span>}
-                        </div>
-                      </td>
+                        </h3>
+                        <p className="text-[11px] text-[var(--text-muted)] break-all">
+                          {app.email}
+                        </p>
+                        {app.phone && (
+                          <p className="text-[11px] font-mono text-[var(--text-muted)]">
+                            {app.phone}
+                          </p>
+                        )}
+                      </div>
+                      <select
+                        value={app.status}
+                        onChange={(e) =>
+                          handleStatusChange(
+                            app.id,
+                            e.target.value as SubmittedApplicationItem["status"]
+                          )
+                        }
+                        className="h-8 px-2 rounded-lg bg-[var(--bg-surface)] text-[var(--text-primary)] font-mono text-[11px] border border-[var(--border-subtle)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)] shrink-0"
+                      >
+                        <option value="NEW">NEW</option>
+                        <option value="REVIEWING">REVIEWING</option>
+                        <option value="INTERVIEW">INTERVIEW</option>
+                        <option value="REJECTED">REJECTED</option>
+                        <option value="HIRED">HIRED</option>
+                      </select>
+                    </div>
 
-                      <td className="py-3.5 px-4">
-                        <span className="font-semibold text-[var(--text-primary)] block">
-                          {app.jobTitle}
-                        </span>
-                        <span className="font-mono text-[10px] text-[var(--text-muted)]">
-                          {new Date(app.createdAt).toLocaleDateString()}
-                        </span>
-                      </td>
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1">
+                      <span className="font-semibold text-[var(--text-primary)]">
+                        {app.jobTitle}
+                      </span>
+                      <span className="font-mono text-[11px] text-[var(--text-muted)]">
+                        {new Date(app.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
 
-                      <td className="py-3.5 px-4">
-                        <span className="font-mono text-[11px] text-[var(--brand-primary)] flex items-center gap-1.5">
-                          <FileText size={13} />
-                          <span>{app.resumeFileName || "resume.pdf"}</span>
-                        </span>
-                      </td>
+                    <div className="flex items-center gap-1.5 font-mono text-[11px] text-[var(--brand-primary)] bg-[var(--bg-surface)] px-2.5 py-1.5 rounded-lg border border-[var(--border-subtle)]">
+                      <FileText size={13} className="shrink-0" />
+                      <span className="truncate">{app.resumeFileName || "resume.pdf"}</span>
+                    </div>
 
-                      <td className="py-3.5 px-4">
-                        <select
-                          value={app.status}
-                          onChange={(e) =>
-                            handleStatusChange(
-                              app.id,
-                              e.target.value as SubmittedApplicationItem["status"]
-                            )
-                          }
-                          className="h-8 px-2.5 rounded-lg bg-[var(--bg-surface)] text-[var(--text-primary)] font-mono text-[11px] border border-[var(--border-subtle)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)] cursor-pointer"
-                        >
-                          <option value="NEW">NEW</option>
-                          <option value="REVIEWING">REVIEWING</option>
-                          <option value="INTERVIEW">INTERVIEW</option>
-                          <option value="REJECTED">REJECTED</option>
-                          <option value="HIRED">HIRED</option>
-                        </select>
-                      </td>
+                    <div className="pt-2 border-t border-[var(--border-subtle)] flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedApp(app)}
+                        className="flex-1 h-8 px-3 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-contrast)] border border-[var(--border-subtle)] text-xs font-semibold text-[var(--text-primary)] transition-colors inline-flex items-center justify-center gap-1.5 whitespace-nowrap"
+                      >
+                        <Eye size={13} />
+                        <span>View Info</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeleteAppTarget(app)}
+                        className="h-8 w-8 rounded-lg inline-flex items-center justify-center bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-tertiary)] hover:text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/30 transition-colors shrink-0"
+                        title="Delete Application"
+                        aria-label={`Delete application from ${app.name}`}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-                      <td className="py-3.5 px-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedApp(app)}
-                          className="h-8 px-3 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-contrast)] border border-[var(--border-subtle)] text-xs font-semibold text-[var(--text-primary)] transition-colors inline-flex items-center gap-1"
-                        >
-                          <Eye size={13} />
-                          <span>View Info</span>
-                        </button>
-                      </td>
+              {/* Desktop Table (>= md) */}
+              <div className="hidden md:block overflow-x-auto rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-sm">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-[var(--bg-surface)] text-[var(--text-secondary)] font-mono uppercase tracking-wider border-b border-[var(--border-subtle)]">
+                      <th className="py-3 px-4 font-bold">Candidate</th>
+                      <th className="py-3 px-4 font-bold">Target Position</th>
+                      <th className="py-3 px-4 font-bold">Resume / Files</th>
+                      <th className="py-3 px-4 font-bold">Status</th>
+                      <th className="py-3 px-4 text-right font-bold">Review</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border-subtle)]">
+                    {applications.map((app) => (
+                      <tr key={app.id} className="hover:bg-[var(--bg-surface)]/60 transition-colors">
+                        <td className="py-3.5 px-4 max-w-[230px]">
+                          <span className="font-bold text-[var(--text-primary)] block truncate">
+                            {app.name}
+                          </span>
+                          <span className="text-[11px] text-[var(--text-muted)] block truncate">
+                            {app.email}
+                          </span>
+                          {app.phone && (
+                            <span className="text-[11px] font-mono text-[var(--text-muted)] block whitespace-nowrap">
+                              {app.phone}
+                            </span>
+                          )}
+                        </td>
+
+                        <td className="py-3.5 px-4 max-w-[190px]">
+                          <span className="font-semibold text-[var(--text-primary)] block truncate">
+                            {app.jobTitle}
+                          </span>
+                          <span className="font-mono text-[10px] text-[var(--text-muted)] whitespace-nowrap">
+                            {new Date(app.createdAt).toLocaleDateString()}
+                          </span>
+                        </td>
+
+                        <td className="py-3.5 px-4 max-w-[220px]">
+                          <span
+                            title={app.resumeFileName || "resume.pdf"}
+                            className="font-mono text-[11px] text-[var(--brand-primary)] inline-flex items-center gap-1.5 max-w-full"
+                          >
+                            <FileText size={13} className="shrink-0" />
+                            <span className="truncate">{app.resumeFileName || "resume.pdf"}</span>
+                          </span>
+                        </td>
+
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <select
+                            value={app.status}
+                            onChange={(e) =>
+                              handleStatusChange(
+                                app.id,
+                                e.target.value as SubmittedApplicationItem["status"]
+                              )
+                            }
+                            className="h-8 px-2.5 rounded-lg bg-[var(--bg-surface)] text-[var(--text-primary)] font-mono text-[11px] border border-[var(--border-subtle)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)] cursor-pointer"
+                          >
+                            <option value="NEW">NEW</option>
+                            <option value="REVIEWING">REVIEWING</option>
+                            <option value="INTERVIEW">INTERVIEW</option>
+                            <option value="REJECTED">REJECTED</option>
+                            <option value="HIRED">HIRED</option>
+                          </select>
+                        </td>
+
+                        <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                          <div className="inline-flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedApp(app)}
+                              className="h-8 px-3 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-contrast)] border border-[var(--border-subtle)] text-xs font-semibold text-[var(--text-primary)] transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
+                            >
+                              <Eye size={13} />
+                              <span>View Info</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDeleteAppTarget(app)}
+                              className="h-8 w-8 rounded-lg inline-flex items-center justify-center bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-tertiary)] hover:text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/30 transition-colors"
+                              title="Delete Application"
+                              aria-label={`Delete application from ${app.name}`}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </section>
       )}
@@ -840,18 +1069,30 @@ function AdminDashboardContent() {
                 </div>
               )}
 
-              <div className="p-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] flex items-center justify-between">
-                <div>
+              <div className="p-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] flex items-center justify-between gap-3">
+                <div className="min-w-0">
                   <span className="block text-[var(--text-muted)] text-[10px] font-mono uppercase">
                     Attached Resume
                   </span>
-                  <span className="font-mono text-xs font-semibold text-[var(--text-primary)]">
+                  <span className="block truncate font-mono text-xs font-semibold text-[var(--text-primary)]">
                     {selectedApp.resumeFileName || "resume.pdf"}
                   </span>
                 </div>
-                <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[var(--brand-primary)]/15 text-[var(--brand-primary)] font-bold">
-                  Uploaded
-                </span>
+                {selectedApp.resumeUrl ? (
+                  <a
+                    href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/admin/applications/${encodeURIComponent(selectedApp.id)}/resume`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--brand-primary)] text-[var(--brand-contrast)] font-mono text-[11px] font-semibold hover:bg-[var(--brand-hover)] transition-colors"
+                  >
+                    <span>Open PDF</span>
+                    <ExternalLink size={12} />
+                  </a>
+                ) : (
+                  <span className="shrink-0 font-mono text-[10px] px-2 py-0.5 rounded bg-[var(--bg-muted)] text-[var(--text-muted)] font-semibold">
+                    No File URL
+                  </span>
+                )}
               </div>
             </div>
 
@@ -982,6 +1223,40 @@ function AdminDashboardContent() {
         onConfirm={() => void confirmDeleteService()}
         onCancel={() => {
           if (!deletingSvc) setDeleteSvcTarget(null);
+        }}
+      />
+
+      <ConfirmDialog
+        open={Boolean(deleteAppTarget)}
+        title="Delete Application"
+        description={
+          deleteAppTarget
+            ? `Permanently delete the application from "${deleteAppTarget.name}" (${deleteAppTarget.email})? This will also remove any attached resume.`
+            : ""
+        }
+        confirmLabel="Delete Application"
+        destructive
+        loading={deletingApp}
+        onConfirm={() => void confirmDeleteApplication()}
+        onCancel={() => {
+          if (!deletingApp) setDeleteAppTarget(null);
+        }}
+      />
+
+      <ConfirmDialog
+        open={Boolean(deleteJobTarget)}
+        title="Delete Job Position"
+        description={
+          deleteJobTarget
+            ? `Remove "${deleteJobTarget.title}" from Job Postings and the public Careers page?`
+            : ""
+        }
+        confirmLabel="Delete Position"
+        destructive
+        loading={deletingJob}
+        onConfirm={() => void confirmDeleteJob()}
+        onCancel={() => {
+          if (!deletingJob) setDeleteJobTarget(null);
         }}
       />
       </div>

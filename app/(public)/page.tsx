@@ -20,6 +20,8 @@ import { CuratedTechVideosSection } from "@/components/landing/CuratedTechVideos
 import { EcosystemMarqueeSection } from "@/components/landing/EcosystemMarqueeSection";
 import { ProjectScopeSimulatorSection } from "@/components/landing/ProjectScopeSimulatorSection";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "DevCore Solutions — Building the Digital Core for a Smarter Tomorrow",
   description:
