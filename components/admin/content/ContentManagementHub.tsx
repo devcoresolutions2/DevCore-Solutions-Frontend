@@ -12,6 +12,8 @@ import {
   CheckCircle2,
   Trash2,
   X,
+  Rocket,
+  FolderGit2,
 } from "lucide-react";
 import {
   apiCreateAdminTestimonial,
@@ -19,6 +21,12 @@ import {
   apiGetContentOverview,
   apiListAdminTestimonials,
   apiUpdateAdminTestimonial,
+  apiListAdminShowcase,
+  apiCreateAdminShowcase,
+  apiDeleteAdminShowcase,
+  apiListAdminProjects,
+  apiCreateAdminProject,
+  apiDeleteAdminProject,
   getContentCatalogExportUrl,
   type AdminTestimonialItem,
 } from "@/lib/api";
@@ -26,6 +34,8 @@ import {
 export default function ContentManagementHub() {
   const [overview, setOverview] = useState<Awaited<ReturnType<typeof apiGetContentOverview>> | null>(null);
   const [testimonials, setTestimonials] = useState<AdminTestimonialItem[]>([]);
+  const [showcaseItems, setShowcaseItems] = useState<any[]>([]);
+  const [projectItems, setProjectItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [banner, setBanner] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -36,14 +46,36 @@ export default function ContentManagementHub() {
   const [quote, setQuote] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Showcase / Launch Modal state
+  const [launchModalOpen, setLaunchModalOpen] = useState(false);
+  const [launchName, setLaunchName] = useState("");
+  const [launchTagline, setLaunchTagline] = useState("");
+  const [launchCategory, setLaunchCategory] = useState("SaaS");
+  const [launchTech, setLaunchTech] = useState("");
+  const [launchUrl, setLaunchUrl] = useState("");
+  const [launchDesc, setLaunchDesc] = useState("");
+
+  // Portfolio Project Modal state
+  const [projectModalOpen, setProjectModalOpen] = useState(false);
+  const [projTitle, setProjTitle] = useState("");
+  const [projSummary, setProjSummary] = useState("");
+  const [projCategory, setProjCategory] = useState("SaaS");
+  const [projTech, setProjTech] = useState("");
+  const [projFeatures, setProjFeatures] = useState("");
+  const [projUrl, setProjUrl] = useState("");
+
   const loadAll = useCallback(async () => {
     try {
-      const [ov, ts] = await Promise.all([
+      const [ov, ts, sc, pr] = await Promise.all([
         apiGetContentOverview(),
         apiListAdminTestimonials(),
+        apiListAdminShowcase().catch(() => ({ items: [] })),
+        apiListAdminProjects().catch(() => ({ items: [] })),
       ]);
       setOverview(ov);
       setTestimonials(ts.items);
+      setShowcaseItems(sc.items || []);
+      setProjectItems(pr.items || []);
     } catch (err: any) {
       setBanner({ type: "error", text: err?.message || "Failed to load content overview." });
     } finally {
@@ -75,6 +107,60 @@ export default function ContentManagementHub() {
       setBanner({ type: "success", text: "Testimonial saved to PostgreSQL." });
     } catch (err: any) {
       setBanner({ type: "error", text: err?.message || "Failed to create testimonial." });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCreateLaunch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await apiCreateAdminShowcase({
+        name: launchName.trim(),
+        tagline: launchTagline.trim(),
+        category: launchCategory,
+        techStack: launchTech.split(",").map((s) => s.trim()).filter(Boolean),
+        liveUrl: launchUrl.trim() || undefined,
+        description: launchDesc.trim() || launchTagline.trim(),
+      });
+      setLaunchModalOpen(false);
+      setLaunchName("");
+      setLaunchTagline("");
+      setLaunchTech("");
+      setLaunchUrl("");
+      setLaunchDesc("");
+      await loadAll();
+      setBanner({ type: "success", text: "Launch published to PostgreSQL & Landing/Launches." });
+    } catch (err: any) {
+      setBanner({ type: "error", text: err?.message || "Failed to create launch." });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCreateProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await apiCreateAdminProject({
+        title: projTitle.trim(),
+        summary: projSummary.trim(),
+        category: projCategory,
+        techStack: projTech.split(",").map((s) => s.trim()).filter(Boolean),
+        features: projFeatures.split(",").map((s) => s.trim()).filter(Boolean),
+        liveUrl: projUrl.trim() || undefined,
+      });
+      setProjectModalOpen(false);
+      setProjTitle("");
+      setProjSummary("");
+      setProjTech("");
+      setProjFeatures("");
+      setProjUrl("");
+      await loadAll();
+      setBanner({ type: "success", text: "Portfolio project published to PostgreSQL & /projects." });
+    } catch (err: any) {
+      setBanner({ type: "error", text: err?.message || "Failed to create project." });
     } finally {
       setSaving(false);
     }
@@ -320,6 +406,101 @@ export default function ContentManagementHub() {
         </div>
       </div>
 
+      {/* Launches (Showcase) & Portfolio Projects Management */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Launches */}
+        <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
+          <div className="px-5 py-4 border-b border-[var(--border-subtle)] flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Rocket className="w-4 h-4 text-[var(--brand-primary)]" />
+              <h2 className="font-semibold text-sm text-[var(--text-primary)]">
+                Launches &amp; Showcase ({showcaseItems.length})
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => setLaunchModalOpen(true)}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)]"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add Launch
+            </button>
+          </div>
+          {showcaseItems.length === 0 ? (
+            <div className="p-8 text-center text-xs text-[var(--text-secondary)]">
+              No launches in PostgreSQL yet. Click &ldquo;Add Launch&rdquo; to publish one.
+            </div>
+          ) : (
+            <div className="divide-y divide-[var(--border-subtle)]">
+              {showcaseItems.map((s) => (
+                <div key={s.id} className="p-4 flex items-center justify-between gap-3 text-xs">
+                  <div className="min-w-0">
+                    <div className="font-semibold text-[var(--text-primary)] truncate">{s.name}</div>
+                    <div className="text-[11px] text-[var(--text-secondary)] truncate">{s.tagline}</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await apiDeleteAdminShowcase(s.id);
+                      await loadAll();
+                    }}
+                    className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/10 shrink-0"
+                    title="Delete Launch"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Portfolio Projects */}
+        <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
+          <div className="px-5 py-4 border-b border-[var(--border-subtle)] flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <FolderGit2 className="w-4 h-4 text-[var(--brand-primary)]" />
+              <h2 className="font-semibold text-sm text-[var(--text-primary)]">
+                Portfolio Projects ({projectItems.length})
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => setProjectModalOpen(true)}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--brand-primary)] text-[var(--brand-contrast)]"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add Project
+            </button>
+          </div>
+          {projectItems.length === 0 ? (
+            <div className="p-8 text-center text-xs text-[var(--text-secondary)]">
+              No portfolio projects in PostgreSQL yet. Click &ldquo;Add Project&rdquo; to publish one.
+            </div>
+          ) : (
+            <div className="divide-y divide-[var(--border-subtle)]">
+              {projectItems.map((p) => (
+                <div key={p.id} className="p-4 flex items-center justify-between gap-3 text-xs">
+                  <div className="min-w-0">
+                    <div className="font-semibold text-[var(--text-primary)] truncate">{p.title}</div>
+                    <div className="text-[11px] text-[var(--text-secondary)] truncate">{p.summary}</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await apiDeleteAdminProject(p.id);
+                      await loadAll();
+                    }}
+                    className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/10 shrink-0"
+                    title="Delete Project"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Add Testimonial Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
@@ -371,6 +552,157 @@ export default function ContentManagementHub() {
                   className="px-4 py-2 rounded-xl bg-[var(--brand-primary)] text-[var(--brand-contrast)] font-semibold"
                 >
                   {saving ? "Saving..." : "Save Testimonial"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Launch Modal */}
+      {launchModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-sm">Publish New Launch</h3>
+              <button type="button" onClick={() => setLaunchModalOpen(false)}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={(e) => void handleCreateLaunch(e)} className="space-y-3 text-xs">
+              <input
+                type="text"
+                required
+                placeholder="Product Name (e.g. DineDesk)"
+                value={launchName}
+                onChange={(e) => setLaunchName(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
+              />
+              <input
+                type="text"
+                required
+                placeholder="Tagline"
+                value={launchTagline}
+                onChange={(e) => setLaunchTagline(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
+              />
+              <select
+                value={launchCategory}
+                onChange={(e) => setLaunchCategory(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
+              >
+                <option value="SaaS">SaaS</option>
+                <option value="Enterprise Web">Enterprise Web</option>
+                <option value="E-Commerce">E-Commerce</option>
+                <option value="AI Automation">AI Automation</option>
+                <option value="Mobile">Mobile</option>
+              </select>
+              <input
+                type="text"
+                placeholder="Tech Stack (comma-separated, e.g. Next.js, PostgreSQL)"
+                value={launchTech}
+                onChange={(e) => setLaunchTech(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
+              />
+              <input
+                type="url"
+                placeholder="Live URL (optional)"
+                value={launchUrl}
+                onChange={(e) => setLaunchUrl(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
+              />
+              <textarea
+                rows={3}
+                placeholder="Description..."
+                value={launchDesc}
+                onChange={(e) => setLaunchDesc(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
+              />
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => setLaunchModalOpen(false)} className="px-3 py-2">
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-4 py-2 rounded-xl bg-[var(--brand-primary)] text-[var(--brand-contrast)] font-semibold"
+                >
+                  {saving ? "Publishing..." : "Publish Launch"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Portfolio Project Modal */}
+      {projectModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-sm">Publish Portfolio Project</h3>
+              <button type="button" onClick={() => setProjectModalOpen(false)}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={(e) => void handleCreateProject(e)} className="space-y-3 text-xs">
+              <input
+                type="text"
+                required
+                placeholder="Project Title"
+                value={projTitle}
+                onChange={(e) => setProjTitle(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
+              />
+              <textarea
+                required
+                rows={2}
+                placeholder="Executive Summary"
+                value={projSummary}
+                onChange={(e) => setProjSummary(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
+              />
+              <select
+                value={projCategory}
+                onChange={(e) => setProjCategory(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
+              >
+                <option value="SaaS">SaaS</option>
+                <option value="Enterprise Web">Enterprise Web</option>
+                <option value="E-Commerce">E-Commerce</option>
+                <option value="AI Automation">AI Automation</option>
+              </select>
+              <input
+                type="text"
+                placeholder="Tech Stack (comma-separated)"
+                value={projTech}
+                onChange={(e) => setProjTech(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
+              />
+              <input
+                type="text"
+                placeholder="Key Features (comma-separated)"
+                value={projFeatures}
+                onChange={(e) => setProjFeatures(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
+              />
+              <input
+                type="url"
+                placeholder="Live URL (optional)"
+                value={projUrl}
+                onChange={(e) => setProjUrl(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
+              />
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => setProjectModalOpen(false)} className="px-3 py-2">
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-4 py-2 rounded-xl bg-[var(--brand-primary)] text-[var(--brand-contrast)] font-semibold"
+                >
+                  {saving ? "Publishing..." : "Publish Project"}
                 </button>
               </div>
             </form>

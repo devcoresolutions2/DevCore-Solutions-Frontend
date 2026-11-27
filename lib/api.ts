@@ -188,20 +188,23 @@ export async function getShowcaseList(
     if (params.cursor) q.set("cursor", params.cursor);
     if (params.category) q.set("category", params.category);
     const qs = q.toString();
-    return await apiFetch<ShowcaseListResult>(`/api/public/showcase${qs ? `?${qs}` : ""}`);
+    return await apiFetch<ShowcaseListResult>(`/api/public/showcase${qs ? `?${qs}` : ""}`, {
+      cache: "no-store",
+    });
   } catch (err) {
-    formatFallbackWarning("showcase list", err);
-    return { items: MOCK_SHOWCASE.slice(0, params.limit || 6), total: MOCK_SHOWCASE.length };
+    console.error("[api] Failed to fetch showcase list:", err);
+    return { items: [], total: 0 };
   }
 }
 
 export async function getShowcaseBySlug(slug: string): Promise<ShowcaseItem | null> {
   if (USE_MOCK) return MOCK_SHOWCASE.find((s) => s.slug === slug) ?? null;
   try {
-    return await apiFetch<ShowcaseItem>(`/api/public/showcase/${encodeURIComponent(slug)}`);
-  } catch (err) {
-    formatFallbackWarning(`showcase (${slug})`, err);
-    return MOCK_SHOWCASE.find((s) => s.slug === slug) ?? null;
+    return await apiFetch<ShowcaseItem>(`/api/public/showcase/${encodeURIComponent(slug)}`, {
+      cache: "no-store",
+    });
+  } catch {
+    return null;
   }
 }
 
@@ -237,20 +240,23 @@ export async function getProjectList(
     if (params.category) q.set("category", params.category);
     if (params.tech) q.set("tech", params.tech);
     const qs = q.toString();
-    return await apiFetch<ProjectListResult>(`/api/public/projects${qs ? `?${qs}` : ""}`);
+    return await apiFetch<ProjectListResult>(`/api/public/projects${qs ? `?${qs}` : ""}`, {
+      cache: "no-store",
+    });
   } catch (err) {
-    formatFallbackWarning("project list", err);
-    return { items: MOCK_PROJECTS.slice(0, params.limit || 6), total: MOCK_PROJECTS.length };
+    console.error("[api] Failed to fetch project list:", err);
+    return { items: [], total: 0 };
   }
 }
 
 export async function getProjectBySlug(slug: string): Promise<ProjectItem | null> {
   if (USE_MOCK) return MOCK_PROJECTS.find((p) => p.slug === slug) ?? null;
   try {
-    return await apiFetch<ProjectItem>(`/api/public/projects/${encodeURIComponent(slug)}`);
-  } catch (err) {
-    formatFallbackWarning(`project (${slug})`, err);
-    return MOCK_PROJECTS.find((p) => p.slug === slug) ?? null;
+    return await apiFetch<ProjectItem>(`/api/public/projects/${encodeURIComponent(slug)}`, {
+      cache: "no-store",
+    });
+  } catch {
+    return null;
   }
 }
 
@@ -322,10 +328,12 @@ export async function getEngagementTiers(): Promise<EngagementTier[]> {
 export async function getTestimonials(): Promise<TestimonialItem[]> {
   if (USE_MOCK) return MOCK_TESTIMONIALS;
   try {
-    return await apiFetch<TestimonialItem[]>("/api/public/testimonials");
+    return await apiFetch<TestimonialItem[]>("/api/public/testimonials", {
+      cache: "no-store",
+    });
   } catch (err) {
-    formatFallbackWarning("testimonials", err);
-    return MOCK_TESTIMONIALS;
+    console.error("[api] Failed to fetch testimonials:", err);
+    return [];
   }
 }
 
@@ -3153,6 +3161,56 @@ export async function apiDeleteAdminService(
   id: string
 ): Promise<{ deleted: boolean; id: string }> {
   return await apiFetch(`/api/admin/content/services/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+export async function apiListAdminShowcase(): Promise<{ items: any[] }> {
+  return await apiFetch("/api/admin/content/showcase", { cache: "no-store" });
+}
+
+export async function apiCreateAdminShowcase(payload: {
+  name: string;
+  tagline: string;
+  description?: string;
+  category?: string;
+  techStack?: string[];
+  liveUrl?: string;
+  coverImage?: string;
+}): Promise<{ item: any }> {
+  return await apiFetch("/api/admin/content/showcase", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiDeleteAdminShowcase(id: string): Promise<{ deleted: boolean; id: string }> {
+  return await apiFetch(`/api/admin/content/showcase/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+export async function apiListAdminProjects(): Promise<{ items: any[] }> {
+  return await apiFetch("/api/admin/content/projects", { cache: "no-store" });
+}
+
+export async function apiCreateAdminProject(payload: {
+  title: string;
+  summary: string;
+  category?: string;
+  techStack?: string[];
+  features?: string[];
+  liveUrl?: string;
+  coverImage?: string;
+}): Promise<{ item: any }> {
+  return await apiFetch("/api/admin/content/projects", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiDeleteAdminProject(id: string): Promise<{ deleted: boolean; id: string }> {
+  return await apiFetch(`/api/admin/content/projects/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
 }

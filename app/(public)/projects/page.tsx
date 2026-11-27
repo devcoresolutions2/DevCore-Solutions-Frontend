@@ -5,6 +5,8 @@ import { getProjectList } from "@/lib/api";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { ProjectsFilter } from "@/components/projects/ProjectsFilter";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Case Studies & Engineering Portfolio",
   description:

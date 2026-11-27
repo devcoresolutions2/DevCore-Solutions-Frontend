@@ -54,7 +54,7 @@ export function ServicesBento({ services }: ServicesBentoProps) {
             </span>
           </div>
           <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl text-[var(--text-primary)] font-extrabold tracking-tight leading-[1.15]">
-            5 Core Engineering{" "}
+            {services.length > 0 ? `${services.length} ` : ""}Core Engineering{" "}
             <span className="text-liquid-gradient">Pillars</span>
           </h2>
         </div>
