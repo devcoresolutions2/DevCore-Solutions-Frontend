@@ -6648,9 +6648,6 @@
     .xl\:col-span-8 {
       grid-column: span 8 / span 8;
     }
-    .xl\:flex {
-      display: flex;
-    }
     .xl\:inline {
       display: inline;
     }
