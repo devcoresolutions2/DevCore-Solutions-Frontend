@@ -11,6 +11,8 @@ import { EngineeringLifecycle } from "@/components/services/EngineeringLifecycle
 import { EngagementMatrix } from "@/components/services/EngagementMatrix";
 import { ServicesCTA } from "@/components/services/ServicesCTA";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Engineered Services & Architectural Capabilities — DevCore Solutions",
   description:

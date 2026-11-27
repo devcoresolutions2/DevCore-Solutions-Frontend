@@ -258,8 +258,10 @@ export async function getProjectBySlug(slug: string): Promise<ProjectItem | null
 export async function getServices(): Promise<ServiceItem[]> {
   if (USE_MOCK) return MOCK_SERVICES;
   try {
-    const raw = await apiFetch<RawBackendService[]>("/api/public/services");
-    if (Array.isArray(raw) && raw.length > 0) {
+    const raw = await apiFetch<RawBackendService[]>("/api/public/services", {
+      cache: "no-store",
+    });
+    if (Array.isArray(raw)) {
       return raw.map((item, idx) => ({
         id: item.id || String(idx + 1),
         title: item.title,
@@ -287,10 +289,10 @@ export async function getServices(): Promise<ServiceItem[]> {
         gridSpan: item.gridSpan || (idx === 0 ? "large" : idx === 1 ? "medium" : "small"),
       }));
     }
-    return MOCK_SERVICES;
+    return [];
   } catch (err) {
-    formatFallbackWarning("services", err);
-    return MOCK_SERVICES;
+    console.error("[api] Failed to fetch services from backend:", err);
+    return [];
   }
 }
 
@@ -1249,10 +1251,14 @@ export async function getBlogArticles(params?: {
       if (params?.sort) query.set("sort", params.sort);
       if (params?.status) query.set("status", params.status);
       const qs = query.toString();
-      const res = await apiFetch<BlogArticleItem[]>(`/api/public/blog${qs ? `?${qs}` : ""}`);
-      if (res) return res;
-    } catch {
-      // fallback
+      const res = await apiFetch<BlogArticleItem[]>(
+        `/api/public/blog${qs ? `?${qs}` : ""}`,
+        { cache: "no-store" }
+      );
+      return Array.isArray(res) ? res : [];
+    } catch (err) {
+      console.error("[api] Failed to fetch blog articles from backend:", err);
+      return [];
     }
   }
 
@@ -1308,10 +1314,13 @@ export async function getFeaturedArticle(): Promise<BlogArticleItem | null> {
 export async function getArticleBySlug(slug: string): Promise<BlogArticleItem | null> {
   if (!USE_MOCK) {
     try {
-      const res = await apiFetch<BlogArticleItem>(`/api/public/blog/${encodeURIComponent(slug)}`);
-      if (res) return res;
+      const res = await apiFetch<BlogArticleItem>(
+        `/api/public/blog/${encodeURIComponent(slug)}`,
+        { cache: "no-store" }
+      );
+      return res ?? null;
     } catch {
-      // fallback
+      return null;
     }
   }
   const found = IN_MEMORY_BLOG_ARTICLES.find((a) => a.slug === slug);
@@ -1322,7 +1331,7 @@ export async function createBlogArticle(
   data: Omit<BlogArticleItem, "id" | "updatedAt">
 ): Promise<BlogArticleItem> {
   const now = new Date().toISOString();
-  const newArticle: BlogArticleItem = {
+  const payload: BlogArticleItem = {
     ...data,
     id: `post-${Date.now()}`,
     readTime: data.readTime || `${data.readingMinutes || 5} min read`,
@@ -1332,26 +1341,32 @@ export async function createBlogArticle(
     tags: data.tags || [],
     categorySlug: data.categorySlug || data.category.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
   };
-  IN_MEMORY_BLOG_ARTICLES.unshift(newArticle);
 
   if (!USE_MOCK) {
-    try {
-      const res = await apiFetch<BlogArticleItem>("/api/admin/blog/articles", {
-        method: "POST",
-        body: JSON.stringify(newArticle),
-      });
-      if (res) return res;
-    } catch {
-      // ignore
-    }
+    return await apiFetch<BlogArticleItem>("/api/admin/blog/articles", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
   }
-  return newArticle;
+
+  IN_MEMORY_BLOG_ARTICLES.unshift(payload);
+  return payload;
 }
 
 export async function updateBlogArticle(
   id: string,
   data: Partial<BlogArticleItem>
 ): Promise<BlogArticleItem> {
+  if (!USE_MOCK) {
+    return await apiFetch<BlogArticleItem>(
+      `/api/admin/blog/articles/${encodeURIComponent(id)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    );
+  }
+
   const idx = IN_MEMORY_BLOG_ARTICLES.findIndex((a) => a.id === id);
   if (idx !== -1) {
     const existing = IN_MEMORY_BLOG_ARTICLES[idx];
@@ -1362,34 +1377,21 @@ export async function updateBlogArticle(
       publishedAt: data.publishedAt || existing.publishedAt,
     };
     IN_MEMORY_BLOG_ARTICLES[idx] = updated;
+    return updated;
   }
-  if (!USE_MOCK) {
-    try {
-      const res = await apiFetch<BlogArticleItem>(
-        `/api/admin/blog/articles/${encodeURIComponent(id)}`,
-        {
-          method: "PUT",
-          body: JSON.stringify(data),
-        }
-      );
-      if (res) return res;
-    } catch {
-      // ignore
-    }
-  }
-  return IN_MEMORY_BLOG_ARTICLES[idx] || (data as BlogArticleItem);
+  return data as BlogArticleItem;
 }
 
 export async function deleteBlogArticle(id: string): Promise<boolean> {
+  if (!USE_MOCK) {
+    await apiFetch(`/api/admin/blog/articles/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    return true;
+  }
+
   const idx = IN_MEMORY_BLOG_ARTICLES.findIndex((a) => a.id === id);
   if (idx !== -1) IN_MEMORY_BLOG_ARTICLES.splice(idx, 1);
-  if (!USE_MOCK) {
-    try {
-      await apiFetch(`/api/admin/blog/articles/${encodeURIComponent(id)}`, { method: "DELETE" });
-    } catch {
-      // ignore
-    }
-  }
   return true;
 }
 

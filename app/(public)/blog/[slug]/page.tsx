@@ -4,6 +4,8 @@ import { getArticleBySlug, getBlogArticles } from "@/lib/api";
 import { ArticleReader } from "./ArticleReader";
 import { NewsletterSection } from "@/components/blog/NewsletterSection";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
