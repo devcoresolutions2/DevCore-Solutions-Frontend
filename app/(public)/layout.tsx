@@ -13,19 +13,25 @@ export default async function PublicLayout({ children }: { children: ReactNode }
 
   return (
     <ContactHubProvider>
-      <GlassNav
-        whatsappNumber={contactSettings.whatsappNumber}
-        phone={contactSettings.phone}
-      />
+      <div className="min-h-screen w-full max-w-[100vw] min-w-0 overflow-x-hidden flex flex-col">
+        <GlassNav
+          whatsappNumber={contactSettings.whatsappNumber}
+          phone={contactSettings.phone}
+        />
 
-      <main id="main-content" className="flex-1 w-full pt-24 outline-none" tabIndex={-1}>
-        {children}
-      </main>
+        <main
+          id="main-content"
+          className="flex-1 w-full max-w-full min-w-0 overflow-x-hidden pt-24 outline-none"
+          tabIndex={-1}
+        >
+          {children}
+        </main>
 
-      <Footer />
+        <Footer />
 
-      <ContactHub settings={contactSettings} />
-      <Toaster />
+        <ContactHub settings={contactSettings} />
+        <Toaster />
+      </div>
     </ContactHubProvider>
   );
 }
