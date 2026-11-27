@@ -202,8 +202,8 @@ function ResetPasswordForm() {
 
   return (
     <div className="w-full min-h-screen flex flex-col lg:flex-row bg-[#F4F6F7] dark:bg-[#06141B] text-[#253745] dark:text-[#CCD0CF] selection:bg-[#253745] selection:text-white dark:selection:bg-[#8FB4C9] dark:selection:text-[#06141B]">
-      {/* ─── LEFT PANEL: OBSIDIAN SECURITY & ASSURANCE (45%) ───────────────── */}
-      <aside className="w-full lg:w-[45%] bg-[#131619] text-[#FAF8F5] flex flex-col justify-between p-8 sm:p-12 lg:p-14 relative overflow-hidden shrink-0 border-b lg:border-b-0 lg:border-r border-white/10">
+      {/* ─── LEFT PANEL: OBSIDIAN SECURITY & ASSURANCE (45%, desktop only) ─── */}
+      <aside className="hidden lg:flex w-full lg:w-[45%] bg-[#131619] text-[#FAF8F5] flex-col justify-between p-8 sm:p-12 lg:p-14 relative overflow-hidden shrink-0 border-b lg:border-b-0 lg:border-r border-white/10">
         {/* Ambient Subsurface Glow */}
         <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#253745]/25 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-10 right-0 w-80 h-80 bg-[#8FB4C9]/15 rounded-full blur-[100px] pointer-events-none" />
@@ -325,7 +325,7 @@ function ResetPasswordForm() {
       </aside>
 
       {/* ─── RIGHT PANEL: FROSTED ALABASTER CANVAS (55%) ──────────────────── */}
-      <section className="w-full lg:w-[55%] flex flex-col justify-between p-6 sm:p-10 lg:p-14 relative overflow-y-auto">
+      <section className="w-full lg:w-[55%] min-h-screen flex flex-col justify-between p-4 sm:p-10 lg:p-14 relative overflow-y-auto">
         {/* Top Bar: Navigation & Operational Status */}
         <div className="relative z-10 w-full flex items-center justify-between gap-4 pb-6">
           <Link
