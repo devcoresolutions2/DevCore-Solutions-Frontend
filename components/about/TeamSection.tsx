@@ -586,4 +586,4 @@ export function TeamSection({ members }: TeamSectionProps) {
       </motion.div>
     </section>
   );
-}
+};
