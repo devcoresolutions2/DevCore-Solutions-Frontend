@@ -21,6 +21,7 @@ import {
   Loader2,
   AlertCircle,
   ArrowUpDown,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -28,6 +29,7 @@ import {
   apiGetAdminLeads,
   apiUpdateAdminLead,
   apiBulkAdminLeads,
+  apiDeleteAdminLead,
   getAdminLeadsExportUrl,
   type AdminLeadsStatsResponse,
   type LeadRecord,
@@ -38,6 +40,7 @@ import { LeadStatusBadge, LeadSourceBadge, LeadPriorityBadge } from "./LeadStatu
 import { LeadKanbanBoard } from "./LeadKanbanBoard";
 import { LeadDetailsDrawer } from "./LeadDetailsDrawer";
 import { UserAvatar } from "@/components/shared/UserAvatar";
+import ConfirmDialog from "@/components/admin/shared/ConfirmDialog";
 
 export function LeadsManager() {
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
@@ -73,6 +76,8 @@ export function LeadsManager() {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<LeadRecord | null>(null);
+  const [deletingLead, setDeletingLead] = useState(false);
 
   // Debounce search
   useEffect(() => {
@@ -745,6 +750,15 @@ export function LeadsManager() {
                                   <Mail size={14} />
                                 </a>
                               )}
+                              <button
+                                type="button"
+                                onClick={() => setDeleteTarget(lead)}
+                                title={`Delete lead from ${lead.name}`}
+                                aria-label={`Delete lead from ${lead.name}`}
+                                className="p-1.5 rounded-lg hover:bg-rose-500/10 text-[var(--text-muted)] hover:text-rose-500 transition-colors"
+                              >
+                                <Trash2 size={14} />
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -812,6 +826,37 @@ export function LeadsManager() {
           onClose={() => setActiveLeadId(null)}
           onLeadMutated={() => {
             fetchLeadsAndStats();
+          }}
+        />
+
+        <ConfirmDialog
+          open={Boolean(deleteTarget)}
+          title="Delete Lead"
+          description={
+            deleteTarget
+              ? `Permanently delete the lead from "${deleteTarget.name}" (${deleteTarget.email || "no email"})? This action cannot be undone.`
+              : ""
+          }
+          confirmLabel="Delete Lead"
+          destructive
+          loading={deletingLead}
+          onConfirm={async () => {
+            if (!deleteTarget) return;
+            setDeletingLead(true);
+            try {
+              await apiDeleteAdminLead(deleteTarget.id);
+              if (activeLeadId === deleteTarget.id) setActiveLeadId(null);
+              setDeleteTarget(null);
+              toast.success("Lead deleted.");
+              await fetchLeadsAndStats();
+            } catch (err: any) {
+              toast.error(err?.message || "Failed to delete lead.");
+            } finally {
+              setDeletingLead(false);
+            }
+          }}
+          onCancel={() => {
+            if (!deletingLead) setDeleteTarget(null);
           }}
         />
       </div>
