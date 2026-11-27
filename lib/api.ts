@@ -3218,6 +3218,12 @@ export async function apiDeleteAdminProject(id: string): Promise<{ deleted: bool
   });
 }
 
+export async function apiDeleteAdminLead(id: string): Promise<{ deleted: boolean; id: string }> {
+  return await apiFetch(`/api/admin/leads/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
 export type {
   ShowcaseItem,
   ProjectItem,

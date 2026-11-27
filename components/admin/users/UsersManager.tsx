@@ -15,6 +15,10 @@ import {
   UserX,
   UserCheck,
   X,
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  Lock,
 } from "lucide-react";
 import {
   apiBulkAdminUsers,
@@ -70,6 +74,17 @@ function UsersManagerInner() {
   } | null>(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
 
+  // 3-Step Enterprise Role Change Confirmation Modal
+  const [roleChangeFlow, setRoleChangeFlow] = useState<{
+    user: AdminUserRecord;
+    nextRole: string;
+    step: 1 | 2 | 3;
+    reason: string;
+    ack: boolean;
+    typedConfirm: string;
+  } | null>(null);
+  const [roleChangeBusy, setRoleChangeBusy] = useState(false);
+
   const loadUsers = useCallback(async () => {
     try {
       const res = await apiListAdminUsers({
@@ -119,13 +134,33 @@ function UsersManagerInner() {
     }
   };
 
-  const handleRoleChange = async (u: AdminUserRecord, nextRole: string) => {
+  const handleRoleChange = (u: AdminUserRecord, nextRole: string) => {
+    if (!nextRole || nextRole === u.role) return;
+    setRoleChangeFlow({
+      user: u,
+      nextRole,
+      step: 1,
+      reason: "",
+      ack: false,
+      typedConfirm: "",
+    });
+  };
+
+  const executeRoleChange = async () => {
+    if (!roleChangeFlow) return;
+    setRoleChangeBusy(true);
     try {
-      await apiChangeUserRole(u.id, nextRole);
+      await apiChangeUserRole(roleChangeFlow.user.id, roleChangeFlow.nextRole);
       await loadUsers();
-      setBanner({ type: "success", text: `Updated ${u.name}'s role to ${nextRole}.` });
+      setBanner({
+        type: "success",
+        text: `Authorized & updated ${roleChangeFlow.user.name}'s role to ${roleChangeFlow.nextRole}.`,
+      });
+      setRoleChangeFlow(null);
     } catch (err: any) {
       setBanner({ type: "error", text: err?.message || "Role change failed." });
+    } finally {
+      setRoleChangeBusy(false);
     }
   };
 
@@ -949,6 +984,287 @@ function UsersManagerInner() {
           }
         }}
       />
+
+      {/* 3-Step Enterprise Role Change Confirmation Modal */}
+      {roleChangeFlow && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Authorize role change"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+        >
+          <div className="w-full max-w-lg rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-2xl overflow-hidden">
+            {/* Modal Header & 3-Step Progress Bar */}
+            <div className="px-6 py-4 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]/60 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center">
+                    <Shield className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-[var(--text-primary)]">
+                      Authorize IAM Role Change
+                    </h3>
+                    <p className="text-[11px] font-mono text-[var(--text-muted)]">
+                      Step {roleChangeFlow.step} of 3 &bull; Security Verification Required
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  disabled={roleChangeBusy}
+                  onClick={() => setRoleChangeFlow(null)}
+                  className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* 3-Step Indicator */}
+              <div className="grid grid-cols-3 gap-2 pt-1">
+                {[
+                  { num: 1, label: "1. Impact Review" },
+                  { num: 2, label: "2. Audit Reason" },
+                  { num: 3, label: "3. Final Verify" },
+                ].map((s) => (
+                  <div key={s.num} className="space-y-1">
+                    <div
+                      className={`h-1.5 rounded-full transition-colors ${
+                        roleChangeFlow.step >= s.num
+                          ? "bg-[var(--brand-primary)]"
+                          : "bg-[var(--border-subtle)]"
+                      }`}
+                    />
+                    <span
+                      className={`block font-mono text-[10px] ${
+                        roleChangeFlow.step === s.num
+                          ? "text-[var(--brand-primary)] font-bold"
+                          : "text-[var(--text-muted)]"
+                      }`}
+                    >
+                      {s.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-5 text-xs">
+              {/* Target User & Role Transition Summary */}
+              <div className="p-3.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <UserAvatar
+                    name={roleChangeFlow.user.name}
+                    avatarUrl={roleChangeFlow.user.avatarUrl}
+                    size={96}
+                    className="w-9 h-9 shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <div className="font-bold text-[var(--text-primary)] truncate">
+                      {roleChangeFlow.user.name}
+                    </div>
+                    <div className="font-mono text-[11px] text-[var(--text-muted)] truncate">
+                      {roleChangeFlow.user.email}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 font-mono text-[11px] shrink-0">
+                  <span className="px-2 py-1 rounded-md bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-secondary)]">
+                    {roleChangeFlow.user.role}
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5 text-[var(--brand-primary)]" />
+                  <span className="px-2 py-1 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 font-bold">
+                    {roleChangeFlow.nextRole}
+                  </span>
+                </div>
+              </div>
+
+              {/* STEP 1: Impact & Permissions Review */}
+              {roleChangeFlow.step === 1 && (
+                <div className="space-y-3">
+                  <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2.5 text-amber-700 dark:text-amber-300">
+                    <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <div className="font-bold">Privilege Boundary Change</div>
+                      <p className="leading-relaxed">
+                        {roleChangeFlow.nextRole === "SUPER_ADMIN"
+                          ? "Granting SUPER_ADMIN gives full control over IAM roles, Platform Settings, Social OAuth tokens, and all database content."
+                          : roleChangeFlow.nextRole === "EDITOR"
+                            ? "Granting EDITOR allows creating and editing Blog Articles, Job Postings, Services, About Page, and Leads, without IAM role authority."
+                            : "Changing to USER or CLIENT immediately revokes all /admin dashboard and CMS write permissions."}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setRoleChangeFlow(null)}
+                      className="h-9 px-4 rounded-xl border border-[var(--border-subtle)] font-semibold text-[var(--text-secondary)]"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setRoleChangeFlow((prev) => (prev ? { ...prev, step: 2 } : null))
+                      }
+                      className="h-9 px-4 rounded-xl bg-[var(--brand-primary)] text-[var(--brand-contrast)] font-semibold inline-flex items-center gap-1.5"
+                    >
+                      <span>Continue to Security Check</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 2: Audit Reason & Explicit Acknowledgment */}
+              {roleChangeFlow.step === 2 && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="block font-semibold text-[var(--text-primary)]">
+                      Reason for Role Change (Audit Log)
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {["Team promotion", "Role reassignment", "Security offboarding", "Temporary access"].map(
+                        (preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() =>
+                              setRoleChangeFlow((prev) =>
+                                prev ? { ...prev, reason: preset } : null
+                              )
+                            }
+                            className={`px-2.5 py-1 rounded-lg border text-[11px] transition-colors ${
+                              roleChangeFlow.reason === preset
+                                ? "bg-[var(--brand-primary)]/15 border-[var(--brand-primary)] text-[var(--brand-primary)] font-semibold"
+                                : "bg-[var(--bg-elevated)] border-[var(--border-subtle)] text-[var(--text-secondary)]"
+                            }`}
+                          >
+                            {preset}
+                          </button>
+                        )
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Enter reason or select a preset above..."
+                      value={roleChangeFlow.reason}
+                      onChange={(e) =>
+                        setRoleChangeFlow((prev) =>
+                          prev ? { ...prev, reason: e.target.value } : null
+                        )
+                      }
+                      className="w-full h-10 px-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
+                    />
+                  </div>
+
+                  <label className="flex items-start gap-2.5 p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={roleChangeFlow.ack}
+                      onChange={(e) =>
+                        setRoleChangeFlow((prev) =>
+                          prev ? { ...prev, ack: e.target.checked } : null
+                        )
+                      }
+                      className="mt-0.5 rounded"
+                    />
+                    <span className="text-[var(--text-secondary)] leading-relaxed">
+                      I understand this privilege change takes effect immediately and will be permanently recorded in the DevCore Security Audit Log.
+                    </span>
+                  </label>
+
+                  <div className="flex justify-between gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setRoleChangeFlow((prev) => (prev ? { ...prev, step: 1 } : null))
+                      }
+                      className="h-9 px-4 rounded-xl border border-[var(--border-subtle)] font-semibold text-[var(--text-secondary)]"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!roleChangeFlow.ack || !roleChangeFlow.reason.trim()}
+                      onClick={() =>
+                        setRoleChangeFlow((prev) => (prev ? { ...prev, step: 3 } : null))
+                      }
+                      className="h-9 px-4 rounded-xl bg-[var(--brand-primary)] text-[var(--brand-contrast)] font-semibold inline-flex items-center gap-1.5 disabled:opacity-45"
+                    >
+                      <span>Proceed to Final Verification</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 3: Final Typed Authorization */}
+              {roleChangeFlow.step === 3 && (
+                <div className="space-y-4">
+                  <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/25 flex items-start gap-2.5 text-rose-700 dark:text-rose-300">
+                    <Lock className="w-4 h-4 shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-bold">Final Authorization Gate</div>
+                      <p className="mt-0.5">
+                        To confirm changing{" "}
+                        <strong className="font-mono">{roleChangeFlow.user.name}</strong> to{" "}
+                        <strong className="font-mono">{roleChangeFlow.nextRole}</strong>, type their email address below:
+                      </p>
+                      <code className="inline-block mt-1.5 px-2 py-0.5 rounded bg-black/10 dark:bg-white/10 font-mono text-[11px] select-all">
+                        {roleChangeFlow.user.email}
+                      </code>
+                    </div>
+                  </div>
+
+                  <input
+                    type="text"
+                    autoFocus
+                    placeholder={`Type ${roleChangeFlow.user.email} to confirm`}
+                    value={roleChangeFlow.typedConfirm}
+                    onChange={(e) =>
+                      setRoleChangeFlow((prev) =>
+                        prev ? { ...prev, typedConfirm: e.target.value } : null
+                      )
+                    }
+                    className="w-full h-10 px-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] font-mono"
+                  />
+
+                  <div className="flex justify-between gap-2 pt-1">
+                    <button
+                      type="button"
+                      disabled={roleChangeBusy}
+                      onClick={() =>
+                        setRoleChangeFlow((prev) => (prev ? { ...prev, step: 2 } : null))
+                      }
+                      className="h-9 px-4 rounded-xl border border-[var(--border-subtle)] font-semibold text-[var(--text-secondary)]"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="button"
+                      disabled={
+                        roleChangeBusy ||
+                        roleChangeFlow.typedConfirm.trim().toLowerCase() !==
+                          roleChangeFlow.user.email.toLowerCase()
+                      }
+                      onClick={() => void executeRoleChange()}
+                      className="h-9 px-5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold inline-flex items-center gap-1.5 disabled:opacity-45 transition-colors"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>
+                        {roleChangeBusy ? "Applying Role..." : "Authorize & Apply Role Change"}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
