@@ -341,7 +341,10 @@ export async function getTestimonials(): Promise<TestimonialItem[]> {
 export async function getContactSettings(): Promise<ContactSettings> {
   if (USE_MOCK) return MOCK_CONTACT_SETTINGS;
   try {
-    const response = await apiFetch<RawBackendContactSettings>("/api/public/settings");
+    // Matches backend route: app.use("/api/public/settings", publicSettingsRouter)
+    const response = await apiFetch<RawBackendContactSettings>("/api/public/settings", {
+      cache: "no-store",
+    });
     const raw = response?.settings || response?.contact || response;
     if (raw) {
       const startHour = raw.businessHours?.start ?? raw.businessHoursStart ?? 9;
