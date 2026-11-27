@@ -36,6 +36,8 @@ import {
   updateJobStatus,
   updateApplicationStatus,
   deleteJobApplication,
+  createJob,
+  deleteJob,
   apiGetSession,
   apiSignOut,
   apiCreateAdminService,
@@ -93,6 +95,10 @@ function AdminDashboardContent() {
   const [selectedApp, setSelectedApp] = useState<SubmittedApplicationItem | null>(null);
   const [deleteAppTarget, setDeleteAppTarget] = useState<SubmittedApplicationItem | null>(null);
   const [deletingApp, setDeletingApp] = useState(false);
+
+  // Job delete modal state
+  const [deleteJobTarget, setDeleteJobTarget] = useState<JobItem | null>(null);
+  const [deletingJob, setDeletingJob] = useState(false);
 
   const loadData = async () => {
     try {
@@ -190,6 +196,21 @@ function AdminDashboardContent() {
     }
   };
 
+  const confirmDeleteJob = async () => {
+    if (!deleteJobTarget) return;
+    setDeletingJob(true);
+    try {
+      await deleteJob(deleteJobTarget.id);
+      setJobs((prev) => prev.filter((j) => j.id !== deleteJobTarget.id));
+      setDeleteJobTarget(null);
+      toast.success("Job position deleted.");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to delete job position.");
+    } finally {
+      setDeletingJob(false);
+    }
+  };
+
   const handleToggleJobStatus = async (job: JobItem) => {
     const nextStatus = job.status === "OPEN" ? "CLOSED" : "OPEN";
     await updateJobStatus(job.id, nextStatus);
@@ -207,33 +228,33 @@ function AdminDashboardContent() {
     toast.success(`Application status updated to ${status}`);
   };
 
-  const handleCreateJob = (e: React.FormEvent) => {
+  const handleCreateJob = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newDescription.trim()) {
       toast.error("Please fill in title and description.");
       return;
     }
 
-    const created: JobItem = {
-      id: `job-${Date.now()}`,
-      slug: newTitle.toLowerCase().replace(/\s+/g, "-"),
-      title: newTitle.trim(),
-      department: newDepartment,
-      location: "Dhaka / Remote",
-      type: newType,
-      workplaceType: newWorkplace,
-      description: newDescription.trim(),
-      skills: newSkills.split(",").map((s) => s.trim()).filter(Boolean),
-      status: "OPEN",
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      await createJob({
+        title: newTitle.trim(),
+        department: newDepartment,
+        location: "Dhaka / Remote",
+        type: newType,
+        workplaceType: newWorkplace,
+        description: newDescription.trim(),
+        skills: newSkills.split(",").map((s) => s.trim()).filter(Boolean),
+      });
 
-    setJobs((prev) => [created, ...prev]);
-    setShowAddJobModal(false);
-    setNewTitle("");
-    setNewDescription("");
-    setNewSkills("");
-    toast.success(`Job position "${created.title}" published!`);
+      setShowAddJobModal(false);
+      setNewTitle("");
+      setNewDescription("");
+      setNewSkills("");
+      await loadData();
+      toast.success(`Job position "${newTitle.trim()}" published!`);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to create job position.");
+    }
   };
 
   return (
@@ -439,18 +460,28 @@ function AdminDashboardContent() {
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() => handleToggleJobStatus(job)}
-                        className={cn(
-                          "px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors",
-                          job.status === "OPEN"
-                            ? "bg-[var(--bg-surface)] hover:bg-[var(--error)]/15 hover:text-[var(--error)] text-[var(--text-secondary)] border border-[var(--border-subtle)]"
-                            : "bg-[var(--success)]/15 text-[var(--success)] hover:bg-[var(--success)]/25"
-                        )}
-                      >
-                        {job.status === "OPEN" ? "Close Role" : "Re-Open Role"}
-                      </button>
+                      <div className="inline-flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleJobStatus(job)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors",
+                            job.status === "OPEN"
+                              ? "bg-[var(--bg-surface)] hover:bg-[var(--error)]/15 hover:text-[var(--error)] text-[var(--text-secondary)] border border-[var(--border-subtle)]"
+                              : "bg-[var(--success)]/15 text-[var(--success)] hover:bg-[var(--success)]/25"
+                          )}
+                        >
+                          {job.status === "OPEN" ? "Close Role" : "Re-Open Role"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeleteJobTarget(job)}
+                          aria-label={`Delete ${job.title}`}
+                          className="p-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-[var(--error)] hover:border-[var(--error)]/40 transition-colors"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -1041,6 +1072,23 @@ function AdminDashboardContent() {
         onConfirm={() => void confirmDeleteApplication()}
         onCancel={() => {
           if (!deletingApp) setDeleteAppTarget(null);
+        }}
+      />
+
+      <ConfirmDialog
+        open={Boolean(deleteJobTarget)}
+        title="Delete Job Position"
+        description={
+          deleteJobTarget
+            ? `Remove "${deleteJobTarget.title}" from Job Postings and the public Careers page?`
+            : ""
+        }
+        confirmLabel="Delete Position"
+        destructive
+        loading={deletingJob}
+        onConfirm={() => void confirmDeleteJob()}
+        onCancel={() => {
+          if (!deletingJob) setDeleteJobTarget(null);
         }}
       />
       </div>

@@ -4,6 +4,8 @@ import { CareersHero } from "@/components/careers/CareersHero";
 import { WhyBuildAtDevCore } from "@/components/careers/WhyBuildAtDevCore";
 import { CareersContent } from "@/components/careers/CareersContent";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Careers & Open Roles — DevCore Solutions",
   description:

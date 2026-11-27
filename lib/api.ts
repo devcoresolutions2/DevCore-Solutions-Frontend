@@ -487,8 +487,10 @@ export async function getJobs(params?: {
   }
 
   try {
-    const raw = await apiFetch<RawBackendJob[]>("/api/public/jobs");
-    if (Array.isArray(raw) && raw.length > 0) {
+    const raw = await apiFetch<RawBackendJob[]>("/api/public/jobs", {
+      cache: "no-store",
+    });
+    if (Array.isArray(raw)) {
       const mapped: JobItem[] = raw.map((j) => ({
         id: j.id,
         slug: j.slug || j.id,
@@ -496,7 +498,10 @@ export async function getJobs(params?: {
         department: j.department || "Engineering",
         location: j.location || "Dhaka / Remote",
         type: j.type || "Full-time",
-        workplaceType: j.workplaceType || "Remote",
+        workplaceType:
+          j.workplaceType === "Hybrid" || j.workplaceType === "On-site"
+            ? j.workplaceType
+            : "Remote",
         description: j.description || "",
         skills: Array.isArray(j.skills) ? j.skills : [],
         responsibilities: Array.isArray(j.responsibilities) ? j.responsibilities : [],
@@ -508,12 +513,10 @@ export async function getJobs(params?: {
       if (filterStatus === "ALL") return mapped;
       return mapped.filter((j) => j.status === filterStatus);
     }
-    if (filterStatus === "ALL") return MOCK_JOBS;
-    return MOCK_JOBS.filter((j) => j.status === filterStatus);
+    return [];
   } catch (err) {
-    formatFallbackWarning("jobs", err);
-    if (filterStatus === "ALL") return MOCK_JOBS;
-    return MOCK_JOBS.filter((j) => j.status === filterStatus);
+    console.error("[api] Failed to fetch jobs from backend:", err);
+    return [];
   }
 }
 
@@ -522,7 +525,10 @@ export async function getJobById(id: string): Promise<JobItem | null> {
     return MOCK_JOBS.find((j) => j.id === id || j.slug === id) ?? null;
   }
   try {
-    const j = await apiFetch<RawBackendJob | null>(`/api/public/jobs/${encodeURIComponent(id)}`);
+    const j = await apiFetch<RawBackendJob | null>(
+      `/api/public/jobs/${encodeURIComponent(id)}`,
+      { cache: "no-store" }
+    );
     if (j) {
       return {
         id: j.id,
@@ -531,7 +537,10 @@ export async function getJobById(id: string): Promise<JobItem | null> {
         department: j.department || "Engineering",
         location: j.location || "Dhaka / Remote",
         type: j.type || "Full-time",
-        workplaceType: j.workplaceType || "Remote",
+        workplaceType:
+          j.workplaceType === "Hybrid" || j.workplaceType === "On-site"
+            ? j.workplaceType
+            : "Remote",
         description: j.description || "",
         skills: Array.isArray(j.skills) ? j.skills : [],
         responsibilities: Array.isArray(j.responsibilities) ? j.responsibilities : [],
@@ -541,9 +550,9 @@ export async function getJobById(id: string): Promise<JobItem | null> {
         createdAt: j.createdAt,
       };
     }
-    return MOCK_JOBS.find((m) => m.id === id || m.slug === id) ?? null;
+    return null;
   } catch {
-    return MOCK_JOBS.find((m) => m.id === id || m.slug === id) ?? null;
+    return null;
   }
 }
 
@@ -656,9 +665,12 @@ export async function submitJobApplication(
 export async function getSubmittedApplications(): Promise<SubmittedApplicationItem[]> {
   if (USE_MOCK) return IN_MEMORY_APPLICATIONS;
   try {
-    return await apiFetch<SubmittedApplicationItem[]>("/api/admin/applications");
-  } catch {
-    return IN_MEMORY_APPLICATIONS;
+    return await apiFetch<SubmittedApplicationItem[]>("/api/admin/applications", {
+      cache: "no-store",
+    });
+  } catch (err) {
+    console.error("[api] Failed to fetch applications from backend:", err);
+    return [];
   }
 }
 
@@ -677,17 +689,76 @@ export async function updateJobStatus(
   jobId: string,
   status: "OPEN" | "CLOSED"
 ): Promise<boolean> {
-  const target = MOCK_JOBS.find((j) => j.id === jobId);
-  if (target) target.status = status;
   if (!USE_MOCK) {
-    try {
-      await apiFetch(`/api/admin/jobs/${encodeURIComponent(jobId)}/status`, {
-        method: "PATCH",
-        body: JSON.stringify({ status }),
-      });
-    } catch {
-      // ignore
-    }
+    await apiFetch(`/api/admin/jobs/${encodeURIComponent(jobId)}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
+  }
+  return true;
+}
+
+export async function createJob(payload: {
+  title: string;
+  department: string;
+  location?: string;
+  type?: string;
+  workplaceType?: "Remote" | "Hybrid" | "On-site";
+  description: string;
+  skills?: string[];
+  responsibilities?: string[];
+  requirements?: string[];
+  salary?: string;
+}): Promise<JobItem> {
+  const normalizeWorkplace = (val?: string): "Remote" | "Hybrid" | "On-site" =>
+    val === "Hybrid" || val === "On-site" ? val : "Remote";
+
+  if (USE_MOCK) {
+    const mockJob: JobItem = {
+      id: `job-${Date.now()}`,
+      slug: payload.title.toLowerCase().replace(/\s+/g, "-"),
+      title: payload.title,
+      department: payload.department,
+      location: payload.location || "Remote",
+      type: payload.type || "Full-time",
+      workplaceType: normalizeWorkplace(payload.workplaceType),
+      description: payload.description,
+      skills: payload.skills || [],
+      status: "OPEN",
+      createdAt: new Date().toISOString(),
+    };
+    MOCK_JOBS.unshift(mockJob);
+    return mockJob;
+  }
+
+  const raw = await apiFetch<RawBackendJob>("/api/admin/jobs", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+  return {
+    id: raw.id,
+    slug: raw.slug || raw.id,
+    title: raw.title,
+    department: raw.department || "Engineering",
+    location: raw.location || "Remote",
+    type: raw.type || "Full-time",
+    workplaceType: normalizeWorkplace(raw.workplaceType),
+    description: raw.description || "",
+    skills: Array.isArray(raw.skills) ? raw.skills : [],
+    responsibilities: Array.isArray(raw.responsibilities) ? raw.responsibilities : [],
+    requirements: Array.isArray(raw.requirements) ? raw.requirements : [],
+    salary: raw.salary,
+    status: raw.status || "OPEN",
+    createdAt: raw.createdAt,
+  };
+}
+
+export async function deleteJob(jobId: string): Promise<boolean> {
+  if (!USE_MOCK) {
+    await apiFetch(`/api/admin/jobs/${encodeURIComponent(jobId)}`, {
+      method: "DELETE",
+    });
   }
   return true;
 }
