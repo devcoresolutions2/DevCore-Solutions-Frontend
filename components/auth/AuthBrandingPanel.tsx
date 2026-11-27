@@ -3,7 +3,7 @@ import { Key, ShieldCheck, UserCheck, Terminal } from "lucide-react";
 
 export function AuthBrandingPanel() {
   return (
-    <div className="relative w-full lg:w-[45%] bg-[#131619] text-[#FAF8F5] p-8 sm:p-12 lg:p-16 flex flex-col justify-between overflow-hidden shadow-2xl shrink-0">
+    <div className="hidden lg:flex relative w-full lg:w-[45%] bg-[#131619] text-[#FAF8F5] p-8 sm:p-12 lg:p-16 flex-col justify-between overflow-hidden shadow-2xl shrink-0">
       {/* Ambient Optical Mesh Gradients */}
       <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-emerald-500/10 blur-[120px] pointer-events-none" />
       <div className="absolute top-1/2 -right-24 w-80 h-80 rounded-full bg-cyan-500/10 blur-[130px] pointer-events-none" />
