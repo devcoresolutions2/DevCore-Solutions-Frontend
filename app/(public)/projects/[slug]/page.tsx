@@ -20,6 +20,8 @@ import { getProjectBySlug, getProjectList } from "@/lib/api";
 import { ReleasePill } from "@/components/glass/ReleasePill";
 import { TechBadge } from "@/components/shared/TechBadge";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }

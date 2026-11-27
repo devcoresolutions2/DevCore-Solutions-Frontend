@@ -8,6 +8,8 @@ import { GlassCard } from "@/components/glass/GlassCard";
 import { ShowcaseCard } from "@/components/showcase/ShowcaseCard";
 import { TechBadge } from "@/components/shared/TechBadge";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }

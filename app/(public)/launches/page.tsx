@@ -5,6 +5,8 @@ import { getShowcaseList } from "@/lib/api";
 import { ShowcaseCard } from "@/components/showcase/ShowcaseCard";
 import { LaunchesFilter } from "@/components/showcase/LaunchesFilter";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Launches & Architecture Releases",
   description: "Explore mission-critical enterprise systems engineered and scaled by DevCore Solutions.",
