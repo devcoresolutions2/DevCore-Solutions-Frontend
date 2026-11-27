@@ -1367,6 +1367,12 @@
   .max-w-\[220px\] {
     max-width: 220px;
   }
+  .max-w-\[230px\] {
+    max-width: 230px;
+  }
+  .max-w-\[240px\] {
+    max-width: 240px;
+  }
   .max-w-\[440px\] {
     max-width: 440px;
   }
@@ -1432,12 +1438,6 @@
   }
   .min-w-\[260px\] {
     min-width: 260px;
-  }
-  .min-w-\[700px\] {
-    min-width: 700px;
-  }
-  .min-w-\[780px\] {
-    min-width: 780px;
   }
   .min-w-\[1200px\] {
     min-width: 1200px;
@@ -6222,6 +6222,9 @@
     }
     .md\:col-span-5 {
       grid-column: span 5 / span 5;
+    }
+    .md\:block {
+      display: block;
     }
     .md\:flex {
       display: flex;
