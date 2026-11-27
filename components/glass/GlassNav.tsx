@@ -383,7 +383,7 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
                 href={`tel:${phone}`}
                 className={cn(
                   "w-9 h-9 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)]/75",
-                  "hidden xl:flex items-center justify-center text-[var(--text-primary)]",
+                  "hidden sm:flex items-center justify-center text-[var(--text-primary)]",
                   "hover:bg-[var(--bg-elevated)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors duration-150",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
                 )}
