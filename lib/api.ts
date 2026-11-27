@@ -789,7 +789,9 @@ export async function updateApplicationStatus(
 export async function getAboutContent(): Promise<AboutGeneralContent> {
   if (USE_MOCK) return IN_MEMORY_ABOUT_CONTENT;
   try {
-    return await apiFetch<AboutGeneralContent>("/api/public/about");
+    return await apiFetch<AboutGeneralContent>("/api/public/about", {
+      cache: "no-store",
+    });
   } catch (err) {
     formatFallbackWarning("about content", err);
     return IN_MEMORY_ABOUT_CONTENT;
@@ -799,17 +801,13 @@ export async function getAboutContent(): Promise<AboutGeneralContent> {
 export async function updateAboutContent(
   payload: Partial<AboutGeneralContent>
 ): Promise<AboutGeneralContent> {
-  Object.assign(IN_MEMORY_ABOUT_CONTENT, payload);
   if (!USE_MOCK) {
-    try {
-      return await apiFetch<AboutGeneralContent>("/api/admin/about", {
-        method: "PATCH",
-        body: JSON.stringify(payload),
-      });
-    } catch {
-      // ignore
-    }
+    return await apiFetch<AboutGeneralContent>("/api/admin/about", {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
   }
+  Object.assign(IN_MEMORY_ABOUT_CONTENT, payload);
   return IN_MEMORY_ABOUT_CONTENT;
 }
 
@@ -825,13 +823,12 @@ export async function getEngineeringPrinciples(params?: {
   }
   try {
     const q = params?.publishedOnly ? "?publishedOnly=true" : "";
-    return await apiFetch<EngineeringPrincipleItem[]>(`/api/public/about/principles${q}`);
-  } catch {
-    let items = [...IN_MEMORY_ENGINEERING_PRINCIPLES];
-    if (params?.publishedOnly) {
-      items = items.filter((p) => p.isPublished);
-    }
-    return items.sort((a, b) => a.orderIndex - b.orderIndex);
+    return await apiFetch<EngineeringPrincipleItem[]>(`/api/public/about/principles${q}`, {
+      cache: "no-store",
+    });
+  } catch (err) {
+    console.error("[api] Failed to fetch engineering principles:", err);
+    return [];
   }
 }
 
@@ -931,32 +928,27 @@ export async function getTeamMembers(params?: {
   }
   try {
     const q = params?.publishedOnly ? "?publishedOnly=true" : "";
-    return await apiFetch<TeamMemberItem[]>(`/api/public/about/team${q}`);
-  } catch {
-    let items = [...IN_MEMORY_TEAM_MEMBERS];
-    if (params?.publishedOnly) {
-      items = items.filter((m) => m.isPublished);
-    }
-    return items.sort((a, b) => a.displayOrder - b.displayOrder);
+    return await apiFetch<TeamMemberItem[]>(`/api/public/about/team${q}`, {
+      cache: "no-store",
+    });
+  } catch (err) {
+    console.error("[api] Failed to fetch team members:", err);
+    return [];
   }
 }
 
 export async function createTeamMember(
   payload: Omit<TeamMemberItem, "id">
 ): Promise<TeamMemberItem> {
+  if (!USE_MOCK) {
+    return await apiFetch<TeamMemberItem>("/api/admin/about/team", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
   const newId = `team-${Date.now()}`;
   const newItem: TeamMemberItem = { id: newId, ...payload };
   IN_MEMORY_TEAM_MEMBERS.push(newItem);
-  if (!USE_MOCK) {
-    try {
-      return await apiFetch<TeamMemberItem>("/api/admin/about/team", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
-    } catch {
-      // ignore
-    }
-  }
   return newItem;
 }
 
@@ -964,54 +956,44 @@ export async function updateTeamMember(
   id: string,
   payload: Partial<TeamMemberItem>
 ): Promise<TeamMemberItem> {
+  if (!USE_MOCK) {
+    return await apiFetch<TeamMemberItem>(`/api/admin/about/team/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+  }
   const idx = IN_MEMORY_TEAM_MEMBERS.findIndex((m) => m.id === id);
   if (idx !== -1) {
     IN_MEMORY_TEAM_MEMBERS[idx] = { ...IN_MEMORY_TEAM_MEMBERS[idx], ...payload };
-  }
-  if (!USE_MOCK) {
-    try {
-      return await apiFetch<TeamMemberItem>(`/api/admin/about/team/${encodeURIComponent(id)}`, {
-        method: "PATCH",
-        body: JSON.stringify(payload),
-      });
-    } catch {
-      // ignore
-    }
   }
   return idx !== -1 ? IN_MEMORY_TEAM_MEMBERS[idx] : (payload as TeamMemberItem);
 }
 
 export async function deleteTeamMember(id: string): Promise<boolean> {
+  if (!USE_MOCK) {
+    await apiFetch(`/api/admin/about/team/${encodeURIComponent(id)}`, { method: "DELETE" });
+    return true;
+  }
   const idx = IN_MEMORY_TEAM_MEMBERS.findIndex((m) => m.id === id);
   if (idx !== -1) {
     IN_MEMORY_TEAM_MEMBERS.splice(idx, 1);
-  }
-  if (!USE_MOCK) {
-    try {
-      await apiFetch(`/api/admin/about/team/${encodeURIComponent(id)}`, { method: "DELETE" });
-    } catch {
-      // ignore
-    }
   }
   return true;
 }
 
 export async function reorderTeamMembers(ids: string[]): Promise<boolean> {
+  if (!USE_MOCK) {
+    await apiFetch("/api/admin/about/team/reorder", {
+      method: "POST",
+      body: JSON.stringify({ ids }),
+    });
+    return true;
+  }
   ids.forEach((id, index) => {
     const item = IN_MEMORY_TEAM_MEMBERS.find((m) => m.id === id);
     if (item) item.displayOrder = index + 1;
   });
   IN_MEMORY_TEAM_MEMBERS.sort((a, b) => a.displayOrder - b.displayOrder);
-  if (!USE_MOCK) {
-    try {
-      await apiFetch("/api/admin/about/team/reorder", {
-        method: "POST",
-        body: JSON.stringify({ ids }),
-      });
-    } catch {
-      // ignore
-    }
-  }
   return true;
 }
 

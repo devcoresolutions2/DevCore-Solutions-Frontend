@@ -43,13 +43,7 @@ function GitHubIcon({ className }: { className?: string }) {
   );
 }
 
-function SocialLinks({
-  member,
-  hideGlobe = false,
-}: {
-  member: TeamMemberItem;
-  hideGlobe?: boolean;
-}) {
+function SocialLinks({ member }: { member: TeamMemberItem }) {
   return (
     <div className="flex items-center gap-2 shrink-0">
       {member.linkedinUrl && (
@@ -78,7 +72,7 @@ function SocialLinks({
           <GitHubIcon className="w-3.5 h-3.5 shrink-0 fill-current" />
         </motion.a>
       )}
-      {!hideGlobe && member.portfolioUrl && (
+      {member.portfolioUrl && member.portfolioUrl !== "#" && (
         <motion.a
           whileHover={{ y: -2, scale: 1.06 }}
           whileTap={{ scale: 0.94 }}
@@ -95,24 +89,73 @@ function SocialLinks({
   );
 }
 
-interface FounderHighlight {
-  firstNamePart: string;
-  highlightedLastPart: string;
-  titleRank: "Founder & CEO" | "Co-Founder & CEO";
-  subtitleTag: string;
-  coreFocus: string[];
-  avatarSrc: string;
-  hideGlobe?: boolean;
+function getMemberFocusList(member: TeamMemberItem): string[] {
+  const lower = `${member.name} ${member.role}`.toLowerCase();
+  if (lower.includes("fourkan")) {
+    return [
+      "Full-Stack System Architecture",
+      "Next.js, React & TypeScript",
+      "PostgreSQL & Prisma Modeling",
+      "Product Strategy & Client Delivery",
+    ];
+  }
+  if (lower.includes("kazi") || lower.includes("mehedi") || lower.includes("samin")) {
+    return [
+      "Scalable Web Platform Engineering",
+      "Node.js, Express & REST APIs",
+      "Cloud Deployment & CI/CD",
+      "Cross-Functional Product Execution",
+    ];
+  }
+  if (lower.includes("ai") || lower.includes("machine learning")) {
+    return [
+      "Applied AI & LLM Workflows",
+      "Retrieval-Augmented Systems",
+      "Deterministic Prompt Pipelines",
+      "Automation & Evaluation",
+    ];
+  }
+  if (lower.includes("design") || lower.includes("ui/ux")) {
+    return [
+      "Accessible Design Systems",
+      "Interactive UX Engineering",
+      "Responsive Interface Architecture",
+      "Conversion-Focused Prototyping",
+    ];
+  }
+  return [
+    "Distributed Systems Architecture",
+    "Production API & Cloud Ops",
+    "Type-Safe Full-Stack Delivery",
+    "Performance & Reliability",
+  ];
 }
 
-function FounderSpotlightCard({
+function resolveMemberAvatar(member: TeamMemberItem): string | null {
+  if (member.avatarUrl && member.avatarUrl.trim()) {
+    return member.avatarUrl.trim();
+  }
+  const lower = member.name.toLowerCase();
+  if (lower.includes("fourkan")) return "/images/team/fourkan-bin-ilias.jpg";
+  if (lower.includes("kazi") || lower.includes("mehedi") || lower.includes("samin")) {
+    return "/images/team/kazi-mehedi-hasan-samin.jpg";
+  }
+  return null;
+}
+
+function splitName(fullName: string): { firstPart: string; lastPart: string } {
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length <= 1) return { firstPart: fullName, lastPart: "" };
+  const lastPart = parts.pop() || "";
+  return { firstPart: parts.join(" "), lastPart };
+}
+
+function TeamMemberSpotlightCard({
   member,
-  highlight,
-  delay = 0,
+  index,
 }: {
   member: TeamMemberItem;
-  highlight: FounderHighlight;
-  delay?: number;
+  index: number;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(-300);
@@ -150,6 +193,15 @@ function FounderSpotlightCard({
     normX.set(0);
     normY.set(0);
   };
+
+  const avatarSrc = resolveMemberAvatar(member);
+  const { firstPart, lastPart } = splitName(member.name);
+  const coreFocus = getMemberFocusList(member);
+  const indexLabel = String(index + 1).padStart(2, "0");
+  const isFounder =
+    member.badge?.toLowerCase().includes("founder") ||
+    member.isFeatured;
+  const delay = Math.min(index * 0.06, 0.3);
 
   return (
     <motion.div
@@ -190,7 +242,7 @@ function FounderSpotlightCard({
         }}
         className="relative z-10 w-full"
       >
-        {/* LEFT SIDE: Framed Portrait with Sleek Micro Status Badge at Top-Right */}
+        {/* LEFT SIDE: Framed Portrait or Initials Avatar */}
         <div
           style={{
             flex: "0 0 230px",
@@ -198,20 +250,31 @@ function FounderSpotlightCard({
             maxWidth: "100%",
             height: "295px",
           }}
-          className="relative rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] group-hover:border-[var(--brand-primary)]/45 shadow-sm overflow-hidden mx-auto sm:mx-0 transition-colors duration-300"
+          className="relative rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] group-hover:border-[var(--brand-primary)]/45 shadow-sm overflow-hidden mx-auto sm:mx-0 transition-colors duration-300 flex items-center justify-center"
         >
-          <img
-            src={highlight.avatarSrc}
-            alt={member.name}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              objectPosition: "top center",
-              display: "block",
-            }}
-            className="transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-          />
+          {avatarSrc ? (
+            <img
+              src={avatarSrc}
+              alt={member.name}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "top center",
+                display: "block",
+              }}
+              className="transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-2 text-center p-4">
+              <div className="w-20 h-20 rounded-2xl bg-[var(--brand-primary)]/12 border border-[var(--brand-primary)]/30 flex items-center justify-center font-display font-black text-2xl text-[var(--brand-primary)]">
+                {member.initials || "DC"}
+              </div>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)]">
+                {member.badge || "DEVCORE TEAM"}
+              </span>
+            </div>
+          )}
 
           {/* Subtle Inner Edge Ring & Bottom Studio Vignette */}
           <div
@@ -234,7 +297,7 @@ function FounderSpotlightCard({
             className="inline-flex items-center gap-1.5 rounded-full bg-slate-950/65 backdrop-blur-md border border-white/20 text-white font-mono font-bold uppercase shadow-sm whitespace-nowrap"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-            <span>{highlight.titleRank}</span>
+            <span>{member.badge || "ENGINEERING"}</span>
           </span>
         </div>
 
@@ -250,12 +313,12 @@ function FounderSpotlightCard({
           className="gap-3.5"
         >
           <div className="flex flex-col gap-2.5 min-w-0">
-            {/* Top Row: Eyebrow on Left + Compact "DevCore Executive Board" Status Pill on Top-Right */}
+            {/* Top Row: Eyebrow on Left + Compact Status Pill on Top-Right */}
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="inline-flex items-center gap-2">
                 <span className="h-px w-4 bg-[var(--brand-primary)] shrink-0" />
                 <span className="font-mono text-[10px] uppercase tracking-widest text-[var(--brand-primary)] font-bold">
-                  {highlight.subtitleTag}
+                  {indexLabel} // {isFounder ? "Executive Leadership" : "Core Engineering"}
                 </span>
               </div>
 
@@ -272,7 +335,7 @@ function FounderSpotlightCard({
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                 </span>
-                <span>DevCore Executive Board</span>
+                <span>{isFounder ? "DevCore Executive Board" : "DevCore Core Guild"}</span>
               </span>
             </div>
 
@@ -280,10 +343,10 @@ function FounderSpotlightCard({
             <div className="min-w-0">
               <div className="relative inline-block max-w-full">
                 <h3 className="font-display font-black text-2xl sm:text-[28px] lg:text-[31px] text-[var(--text-primary)] tracking-[-0.025em] leading-[1.15]">
-                  <span>{highlight.firstNamePart} </span>
-                  <span className="text-liquid-gradient">
-                    {highlight.highlightedLastPart}
-                  </span>
+                  <span>{firstPart}{lastPart ? " " : ""}</span>
+                  {lastPart && (
+                    <span className="text-liquid-gradient">{lastPart}</span>
+                  )}
                 </h3>
                 <span
                   aria-hidden="true"
@@ -309,7 +372,7 @@ function FounderSpotlightCard({
                   className="relative z-10 text-[var(--brand-primary)] shrink-0"
                 />
                 <span className="relative z-10 text-xs font-bold text-[var(--text-primary)]">
-                  Junior Software Engineer &amp; Full Stack Developer
+                  {member.role}
                 </span>
               </div>
             </div>
@@ -323,7 +386,7 @@ function FounderSpotlightCard({
 
             {/* Core Engineering Focus Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
-              {highlight.coreFocus.map((item, idx) => (
+              {coreFocus.map((item, idx) => (
                 <motion.div
                   key={item}
                   initial={{ opacity: 0, y: 6 }}
@@ -348,10 +411,10 @@ function FounderSpotlightCard({
           {/* Footer Links */}
           <div className="pt-3 border-t border-[var(--border-subtle)] flex flex-wrap items-center justify-between gap-2.5">
             <div className="flex items-center gap-2">
-              <SocialLinks member={member} hideGlobe={highlight.hideGlobe} />
+              <SocialLinks member={member} />
               <span className="inline-flex items-center gap-1 text-[11px] font-mono text-[var(--text-muted)]">
                 <Sparkles size={11} className="text-[var(--brand-primary)]" />
-                <span>Direct Founder Access</span>
+                <span>{isFounder ? "Direct Founder Access" : "Direct Engineer Access"}</span>
               </span>
             </div>
 
@@ -367,12 +430,15 @@ function FounderSpotlightCard({
               </a>
             ) : (
               <a
-                href="https://www.linkedin.com/company/devcoresolutions2"
+                href={
+                  member.linkedinUrl ||
+                  "https://www.linkedin.com/company/devcoresolutions2"
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--brand-primary)] text-[var(--text-primary)] hover:text-[var(--brand-contrast)] border border-[var(--border-subtle)] hover:border-[var(--brand-primary)] font-semibold text-xs transition-all whitespace-nowrap"
               >
-                <span>Company LinkedIn</span>
+                <span>LinkedIn Profile</span>
                 <ArrowUpRight size={13} />
               </a>
             )}
@@ -388,86 +454,9 @@ interface TeamSectionProps {
 }
 
 export function TeamSection({ members }: TeamSectionProps) {
-  const safeMembers = members || [];
-  const templateBase = safeMembers[0];
-
-  const createMember = (
-    existing: TeamMemberItem | undefined,
-    overrides: Partial<TeamMemberItem> &
-      Pick<TeamMemberItem, "id" | "name" | "role">
-  ): TeamMemberItem => {
-    const computedInitials =
-      overrides.initials ||
-      overrides.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .slice(0, 3)
-        .toUpperCase();
-
-    return {
-      ...(templateBase ?? {}),
-      initials: computedInitials,
-      badge: "",
-      bio: "",
-      avatarUrl: "",
-      linkedinUrl: "",
-      githubUrl: "",
-      portfolioUrl: "",
-      order: 0,
-      published: true,
-      isFeatured: true,
-      ...(existing ?? {}),
-      ...overrides,
-    } as TeamMemberItem;
-  };
-
-  const existingFourkan = safeMembers.find((m) =>
-    m.name.toLowerCase().includes("fourkan")
+  const orderedMembers = [...(members || [])].sort(
+    (a, b) => (a.displayOrder ?? 99) - (b.displayOrder ?? 99)
   );
-  const existingSamin = safeMembers.find(
-    (m) =>
-      m.name.toLowerCase().includes("kazi") ||
-      m.name.toLowerCase().includes("mehedi") ||
-      m.name.toLowerCase().includes("samin")
-  );
-
-  const fourkanProfile = createMember(existingFourkan, {
-    id: existingFourkan?.id || "founder-fourkan",
-    name: "Fourkan Bin Ilias",
-    initials: "FI",
-    role: "Founder & CEO • Junior Software Engineer & Full Stack Developer",
-    badge: "FOUNDER & CEO",
-    bio: "Founder & CEO leading end-to-end full-stack architecture, TypeScript & Next.js product systems, PostgreSQL database design, and direct client delivery at DevCore Solutions.",
-    avatarUrl: "/images/team/fourkan-bin-ilias.jpg",
-    linkedinUrl:
-      existingFourkan?.linkedinUrl ||
-      "https://www.linkedin.com/in/fourkan-bin-ilias/",
-    githubUrl: existingFourkan?.githubUrl || "https://github.com/Pinon1345",
-    portfolioUrl:
-      existingFourkan?.portfolioUrl && existingFourkan.portfolioUrl !== "#"
-        ? existingFourkan.portfolioUrl
-        : "https://fourkan-bin-ilias-portfolio-dev.vercel.app/",
-  });
-
-  const saminProfile = createMember(existingSamin, {
-    id: existingSamin?.id || "cofounder-samin",
-    name: "Kazi Mehedi Hasan Samin",
-    initials: "KM",
-    role: "Co-Founder & CEO • Junior Software Engineer & Full Stack Developer",
-    badge: "CO-FOUNDER & CEO",
-    bio: "Co-Founder & CEO driving scalable full-stack web platforms, React & Node.js engineering workflows, API infrastructure, and collaborative product execution across DevCore Solutions.",
-    avatarUrl: "/images/team/kazi-mehedi-hasan-samin.jpg",
-    linkedinUrl:
-      existingSamin?.linkedinUrl ||
-      "https://www.linkedin.com/in/kazi-mahedi-hasan",
-    githubUrl:
-      existingSamin?.githubUrl || "https://github.com/kazi-Samin",
-    portfolioUrl:
-      existingSamin?.portfolioUrl && existingSamin.portfolioUrl !== "#"
-        ? existingSamin.portfolioUrl
-        : "https://kazi-mahedi-hasan-portfolio.vercel.app/",
-  });
 
   return (
     <section
@@ -494,7 +483,7 @@ export function TeamSection({ members }: TeamSectionProps) {
             <span className="text-liquid-gradient">DevCore</span>
           </h2>
           <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed mt-1">
-            DevCore is built and operated directly by its two co-founders—you
+            DevCore is built and operated directly by its core engineering team—you
             collaborate straight with the engineers architecting and shipping
             your product.
           </p>
@@ -503,53 +492,23 @@ export function TeamSection({ members }: TeamSectionProps) {
         <div className="self-start md:self-auto inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-elevated)]/90 border border-[var(--border-subtle)] shadow-2xs shrink-0">
           <ShieldCheck size={13} className="text-[var(--brand-primary)]" />
           <span className="font-mono text-[10px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
-            Zero Outsourcing &bull; 100% Founder-Built
+            Zero Outsourcing &bull; 100% Builder-Led
           </span>
         </div>
       </div>
 
-      {/* Stacked Founder Cards: Fourkan First, Kazi Mehedi Hasan Samin Directly Below */}
+      {/* Dynamic Team Cards (Powered by Admin About CMS) */}
       <div className="flex flex-col gap-5 sm:gap-6">
-        <FounderSpotlightCard
-          member={fourkanProfile}
-          highlight={{
-            firstNamePart: "Fourkan Bin",
-            highlightedLastPart: "Ilias",
-            titleRank: "Founder & CEO",
-            subtitleTag: "01 // Executive Leadership",
-            avatarSrc: "/images/team/fourkan-bin-ilias.jpg",
-            hideGlobe: true,
-            coreFocus: [
-              "Full-Stack System Architecture",
-              "Next.js, React & TypeScript",
-              "PostgreSQL & Prisma Modeling",
-              "Product Strategy & Client Delivery",
-            ],
-          }}
-          delay={0.04}
-        />
-
-        <FounderSpotlightCard
-          member={saminProfile}
-          highlight={{
-            firstNamePart: "Kazi Mehedi Hasan",
-            highlightedLastPart: "Samin",
-            titleRank: "Co-Founder & CEO",
-            subtitleTag: "02 // Executive Leadership",
-            avatarSrc: "/images/team/kazi-mehedi-hasan-samin.jpg",
-            hideGlobe: true,
-            coreFocus: [
-              "Scalable Web Platform Engineering",
-              "Node.js, Express & REST APIs",
-              "Cloud Deployment & CI/CD",
-              "Cross-Functional Product Execution",
-            ],
-          }}
-          delay={0.1}
-        />
+        {orderedMembers.map((member, index) => (
+          <TeamMemberSpotlightCard
+            key={member.id}
+            member={member}
+            index={index}
+          />
+        ))}
       </div>
 
-      {/* Compact Founder-Led Studio Assurance Strip */}
+      {/* Compact Studio Assurance Strip */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -563,11 +522,11 @@ export function TeamSection({ members }: TeamSectionProps) {
           </div>
           <div className="min-w-0">
             <p className="text-xs sm:text-[13px] font-bold text-[var(--text-primary)]">
-              Lean Two-Founder Engineering Studio
+              Lean Engineering Studio
             </p>
             <p className="text-[11px] text-[var(--text-secondary)]">
               No account managers or layers of delegation—every architecture
-              decision, commit, and deployment is handled directly by us.
+              decision, commit, and deployment is handled directly by our builders.
             </p>
           </div>
         </div>
@@ -581,9 +540,9 @@ export function TeamSection({ members }: TeamSectionProps) {
           className="self-start sm:self-center inline-flex items-center gap-1.5 font-mono font-bold uppercase tracking-wider rounded-full bg-[var(--brand-primary)]/12 text-[var(--brand-primary)] border border-[var(--brand-primary)]/30 shrink-0 whitespace-nowrap"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-          <span>2 Active Builders</span>
+          <span>{orderedMembers.length} Active {orderedMembers.length === 1 ? "Builder" : "Builders"}</span>
         </span>
       </motion.div>
     </section>
   );
-};
+}
