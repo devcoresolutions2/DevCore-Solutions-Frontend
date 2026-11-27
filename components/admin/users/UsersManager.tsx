@@ -19,6 +19,7 @@ import {
   ArrowRight,
   CheckCircle2,
   Lock,
+  Trash2,
 } from "lucide-react";
 import {
   apiBulkAdminUsers,
@@ -29,6 +30,7 @@ import {
   apiResendUserVerification,
   apiRevokeUserSessions,
   apiToggleUserActive,
+  apiDeleteAdminUser,
   getAdminUsersExportUrl,
   type AdminUserRecord,
   type AdminUsersListResponse,
@@ -84,6 +86,14 @@ function UsersManagerInner() {
     typedConfirm: string;
   } | null>(null);
   const [roleChangeBusy, setRoleChangeBusy] = useState(false);
+
+  // 2-Step Delete User Confirmation Modal
+  const [deleteUserFlow, setDeleteUserFlow] = useState<{
+    user: AdminUserRecord;
+    step: 1 | 2;
+    typedConfirm: string;
+  } | null>(null);
+  const [deleteUserBusy, setDeleteUserBusy] = useState(false);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -775,6 +785,17 @@ function UsersManagerInner() {
                           <UserCheck className="w-3.5 h-3.5" />
                         )}
                       </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setDeleteUserFlow({ user: u, step: 1, typedConfirm: "" })
+                        }
+                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+                        title="Delete User"
+                        aria-label={`Delete ${u.name}`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -1257,6 +1278,155 @@ function UsersManagerInner() {
                       <span>
                         {roleChangeBusy ? "Applying Role..." : "Authorize & Apply Role Change"}
                       </span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2-Step Delete User Confirmation Modal */}
+      {deleteUserFlow && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Confirm user deletion"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+        >
+          <div className="w-full max-w-md rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]/60 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-rose-500/15 text-rose-500 flex items-center justify-center">
+                  <Trash2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[var(--text-primary)]">
+                    Delete User Account
+                  </h3>
+                  <p className="text-[11px] font-mono text-[var(--text-muted)]">
+                    Step {deleteUserFlow.step} of 2 &bull; Irreversible Action
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={deleteUserBusy}
+                onClick={() => setDeleteUserFlow(null)}
+                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 text-xs">
+              <div className="p-3.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center gap-3">
+                <UserAvatar
+                  name={deleteUserFlow.user.name}
+                  avatarUrl={deleteUserFlow.user.avatarUrl}
+                  size={96}
+                  className="w-9 h-9 shrink-0"
+                />
+                <div className="min-w-0">
+                  <div className="font-bold text-[var(--text-primary)] truncate">
+                    {deleteUserFlow.user.name}
+                  </div>
+                  <div className="font-mono text-[11px] text-[var(--text-muted)] truncate">
+                    {deleteUserFlow.user.email} &bull; {deleteUserFlow.user.role}
+                  </div>
+                </div>
+              </div>
+
+              {deleteUserFlow.step === 1 ? (
+                <div className="space-y-4">
+                  <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-700 dark:text-rose-300 space-y-1">
+                    <div className="font-bold">Permanent Account Removal</div>
+                    <p className="leading-relaxed">
+                      Deleting this user will permanently remove their profile, OAuth links, and all active sessions from PostgreSQL. This action cannot be undone.
+                    </p>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDeleteUserFlow(null)}
+                      className="h-9 px-4 rounded-xl border border-[var(--border-subtle)] font-semibold text-[var(--text-secondary)]"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setDeleteUserFlow((prev) => (prev ? { ...prev, step: 2 } : null))
+                      }
+                      className="h-9 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold inline-flex items-center gap-1.5"
+                    >
+                      <span>Continue to Final Confirmation</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-[var(--text-secondary)]">
+                    Type{" "}
+                    <code className="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] font-mono text-[11px] text-[var(--text-primary)]">
+                      {deleteUserFlow.user.email}
+                    </code>{" "}
+                    below to permanently delete this account:
+                  </p>
+                  <input
+                    type="text"
+                    autoFocus
+                    placeholder={deleteUserFlow.user.email}
+                    value={deleteUserFlow.typedConfirm}
+                    onChange={(e) =>
+                      setDeleteUserFlow((prev) =>
+                        prev ? { ...prev, typedConfirm: e.target.value } : null
+                      )
+                    }
+                    className="w-full h-10 px-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] font-mono"
+                  />
+                  <div className="flex justify-between gap-2">
+                    <button
+                      type="button"
+                      disabled={deleteUserBusy}
+                      onClick={() =>
+                        setDeleteUserFlow((prev) => (prev ? { ...prev, step: 1 } : null))
+                      }
+                      className="h-9 px-4 rounded-xl border border-[var(--border-subtle)] font-semibold text-[var(--text-secondary)]"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="button"
+                      disabled={
+                        deleteUserBusy ||
+                        deleteUserFlow.typedConfirm.trim().toLowerCase() !==
+                          deleteUserFlow.user.email.toLowerCase()
+                      }
+                      onClick={async () => {
+                        setDeleteUserBusy(true);
+                        try {
+                          await apiDeleteAdminUser(deleteUserFlow.user.id);
+                          setDeleteUserFlow(null);
+                          await loadUsers();
+                          setBanner({
+                            type: "success",
+                            text: `Permanently deleted user ${deleteUserFlow.user.email}.`,
+                          });
+                        } catch (err: any) {
+                          setBanner({
+                            type: "error",
+                            text: err?.message || "Failed to delete user.",
+                          });
+                        } finally {
+                          setDeleteUserBusy(false);
+                        }
+                      }}
+                      className="h-9 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold disabled:opacity-45 transition-colors"
+                    >
+                      {deleteUserBusy ? "Deleting..." : "Permanently Delete User"}
                     </button>
                   </div>
                 </div>
