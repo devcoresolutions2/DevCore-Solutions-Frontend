@@ -981,6 +981,9 @@
   .h-\[2px\] {
     height: 2px;
   }
+  .h-\[18px\] {
+    height: 18px;
+  }
   .h-\[18rem\] {
     height: 18rem;
   }
@@ -1172,6 +1175,9 @@
   }
   .w-\[3px\] {
     width: 3px;
+  }
+  .w-\[18px\] {
+    width: 18px;
   }
   .w-\[36rem\] {
     width: 36rem;
@@ -1403,6 +1409,9 @@
     --tw-scale-y: 105%;
     --tw-scale-z: 105%;
     scale: var(--tw-scale-x) var(--tw-scale-y);
+  }
+  .scale-\[1\.01\] {
+    scale: 1.01;
   }
   .rotate-45 {
     rotate: 45deg;
@@ -2198,14 +2207,14 @@
   .border-l-\[var\(--warning\)\] {
     border-left-color: var(--warning);
   }
-  .bg-\[\#0A66C2\]\/10 {
-    background-color: color-mix(in oklab, #0A66C2 10%, transparent);
+  .bg-\[\#0A66C2\]\/12 {
+    background-color: color-mix(in oklab, #0A66C2 12%, transparent);
   }
   .bg-\[\#0B151C\] {
     background-color: #0B151C;
   }
-  .bg-\[\#0CAA41\]\/10 {
-    background-color: color-mix(in oklab, #0CAA41 10%, transparent);
+  .bg-\[\#0CAA41\]\/12 {
+    background-color: color-mix(in oklab, #0CAA41 12%, transparent);
   }
   .bg-\[\#0d1117\] {
     background-color: #0d1117;
@@ -2225,8 +2234,8 @@
   .bg-\[\#191D22\] {
     background-color: #191D22;
   }
-  .bg-\[\#0668E1\]\/10 {
-    background-color: color-mix(in oklab, #0668E1 10%, transparent);
+  .bg-\[\#0668E1\]\/12 {
+    background-color: color-mix(in oklab, #0668E1 12%, transparent);
   }
   .bg-\[\#131619\] {
     background-color: #131619;
@@ -2386,6 +2395,9 @@
     @supports (color: color-mix(in lab, red, red)) {
       background-color: color-mix(in oklab, var(--bg-elevated) 95%, transparent);
     }
+  }
+  .bg-\[var\(--bg-muted\)\] {
+    background-color: var(--bg-muted);
   }
   .bg-\[var\(--bg-surface\)\] {
     background-color: var(--bg-surface);
@@ -3206,6 +3218,9 @@
   }
   .px-6 {
     padding-inline: calc(var(--spacing) * 6);
+  }
+  .px-7 {
+    padding-inline: calc(var(--spacing) * 7);
   }
   .px-8 {
     padding-inline: calc(var(--spacing) * 8);
@@ -4580,6 +4595,14 @@
         border-color: color-mix(in oklab, var(--brand-primary) 70%, transparent);
       }
     }
+    .hover\:border-\[var\(--error\)\]\/40:hover {
+      border-color: var(--error);
+    }
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:border-\[var\(--error\)\]\/40:hover {
+        border-color: color-mix(in oklab, var(--error) 40%, transparent);
+      }
+    }
     .hover\:border-\[var\(--success\)\]:hover {
       border-color: var(--success);
     }
@@ -4611,6 +4634,14 @@
     @supports (color: color-mix(in lab, red, red)) {
       .hover\:border-emerald-500\/30:hover {
         border-color: color-mix(in oklab, var(--color-emerald-500) 30%, transparent);
+      }
+    }
+    .hover\:border-rose-500\/30:hover {
+      border-color: color-mix(in srgb, oklch(64.5% 0.246 16.439) 30%, transparent);
+    }
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:border-rose-500\/30:hover {
+        border-color: color-mix(in oklab, var(--color-rose-500) 30%, transparent);
       }
     }
     .hover\:border-rose-500\/40:hover {
@@ -5020,6 +5051,9 @@
   }
   .disabled\:opacity-50:disabled {
     opacity: 50%;
+  }
+  .disabled\:opacity-60:disabled {
+    opacity: 60%;
   }
   :where([data-slot="button-group"]) .in-data-\[slot\=button-group\]\:rounded-lg {
     border-radius: var(--radius-lg);
@@ -5728,6 +5762,9 @@
     .lg\:sticky {
       position: sticky;
     }
+    .lg\:top-24 {
+      top: calc(var(--spacing) * 24);
+    }
     .lg\:top-28 {
       top: calc(var(--spacing) * 28);
     }
@@ -6034,11 +6071,26 @@
       border-color: color-mix(in oklab, var(--color-white) 15%, transparent);
     }
   }
+  .dark\:bg-\[\#0A66C2\]\/20:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) {
+    background-color: color-mix(in oklab, #0A66C2 20%, transparent);
+  }
+  .dark\:bg-\[\#0CAA41\]\/20:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) {
+    background-color: color-mix(in oklab, #0CAA41 20%, transparent);
+  }
   .dark\:bg-\[\#8FB4C9\]:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) {
     background-color: #8FB4C9;
   }
+  .dark\:bg-\[\#0668E1\]\/20:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) {
+    background-color: color-mix(in oklab, #0668E1 20%, transparent);
+  }
   .dark\:bg-\[\#06141B\]:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) {
     background-color: #06141B;
+  }
+  .dark\:bg-\[\#FF0000\]\/18:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) {
+    background-color: color-mix(in oklab, #FF0000 18%, transparent);
+  }
+  .dark\:bg-\[\#FF4500\]\/18:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) {
+    background-color: color-mix(in oklab, #FF4500 18%, transparent);
   }
   .dark\:bg-amber-400\/15:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) {
     background-color: color-mix(in srgb, oklch(82.8% 0.189 84.429) 15%, transparent);
@@ -6106,14 +6158,29 @@
       background-color: color-mix(in oklab, var(--color-white) 8%, transparent);
     }
   }
+  .dark\:text-\[\#3B82F6\]:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) {
+    color: #3B82F6;
+  }
   .dark\:text-\[\#8FB4C9\]:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) {
     color: #8FB4C9;
+  }
+  .dark\:text-\[\#34D399\]:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) {
+    color: #34D399;
+  }
+  .dark\:text-\[\#60A5FA\]:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) {
+    color: #60A5FA;
   }
   .dark\:text-\[\#06141B\]:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) {
     color: #06141B;
   }
   .dark\:text-\[\#CCD0CF\]:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) {
     color: #CCD0CF;
+  }
+  .dark\:text-\[\#F87171\]:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) {
+    color: #F87171;
+  }
+  .dark\:text-\[\#FB923C\]:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) {
+    color: #FB923C;
   }
   .dark\:text-amber-300:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) {
     color: var(--color-amber-300);
