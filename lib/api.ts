@@ -3242,6 +3242,54 @@ export async function apiDeleteAdminUser(id: string): Promise<{ deleted: boolean
   });
 }
 
+export async function apiUploadAdminProjectCoverImage(file: File): Promise<string> {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Please select or drop a valid image file (PNG, JPG, WebP, GIF, AVIF).");
+  }
+  if (file.size > 25 * 1024 * 1024) {
+    throw new Error("Image size must be 25 MB or less.");
+  }
+
+  const sig = await apiFetch<{
+    signature: string;
+    timestamp: number;
+    apiKey: string;
+    cloudName: string;
+    folder: string;
+    publicId: string;
+    allowedFormats: string;
+    uploadUrl: string;
+  }>("/api/admin/content/media-signature", {
+    method: "POST",
+    body: JSON.stringify({ fileName: file.name }),
+  });
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("api_key", sig.apiKey);
+  formData.append("timestamp", String(sig.timestamp));
+  formData.append("signature", sig.signature);
+  formData.append("folder", sig.folder);
+  formData.append("public_id", sig.publicId);
+  formData.append("allowed_formats", sig.allowedFormats);
+
+  const uploadRes = await fetch(sig.uploadUrl, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!uploadRes.ok) {
+    const errBody = await uploadRes.json().catch(() => null);
+    throw new Error(errBody?.error?.message || "Cloudinary image upload failed.");
+  }
+
+  const uploaded = await uploadRes.json();
+  if (!uploaded?.secure_url) {
+    throw new Error("Cloudinary did not return an image URL.");
+  }
+  return uploaded.secure_url as string;
+}
+
 export type {
   ShowcaseItem,
   ProjectItem,
