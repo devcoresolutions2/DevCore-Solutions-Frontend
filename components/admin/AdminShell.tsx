@@ -35,6 +35,7 @@ import {
   Shield,
   KeyRound,
   MonitorSmartphone,
+  Rocket,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { UserAvatar } from "@/components/shared/UserAvatar";
@@ -57,6 +58,7 @@ const NAV_GROUPS = [
     label: "Content & CMS",
     items: [
       { href: "/admin/content", label: "Content Manager", icon: FileText },
+      { href: "/admin/projects", label: "Projects & Launches", icon: Rocket },
       { href: "/admin/dashboard?tab=blog", label: "Blog Articles", icon: BookOpen },
       { href: "/admin/dashboard?tab=jobs", label: "Job Postings", icon: Briefcase },
       { href: "/admin/dashboard?tab=applications", label: "Applications", icon: Users },
@@ -115,6 +117,8 @@ function getBreadcrumbLabel(pathname: string | null, tab?: string): { section: s
     return { section: "Team & Security", page: "Platform Settings" };
   if (pathname.startsWith("/admin/media"))
     return { section: "Content & CMS", page: "Media Library" };
+  if (pathname.startsWith("/admin/projects"))
+    return { section: "Content & CMS", page: "Projects & Launches" };
   if (pathname.startsWith("/admin/content"))
     return { section: "Content & CMS", page: "Content Manager" };
   return { section: "Overview", page: "Dashboard" };
