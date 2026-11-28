@@ -3176,12 +3176,18 @@ export async function apiListAdminShowcase(): Promise<{ items: any[] }> {
 
 export async function apiCreateAdminShowcase(payload: {
   name: string;
+  slug?: string;
   tagline: string;
   description?: string;
   category?: string;
+  badge?: string;
+  launchDate?: string;
   techStack?: string[];
+  metrics?: { label: string; value: string }[];
   liveUrl?: string;
   coverImage?: string;
+  caseStudySlug?: string;
+  featuredOnHome?: boolean;
 }): Promise<{ item: any }> {
   return await apiFetch("/api/admin/content/showcase", {
     method: "POST",
@@ -3201,10 +3207,14 @@ export async function apiListAdminProjects(): Promise<{ items: any[] }> {
 
 export async function apiCreateAdminProject(payload: {
   title: string;
+  slug?: string;
   summary: string;
   category?: string;
   techStack?: string[];
+  challenge?: string;
+  solution?: string;
   features?: string[];
+  metrics?: { label: string; value: string }[];
   liveUrl?: string;
   coverImage?: string;
 }): Promise<{ item: any }> {
