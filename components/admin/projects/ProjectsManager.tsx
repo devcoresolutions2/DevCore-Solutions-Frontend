@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Rocket,
@@ -17,6 +17,8 @@ import {
   Globe,
   BarChart3,
   Image as ImageIcon,
+  UploadCloud,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -26,6 +28,7 @@ import {
   apiListAdminProjects,
   apiCreateAdminProject,
   apiDeleteAdminProject,
+  apiUploadAdminProjectCoverImage,
 } from "@/lib/api";
 import ConfirmDialog from "@/components/admin/shared/ConfirmDialog";
 import { cn } from "@/lib/utils";
@@ -48,6 +51,9 @@ export function ProjectsManager() {
   // Add Project / Launch Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement | null>(null);
 
   // Publish targets
   const [publishToLaunches, setPublishToLaunches] = useState(true);
@@ -716,14 +722,129 @@ export function ProjectsManager() {
                   <div className="space-y-1">
                     <label className="font-semibold flex items-center gap-1.5">
                       <ImageIcon size={12} />
-                      <span>Cover Image URL (Cloudinary / Public Path)</span>
+                      <span>Cover Image (Drag &amp; Drop, Upload, or URL)</span>
                     </label>
                     <input
+                      ref={coverInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        if (!file) return;
+                        setUploadingCover(true);
+                        try {
+                          const url = await apiUploadAdminProjectCoverImage(file);
+                          setCoverImage(url);
+                          toast.success("Cover image uploaded to Cloudinary!");
+                        } catch (err: any) {
+                          toast.error(err?.message || "Failed to upload cover image.");
+                        } finally {
+                          setUploadingCover(false);
+                        }
+                      }}
+                    />
+
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => !uploadingCover && coverInputRef.current?.click()}
+                      onKeyDown={(e) => {
+                        if ((e.key === "Enter" || e.key === " ") && !uploadingCover) {
+                          e.preventDefault();
+                          coverInputRef.current?.click();
+                        }
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setDragActive(true);
+                      }}
+                      onDragLeave={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setDragActive(false);
+                      }}
+                      onDrop={async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setDragActive(false);
+                        const file = e.dataTransfer?.files?.[0];
+                        if (!file) return;
+                        setUploadingCover(true);
+                        try {
+                          const url = await apiUploadAdminProjectCoverImage(file);
+                          setCoverImage(url);
+                          toast.success("Cover image uploaded to Cloudinary!");
+                        } catch (err: any) {
+                          toast.error(err?.message || "Failed to upload cover image.");
+                        } finally {
+                          setUploadingCover(false);
+                        }
+                      }}
+                      className={cn(
+                        "rounded-xl border-2 border-dashed p-3 transition-colors cursor-pointer",
+                        dragActive
+                          ? "border-[var(--brand-primary)] bg-[var(--brand-primary)]/10"
+                          : "border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--brand-primary)]/60"
+                      )}
+                    >
+                      {uploadingCover ? (
+                        <div className="flex items-center justify-center gap-2 py-2 text-xs text-[var(--text-secondary)]">
+                          <Loader2 size={15} className="animate-spin text-[var(--brand-primary)]" />
+                          <span>Uploading image to Cloudinary...</span>
+                        </div>
+                      ) : coverImage ? (
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={coverImage}
+                            alt="Cover preview"
+                            className="w-16 h-11 rounded-lg object-cover border border-[var(--border-subtle)] shrink-0 bg-[var(--bg-surface)]"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[11px] font-semibold text-[var(--text-primary)] truncate">
+                              Cover attached — click or drag a new file to replace
+                            </p>
+                            <p className="text-[10px] font-mono text-[var(--text-muted)] truncate">
+                              {coverImage}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCoverImage("");
+                            }}
+                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-rose-500 hover:bg-rose-500/10"
+                            title="Clear cover image"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2.5 py-1 text-xs text-[var(--text-secondary)]">
+                          <div className="w-8 h-8 rounded-lg bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] flex items-center justify-center shrink-0">
+                            <UploadCloud size={16} />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-[var(--text-primary)]">
+                              Drag &amp; drop image here, or click to browse
+                            </p>
+                            <p className="text-[10px] text-[var(--text-muted)]">
+                              Supports Chrome downloads drag, PNG/JPG/WebP up to 25 MB
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <input
                       type="text"
-                      placeholder="/images/dinedesk-cover.jpg or https://res.cloudinary.com/..."
+                      placeholder="Or paste URL: /images/dinedesk-cover.jpg or https://res.cloudinary.com/..."
                       value={coverImage}
                       onChange={(e) => setCoverImage(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
+                      className="w-full h-9 px-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[11px] font-mono"
                     />
                   </div>
                 </div>
