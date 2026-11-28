@@ -194,7 +194,7 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
           "fixed inset-x-0 z-50 mx-auto transition-all duration-300 ease-in-out",
           scrolled
             ? "top-2.5 px-2.5 sm:px-4 max-w-[1440px]"
-            : "top-4 px-4 sm:px-6 max-w-7xl"
+            : "top-4 px-3 sm:px-5 max-w-[1380px]"
         )}
         role="banner"
       >
@@ -203,8 +203,8 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
             "relative overflow-visible devcore-glass-nav rounded-2xl flex items-center justify-between gap-2",
             "transition-all duration-300 ease-in-out",
             scrolled
-              ? "h-14 px-4 sm:px-7 shadow-xl border-[var(--border-strong)]/40"
-              : "h-16 px-4 sm:px-6 shadow-md"
+              ? "h-14 px-3.5 sm:px-6 shadow-xl border-[var(--border-strong)]/40"
+              : "h-16 px-3.5 sm:px-5 shadow-md"
           )}
           aria-label="Main navigation"
         >
@@ -269,7 +269,7 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
 
           {/* Desktop Center Navigation Links (borderless floating layout) */}
           <div
-            className="relative isolate hidden lg:flex items-center gap-0.5 xl:gap-1"
+            className="relative isolate hidden lg:flex items-center gap-0.5 2xl:gap-1 min-w-0"
             role="menubar"
             onMouseLeave={() => setHoveredHref(null)}
           >
@@ -289,7 +289,7 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
                     }
                   }}
                   className={cn(
-                    "relative px-2 xl:px-3 py-1.5 rounded-lg text-[12.5px] xl:text-sm transition-colors duration-150 select-none whitespace-nowrap",
+                    "relative px-1.5 xl:px-2 2xl:px-3 py-1.5 rounded-lg text-xs xl:text-[13px] 2xl:text-sm transition-colors duration-150 select-none whitespace-nowrap",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]",
                     active
                       ? "text-[var(--brand-contrast)] font-semibold"
@@ -364,7 +364,7 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
                 rel="noopener noreferrer"
                 className={cn(
                   "w-9 h-9 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)]/75",
-                  "hidden sm:flex items-center justify-center text-[var(--success)]",
+                  "hidden sm:flex lg:hidden xl:flex items-center justify-center text-[var(--success)]",
                   "hover:bg-[var(--bg-elevated)] hover:border-[var(--success)]/60 hover:shadow-sm transition-colors duration-150",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
                 )}
@@ -383,7 +383,7 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
                 href={`tel:${phone}`}
                 className={cn(
                   "w-9 h-9 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)]/75",
-                  "hidden sm:flex items-center justify-center text-[var(--text-primary)]",
+                  "hidden sm:flex lg:hidden xl:flex items-center justify-center text-[var(--text-primary)]",
                   "hover:bg-[var(--bg-elevated)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors duration-150",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
                 )}
@@ -418,7 +418,7 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
                     className="w-6 h-6"
                     textClassName="text-[10px]"
                   />
-                  <span className="hidden sm:inline text-xs font-semibold text-[var(--text-primary)] max-w-[96px] xl:max-w-[120px] truncate">
+                  <span className="hidden sm:inline lg:hidden xl:inline text-xs font-semibold text-[var(--text-primary)] max-w-[96px] 2xl:max-w-[130px] truncate">
                     {user.name}
                   </span>
                   <ChevronDown
@@ -511,14 +511,14 @@ export function GlassNav({ whatsappNumber = "", phone = "" }: GlassNavProps) {
                 href="/contact"
                 className={cn(
                   "hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold group",
-                  "h-9 px-3.5 xl:px-4 rounded-xl",
+                  "h-9 px-3 2xl:px-4 rounded-xl",
                   "bg-[var(--brand-primary)] text-[var(--brand-contrast)]",
                   "hover:bg-[var(--brand-hover)] transition-all duration-200",
                   "shadow-sm btn-liquid-hover whitespace-nowrap",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2"
                 )}
               >
-                <Rocket size={13} aria-hidden="true" />
+                <Rocket size={13} aria-hidden="true" className="hidden xl:inline-block" />
                 <span>Start a Project</span>
                 <ArrowRight
                   size={13}
